@@ -1,0 +1,7 @@
+slug: utbms
+term: UTBMS
+definition: UTBMS stands for Uniform Task-Based Management System, a set of legal billing task, activity, and expense codes used in electronic billing.
+appliesTo: Corporate legal departments and law firms use UTBMS codes to classify legal work consistently across matters and invoices.
+misconceptions:
+  - UTBMS is not the same thing as LEDES; UTBMS supplies codes, while LEDES defines invoice exchange formats.
+related: [ledes, billable-hours, matter]

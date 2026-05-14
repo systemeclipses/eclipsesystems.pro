@@ -1,0 +1,122 @@
+- code: L100
+  category: Litigation
+  phase: Case Assessment, Development and Administration
+  task: Case Assessment, Development and Administration
+  official_definition: Initial case assessment, development, and ongoing administration.
+  practical_examples:
+    - Opening a litigation matter and reviewing initial pleadings.
+    - Preparing a case budget for partner review.
+    - Coordinating internal case management responsibilities.
+  common_misuses:
+    - Do not use for written discovery; use L310.
+    - Do not use for trial attendance; use L450.
+  related_codes: [L110, L120, L150]
+- code: L110
+  category: Litigation
+  phase: Case Assessment, Development and Administration
+  task: Fact Investigation/Development
+  official_definition: Investigation and development of facts.
+  practical_examples:
+    - Reviewing client-provided documents for factual chronology.
+    - Interviewing a potential fact witness.
+    - Drafting a factual timeline for attorney review.
+  common_misuses:
+    - Do not use for legal research; use L120.
+    - Do not use for deposition work; use L330.
+  related_codes: [L120, L130, L140]
+- code: L120
+  category: Litigation
+  phase: Case Assessment, Development and Administration
+  task: Analysis/Strategy
+  official_definition: Case analysis and litigation strategy.
+  practical_examples:
+    - Evaluating claims and defenses after factual review.
+    - Preparing strategy notes before mediation.
+    - Reviewing risk exposure with the responsible attorney.
+  common_misuses:
+    - Do not use for fact witness interviews; use L110.
+  related_codes: [L110, L160, L240]
+- code: L310
+  category: Litigation
+  phase: Discovery
+  task: Written Discovery
+  official_definition: Written discovery requests and responses.
+  practical_examples:
+    - Drafting interrogatories.
+    - Preparing responses to requests for production.
+    - Reviewing written discovery objections.
+  common_misuses:
+    - Do not use for document production logistics; use L320.
+  related_codes: [L320, L330, L350]
+- code: L330
+  category: Litigation
+  phase: Discovery
+  task: Depositions
+  official_definition: Deposition preparation, attendance, and follow-up.
+  practical_examples:
+    - Preparing a witness outline.
+    - Attending a deposition.
+    - Summarizing deposition testimony.
+  common_misuses:
+    - Do not use for trial witness preparation; use L410.
+  related_codes: [L310, L340, L410]
+- code: L450
+  category: Litigation
+  phase: Trial Preparation and Trial
+  task: Trial and Hearing Attendance
+  official_definition: Attendance at trial or hearings.
+  practical_examples:
+    - Attending a motion hearing.
+    - Appearing for trial.
+    - Supporting counsel during an evidentiary hearing.
+  common_misuses:
+    - Do not use for pretrial written submissions; use L430.
+  related_codes: [L430, L440, L460]
+- code: A101
+  category: Activity
+  phase: Activity Code
+  task: Plan and prepare for
+  official_definition: Planning and preparation activity.
+  practical_examples:
+    - Preparing for a client call.
+    - Planning a discovery response workflow.
+    - Preparing a hearing checklist.
+  common_misuses:
+    - Do not use when the primary activity is research; use A102.
+  related_codes: [A102, A103, A104]
+- code: A102
+  category: Activity
+  phase: Activity Code
+  task: Research
+  official_definition: Legal or factual research activity.
+  practical_examples:
+    - Researching Alabama law on a procedural issue.
+    - Reviewing secondary authority before drafting.
+    - Finding supporting cases for a motion.
+  common_misuses:
+    - Do not use for document review; use A104.
+  related_codes: [A101, A103, A104]
+- code: A103
+  category: Activity
+  phase: Activity Code
+  task: Draft/Revise
+  official_definition: Drafting or revising documents.
+  practical_examples:
+    - Drafting a demand letter.
+    - Revising discovery responses.
+    - Editing an invoice narrative.
+  common_misuses:
+    - Do not use for communications about a draft; use A105-A108 as appropriate.
+  related_codes: [A102, A104]
+- code: E101
+  category: Expense
+  phase: Expense Code
+  task: Copying
+  official_definition: Copying charges.
+  practical_examples:
+    - Client-approved copy costs.
+    - Per-page copy charges for discovery production.
+    - Copy costs attached to matter expense records.
+  common_misuses:
+    - Do not use for outside printing; use E102.
+  related_codes: [E102, E118]

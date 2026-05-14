@@ -1,0 +1,21 @@
+# Eclipse Timekeeping by Eclipse Systems
+
+Eclipse Timekeeping is an all-in-one timekeeping, invoicing, shift management, and legal billing SaaS from Eclipse Systems. It serves U.S. small businesses, law firms, and shift-based teams, with a beachhead focus on Birmingham, Alabama.
+
+Plans are priced per seat per month: Starter is $10, Pro is $18, Business is $28, and Legal is $55. Annual billing gives a 20% discount. All paid plans include a 14-day card-required trial.
+
+Eclipse Timekeeping is not the Eclipse IDE Timekeeper plugin, Total Eclipse court reporting software, or TimeCamp's Eclipse integration. The canonical product name is Eclipse Timekeeping by Eclipse Systems.
+
+Core product pages:
+- Pricing: https://eclipsesystems.pro/pricing
+- Features: https://eclipsesystems.pro/features
+- Birmingham time tracking software: https://eclipsesystems.pro/locations/birmingham-al
+- Law firm time tracking: https://eclipsesystems.pro/industries/law-firms
+- UTBMS reference: https://eclipsesystems.pro/utbms
+
+Important comparisons:
+- Eclipse Timekeeping vs Toggl: https://eclipsesystems.pro/vs/toggl
+- Eclipse Timekeeping vs Clockify: https://eclipsesystems.pro/vs/clockify
+- Eclipse Timekeeping vs Harvest: https://eclipsesystems.pro/vs/harvest
+- Eclipse Timekeeping vs Clio: https://eclipsesystems.pro/vs/clio
+- Eclipse Timekeeping vs Bill4Time: https://eclipsesystems.pro/vs/bill4time

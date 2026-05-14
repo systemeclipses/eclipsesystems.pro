@@ -1,0 +1,8 @@
+slug: realization-rate
+term: Realization Rate
+definition: Realization rate measures how much recorded billable value is actually billed or collected.
+appliesTo: Firms use realization to find leakage between time capture, invoice review, and payment collection.
+misconceptions:
+  - High utilization does not guarantee high realization.
+  - Realization can fall because of vague narratives, poor scoping, or partner write-downs.
+related: [billable-hours, utilization-rate, wip]

@@ -1,0 +1,15 @@
+slug: construction
+name: Construction
+title: Time Tracking Software for Construction Teams
+description: Project-aware mobile time tracking for construction companies, subcontractors, and field teams.
+compliance: Construction teams should keep clear project, job, and cost records that support payroll, client billing, and job costing.
+recommendedPlan: Pro
+problems:
+  - Field time often arrives late or without enough project detail.
+  - Job costing depends on separating billable, fixed-fee, and non-billable work.
+featureMap:
+  - problem: Field entries lack project detail.
+    feature: Mobile-friendly manual entries, projects, tasks, and tags.
+  - problem: Budgets drift before managers notice.
+    feature: Budget hours, budget amounts, and project reporting.
+originalData: Eclipse Systems recommends reviewing budget percentage used weekly for active jobs, not only after invoice preparation.

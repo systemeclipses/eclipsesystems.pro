@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "time-tracking",
+    "name": "Time Tracking",
+    "summary": "Live timers, manual entries, timesheets, approvals, and running timer visibility.",
+    "questions": ["How does Eclipse Timekeeping prevent duplicate running timers?", "Can employees submit weekly timesheets?", "Can managers approve time before billing?"]
+  },
+  {
+    "slug": "invoicing",
+    "name": "Invoicing",
+    "summary": "Turn approved billable time into draft invoices, PDF exports, and payment links.",
+    "questions": ["Can Eclipse Timekeeping create invoices from time entries?", "Does Eclipse Timekeeping store card data?", "How are invoice amounts calculated?"]
+  },
+  {
+    "slug": "shift-management",
+    "name": "Shift Management",
+    "summary": "Schedule shifts, manage swaps, and run an add/drop marketplace with approvals.",
+    "questions": ["How do shift swaps work?", "Can managers approve dropped shifts?", "Does the marketplace update in realtime?"]
+  },
+  {
+    "slug": "team-chat",
+    "name": "Team Chat",
+    "summary": "DMs, channels, reactions, and time or shift sharing in the same workspace.",
+    "questions": ["Does Eclipse Timekeeping support channels?", "Can teams discuss shifts in the app?", "How does chat respect organization access?"]
+  },
+  {
+    "slug": "legal-billing",
+    "name": "Legal Billing",
+    "summary": "Matter-aware timekeeping with UTBMS task/activity codes, LEDES export, and custom rates.",
+    "questions": ["Does Eclipse Timekeeping support UTBMS codes?", "Can Eclipse Timekeeping export LEDES 1998B?", "How do custom matter rates work?"]
+  },
+  {
+    "slug": "reporting",
+    "name": "Reporting",
+    "summary": "Member, project, invoice, utilization, and subordinate team reporting.",
+    "questions": ["Can managers see subordinate time?", "Can teams report billable amounts by project?", "What reports are available on Starter?"]
+  }
+]

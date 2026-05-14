@@ -1,0 +1,15 @@
+slug: accounting-firms
+name: Accounting Firms
+title: Time Tracking & Billing Software for Accounting Firms
+description: Track client work, projects, fixed-fee engagements, hourly billing, and realization across accounting teams.
+compliance: Accounting firms should retain clear records of billable and non-billable client work, especially during tax season and advisory engagements.
+recommendedPlan: Pro
+problems:
+  - Busy seasons make after-the-fact time reconstruction common.
+  - Fixed-fee engagements still need internal profitability visibility.
+featureMap:
+  - problem: Client work crosses many small tasks.
+    feature: Clients, projects, tasks, and weekly timesheets.
+  - problem: Fixed-fee work hides margin.
+    feature: Budget hours and project reporting.
+originalData: Eclipse Systems' internal planning benchmark treats realization, utilization, and WIP aging as the three reporting views accounting firms should review monthly.

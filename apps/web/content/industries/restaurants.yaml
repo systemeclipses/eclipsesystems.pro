@@ -1,0 +1,15 @@
+slug: restaurants
+name: Restaurants
+title: Time Tracking & Shift Software for Restaurants
+description: Restaurant timekeeping with shift scheduling, add/drop marketplace, swaps, chat, and manager approvals.
+compliance: Restaurant operators should align scheduling and time records with applicable wage-and-hour rules and local predictive scheduling obligations where they apply.
+recommendedPlan: Business
+problems:
+  - Shift swaps happen through texts that managers cannot easily audit.
+  - Coverage gaps become payroll and customer-service problems.
+featureMap:
+  - problem: Untracked shift swaps create confusion.
+    feature: Shift marketplace, swap requests, and approvals.
+  - problem: Managers need fast coordination.
+    feature: Channels, DMs, and shift sharing in chat.
+originalData: Eclipse Systems recommends tracking swap response time and no-show rate as weekly scheduling health metrics.

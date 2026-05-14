@@ -1,0 +1,26 @@
+name: Toggl Track
+slug: toggl
+website: https://toggl.com
+last_verified: 2026-05-13
+audience: teams that want lightweight time tracking
+pricing:
+  free: true
+  paid_from: 10
+  seat_min: 1
+features:
+  time_tracking: true
+  projects: true
+  invoicing: false
+  shifts: false
+  chat: false
+  utbms: false
+  ledes: false
+  trust_accounting: false
+strengths:
+  - Mature time tracking product with a polished user experience.
+  - Strong reporting for simple project time analysis.
+  - Useful for freelancers and small teams that do not need billing operations in the same tool.
+weaknesses:
+  - Invoicing, shifts, legal billing, LEDES export, and trust accounting are outside its core product.
+  - Teams that need scheduling or matter workflows usually need additional software.
+source_url: https://toggl.com/track/pricing/

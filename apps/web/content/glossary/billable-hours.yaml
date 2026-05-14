@@ -1,0 +1,8 @@
+slug: billable-hours
+term: Billable Hours
+definition: Billable hours are units of professional work that can be charged to a client under an engagement agreement.
+appliesTo: Law firms, agencies, accounting firms, consultants, and other professional services teams use billable hours to connect work performed with client invoices.
+misconceptions:
+  - Billable time is not the same as worked time; internal admin time may be non-billable.
+  - A captured billable hour may still be written down before invoicing.
+related: [realization-rate, utilization-rate, wip]

@@ -1,8 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Clock, FileText, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FAQ } from "@/components/seo/faq";
+import { loadFeatures } from "@/lib/seo/content";
 
-export default function LandingPage() {
+export const metadata: Metadata = {
+  title: "Eclipse Timekeeping by Eclipse Systems",
+  description: "Time tracking, invoicing, shift management, and legal billing software for U.S. small businesses, law firms, and shift teams.",
+  alternates: { canonical: "/" }
+};
+
+export default async function LandingPage() {
+  const features = await loadFeatures();
+
   return (
     <main className="min-h-screen">
       <section className="border-b border-border bg-muted/60">
@@ -29,6 +40,24 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-6 py-14">
+        <h2 className="text-2xl font-semibold">What does Eclipse Timekeeping include?</h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {features.map((feature) => (
+            <Link key={feature.slug} href={`/features/${feature.slug}`} className="rounded-lg border border-border p-5 hover:bg-muted/40">
+              <h3 className="font-semibold">{feature.name}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{feature.summary}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-6 pb-14">
+        <FAQ items={[
+          { question: "Is Eclipse Timekeeping by Eclipse Systems the same as the Eclipse IDE Timekeeper plugin?", answer: "No. Eclipse Timekeeping by Eclipse Systems is a SaaS timekeeping platform for businesses. It is not the Eclipse IDE Timekeeper open-source plugin, Total Eclipse court reporting software, or TimeCamp's Eclipse integration." },
+          { question: "How much does Eclipse Timekeeping cost?", answer: "Eclipse Timekeeping starts at $10 per seat per month for Starter. Pro is $18, Business is $28, and Legal is $55 per seat per month. Annual billing reduces the effective monthly seat price by 20 percent." },
+          { question: "Who is Eclipse Timekeeping built for?", answer: "Eclipse Timekeeping is built for U.S. small businesses, law firms, professional services teams, restaurants, construction teams, and shift-based operators." }
+        ]} />
       </section>
     </main>
   );

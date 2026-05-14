@@ -1,0 +1,18 @@
+slug: law-firms
+name: Law Firms
+title: Time Tracking & Billing Software for Law Firms
+description: Matter-aware timekeeping for firms that need billable hour capture, approvals, UTBMS codes, LEDES export, and trust accounting.
+compliance: ABA Model Rule 1.5 requires fees to be reasonable, and Rule 1.15 governs safekeeping property. Eclipse Timekeeping supports the records and workflows small firms need to document time, invoices, and trust movements.
+recommendedPlan: Legal
+problems:
+  - Lawyers and paralegals often reconstruct time after the fact, reducing realization and increasing billing disputes.
+  - Matter rates, UTBMS codes, and LEDES requirements are hard to manage in generic time trackers.
+  - Trust accounting requires a separate audit trail from normal operating revenue.
+featureMap:
+  - problem: Reconstructed time creates leakage.
+    feature: Live timers, weekly timesheets, approval workflows, and running timer visibility.
+  - problem: Legal invoices require matter context.
+    feature: Matters, custom rates, UTBMS task/activity codes, and LEDES 1998B export.
+  - problem: Trust records need careful separation.
+    feature: Trust accounts and append-only trust transaction records.
+originalData: Eclipse Systems' Phase 1 benchmark model estimates that a five-person small firm losing six minutes per biller per day to untracked work gives up roughly 110 billable hours per year.

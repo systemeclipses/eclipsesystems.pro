@@ -1,0 +1,22 @@
+name: Lighthouse
+
+on:
+  pull_request:
+    paths:
+      - "apps/web/**"
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @eclipsesystems/web build
+      - run: pnpm dlx @lhci/cli@0.14.0 autorun --collect.startServerCommand="pnpm --filter @eclipsesystems/web start" --assert.assertions.categories:performance='["error",{"minScore":0.9}]'

@@ -1,0 +1,35 @@
+# Eclipse Timekeeping
+
+> Eclipse Timekeeping is an all-in-one timekeeping, invoicing, and workforce management SaaS by Eclipse Systems. It serves small businesses, law firms, and shift-based teams in the United States. Pricing is per seat, per month: Starter $10, Pro $18, Business $28, Legal $55. The product is headquartered in Alabama and built for U.S. small businesses with a focus on the Birmingham metro area.
+
+## Product
+- [Pricing](https://eclipsesystems.pro/pricing): All four plans with per-seat prices and feature matrix.
+- [Starter Plan ($10/seat/mo)](https://eclipsesystems.pro/plans/starter): Personal and team time tracking.
+- [Pro Plan ($18/seat/mo)](https://eclipsesystems.pro/plans/pro): Adds clients, projects, invoicing.
+- [Business Plan ($28/seat/mo)](https://eclipsesystems.pro/plans/business): Adds shifts, swaps, chat, admin reporting.
+- [Legal Plan ($55/seat/mo)](https://eclipsesystems.pro/plans/legal): Adds ABA UTBMS codes, LEDES 1998B export, matters, trust accounting.
+
+## Industries
+- [Law Firms](https://eclipsesystems.pro/industries/law-firms)
+- [Paralegals](https://eclipsesystems.pro/industries/paralegals)
+- [Accounting Firms](https://eclipsesystems.pro/industries/accounting-firms)
+- [Restaurants](https://eclipsesystems.pro/industries/restaurants)
+- [Construction](https://eclipsesystems.pro/industries/construction)
+
+## Guides
+- [LEDES 1998B Invoice Format Explained](https://eclipsesystems.pro/guides/ledes-1998b-format)
+- [UTBMS Code Reference](https://eclipsesystems.pro/utbms)
+- [How to Track Billable Hours](https://eclipsesystems.pro/guides/track-billable-hours)
+- [Shift Swap Best Practices](https://eclipsesystems.pro/guides/shift-swap-policies)
+
+## Comparisons
+- [Eclipse Timekeeping vs Toggl](https://eclipsesystems.pro/vs/toggl)
+- [Eclipse Timekeeping vs Clockify](https://eclipsesystems.pro/vs/clockify)
+- [Eclipse Timekeeping vs Harvest](https://eclipsesystems.pro/vs/harvest)
+- [Eclipse Timekeeping vs Clio](https://eclipsesystems.pro/vs/clio)
+- [Eclipse Timekeeping vs Bill4Time](https://eclipsesystems.pro/vs/bill4time)
+
+## Company
+- [About Eclipse Systems](https://eclipsesystems.pro/about)
+- [Security](https://eclipsesystems.pro/security)
+- [Privacy](https://eclipsesystems.pro/privacy)

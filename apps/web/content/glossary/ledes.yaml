@@ -1,0 +1,7 @@
+slug: ledes
+term: LEDES
+definition: LEDES is a family of legal electronic data exchange standards used to submit legal invoices in structured formats.
+appliesTo: Law firms use LEDES formats, including LEDES 1998B, when clients require e-billing submissions.
+misconceptions:
+  - LEDES export does not replace invoice review; narratives, rates, and codes still need validation before export.
+related: [utbms, billable-hours, matter]

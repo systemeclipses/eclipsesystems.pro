@@ -1,0 +1,25 @@
+name: Clio
+slug: clio
+website: https://www.clio.com
+last_verified: 2026-05-13
+audience: law firms that want full practice management
+pricing:
+  free: false
+  paid_from: 49
+  seat_min: 1
+features:
+  time_tracking: true
+  projects: false
+  invoicing: true
+  shifts: false
+  chat: false
+  utbms: true
+  ledes: true
+  trust_accounting: true
+strengths:
+  - Deep legal practice management platform with broad law firm workflows.
+  - Strong ecosystem and legal-specific brand awareness.
+weaknesses:
+  - More system than some small firms need when the immediate problem is timekeeping and billing.
+  - Shift and general small-business workforce workflows are not the core use case.
+source_url: https://www.clio.com/pricing/

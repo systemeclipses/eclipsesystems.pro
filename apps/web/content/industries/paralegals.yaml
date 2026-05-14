@@ -1,0 +1,15 @@
+slug: paralegals
+name: Paralegals
+title: Time Tracking & Billing Software for Paralegals
+description: Capture paralegal work with clear descriptions, matter context, UTBMS codes, and attorney review.
+compliance: Paralegal billing should be described clearly enough for client review and supervised consistently by responsible attorneys.
+recommendedPlan: Legal
+problems:
+  - Paralegal work is often under-described or written off because it lacks matter and task context.
+  - Firms need review before entries become client-facing invoices.
+featureMap:
+  - problem: Entries lack billing context.
+    feature: Matter-linked time entries with UTBMS task and activity codes.
+  - problem: Supervising attorneys need review.
+    feature: Approval workflows and subordinate reporting.
+originalData: Eclipse Systems recommends measuring paralegal realization separately from attorney realization because write-down patterns are often different.

@@ -1,0 +1,25 @@
+name: Harvest
+slug: harvest
+website: https://www.getharvest.com
+last_verified: 2026-05-13
+audience: professional services teams that need time tracking and invoicing
+pricing:
+  free: true
+  paid_from: 12
+  seat_min: 1
+features:
+  time_tracking: true
+  projects: true
+  invoicing: true
+  shifts: false
+  chat: false
+  utbms: false
+  ledes: false
+  trust_accounting: false
+strengths:
+  - Mature time and invoice workflow.
+  - Strong reputation among agencies and consultants.
+weaknesses:
+  - Shift operations, chat, and legal-specific controls are not native differentiators.
+  - Law firms needing LEDES or UTBMS support will likely need another system.
+source_url: https://www.getharvest.com/pricing

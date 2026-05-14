@@ -1,0 +1,24 @@
+name: Bill4Time
+slug: bill4time
+website: https://www.bill4time.com
+last_verified: 2026-05-13
+audience: law firms and professional services teams focused on billing
+pricing:
+  free: false
+  paid_from: 29
+  seat_min: 1
+features:
+  time_tracking: true
+  projects: true
+  invoicing: true
+  shifts: false
+  chat: false
+  utbms: true
+  ledes: true
+  trust_accounting: true
+strengths:
+  - Legal and professional billing depth.
+  - Useful for firms that prioritize billing controls above workforce operations.
+weaknesses:
+  - Shift marketplace, team chat, and broader workforce management are not core strengths.
+source_url: https://www.bill4time.com/pricing/

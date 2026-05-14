@@ -1,0 +1,25 @@
+name: Clockify
+slug: clockify
+website: https://clockify.me
+last_verified: 2026-05-13
+audience: cost-conscious teams comparing free time trackers
+pricing:
+  free: true
+  paid_from: 4.99
+  seat_min: 1
+features:
+  time_tracking: true
+  projects: true
+  invoicing: true
+  shifts: true
+  chat: false
+  utbms: false
+  ledes: false
+  trust_accounting: false
+strengths:
+  - Broad feature set and a generous free tier.
+  - Good fit when price is the deciding factor.
+weaknesses:
+  - Legal-specific billing workflows and trust accounting are not the center of the product.
+  - Teams may need more configuration to create a guided workflow.
+source_url: https://clockify.me/pricing
