@@ -1,0 +1,20 @@
+create extension if not exists pgcrypto with schema extensions;
+create extension if not exists citext with schema extensions;
+create extension if not exists pg_trgm with schema extensions;
+create extension if not exists btree_gist with schema extensions;
+
+do $$ begin create type public.org_kind as enum ('personal', 'team'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.plan_code as enum ('starter', 'pro', 'business', 'legal'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.billing_interval as enum ('month', 'year'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.subscription_status as enum ('trialing','active','past_due','canceled','incomplete','incomplete_expired','unpaid','paused'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.member_role as enum ('owner','admin','manager','member'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.invite_status as enum ('pending','accepted','revoked','expired'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.time_entry_status as enum ('draft','submitted','approved','rejected','invoiced','locked'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.invoice_status as enum ('draft','sent','viewed','partially_paid','paid','overdue','void','refunded'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.shift_status as enum ('open','assigned','swap_requested','dropped','completed','no_show','canceled'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.swap_status as enum ('requested','offered','accepted','declined','canceled','expired'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.message_kind as enum ('text','file','system','time_share','shift_share'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.channel_kind as enum ('dm','group','channel'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.matter_status as enum ('open','closed','on_hold','archived'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.conflict_status as enum ('pending','cleared','flagged','waived'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.trust_txn_kind as enum ('deposit','withdrawal','transfer','fee','interest'); exception when duplicate_object then null; end $$;

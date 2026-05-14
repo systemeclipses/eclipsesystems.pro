@@ -1,0 +1,11 @@
+import { requireFeature } from "@/lib/plan-features";
+import { getActiveOrgId } from "@/lib/org";
+import { createServerClient } from "@/lib/supabase/server";
+
+export default async function ClientsPage() {
+  const orgId = await getActiveOrgId();
+  await requireFeature(orgId, "projects");
+  const supabase = createServerClient();
+  const { data } = await supabase.from("clients" as never).select("name").eq("organization_id", orgId);
+  return <section><h1 className="text-2xl font-semibold">Clients</h1><pre className="mt-6 rounded-lg border border-border p-4">{JSON.stringify(data ?? [], null, 2)}</pre></section>;
+}
