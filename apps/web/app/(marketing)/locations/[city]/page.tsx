@@ -26,7 +26,7 @@ export default async function LocationPage({ params }: { params: { city: string 
     name: "Eclipse Timekeeping by Eclipse Systems",
     url: absoluteUrl(`/locations/${location.slug}`),
     areaServed: [{ "@type": "City", name: location.city }, { "@type": "State", name: location.state }],
-    priceRange: "$10-$55 per seat per month"
+    priceRange: "$10-$38 per seat per month, plus legal add-on"
   };
 
   return (
@@ -57,8 +57,8 @@ export default async function LocationPage({ params }: { params: { city: string 
       </section>
       <FAQ items={[
         { question: `What is the best time tracking software for ${location.city} businesses?`, answer: `The best option depends on the workflow. Eclipse Timekeeping is built for ${location.city} teams that need time tracking plus invoicing, shift management, legal billing, or manager approvals.` },
-        { question: `Does Eclipse Timekeeping support ${location.city} law firms?`, answer: "Yes. The Legal plan supports matters, UTBMS codes, LEDES 1998B export, conflict checks, custom rates, and trust accounting records." },
-        { question: `How much does Eclipse Timekeeping cost in ${location.state}?`, answer: "Pricing is national: Starter $10, Pro $18, Business $28, and Legal $55 per seat per month." }
+        { question: `Does Eclipse Timekeeping support ${location.city} law firms?`, answer: "Yes. Eclipse Legal Add-on supports matters, UTBMS codes, LEDES 1998B export, conflict checks, custom rates, and trust accounting records." },
+        { question: `How much does Eclipse Timekeeping cost in ${location.state}?`, answer: "Pricing is national: Eclipse Timekeeping is $10, Mission Command is $18, Eclipse is $22, Eclipse Suite is $38, and Eclipse Legal Add-on is $20 per seat per month." }
       ]} />
     </main>
   );

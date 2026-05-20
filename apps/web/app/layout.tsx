@@ -1,7 +1,25 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { Analytics } from "@/lib/analytics";
 import { StructuredData } from "@/components/seo/structured-data";
 import "./globals.css";
+
+const seatren = localFont({
+  src: "../../../Seatren.otf",
+  variable: "--font-seatren",
+  display: "swap"
+});
+
+const helvena = localFont({
+  src: [
+    { path: "../../../Helvena-Regular.otf", weight: "400", style: "normal" },
+    { path: "../../../Helvena-Medium.otf", weight: "500", style: "normal" },
+    { path: "../../../Helvena-Semibold.otf", weight: "600", style: "normal" },
+    { path: "../../../Helvena-Bold.otf", weight: "700", style: "normal" }
+  ],
+  variable: "--font-helvena",
+  display: "swap"
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://eclipsesystems.pro"),
@@ -9,7 +27,7 @@ export const metadata: Metadata = {
     default: "Eclipse Timekeeping by Eclipse Systems - Time Tracking, Invoicing & Shift Management for Modern Teams",
     template: "%s | Eclipse Timekeeping by Eclipse Systems"
   },
-  description: "All-in-one timekeeping, invoicing, shift management, and legal billing software. From $10/seat/month. Built for U.S. small businesses, law firms, and shift teams.",
+  description: "Timekeeping, invoicing, shift management, team chat, and legal billing add-ons. From $10/seat/month. Built for U.S. small businesses, law firms, and shift teams.",
   applicationName: "Eclipse Timekeeping",
   authors: [{ name: "Eclipse Systems", url: "https://eclipsesystems.pro" }],
   generator: "Next.js",
@@ -20,7 +38,7 @@ export const metadata: Metadata = {
     url: "https://eclipsesystems.pro",
     siteName: "Eclipse Systems",
     title: "Eclipse Timekeeping by Eclipse Systems",
-    description: "All-in-one timekeeping, invoicing, shift management, and legal billing software for U.S. small businesses, law firms, and shift teams.",
+    description: "Eclipse Suite bundles timekeeping, project billing, shift management, and chat. Eclipse Legal is available as a law-firm add-on.",
     images: [{ url: "/api/og/default", width: 1200, height: 630, alt: "Eclipse Timekeeping by Eclipse Systems" }]
   },
   twitter: {
@@ -28,7 +46,7 @@ export const metadata: Metadata = {
     site: "@eclipsesystems",
     creator: "@eclipsesystems",
     title: "Eclipse Timekeeping by Eclipse Systems",
-    description: "Time tracking, invoicing, shift management, and legal billing software from $10/seat/month.",
+    description: "Time tracking, invoicing, shift management, chat, and legal billing add-ons from $10/seat/month.",
     images: ["/api/og/default"]
   },
   alternates: { canonical: "https://eclipsesystems.pro" },
@@ -77,16 +95,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     operatingSystem: "Web, iOS, Android",
     url: "https://eclipsesystems.pro",
     offers: [
-      { "@type": "Offer", name: "Starter", price: "10", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Pro", price: "18", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Business", price: "28", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Legal", price: "55", priceCurrency: "USD", unitText: "seat per month" }
+      { "@type": "Offer", name: "Eclipse Timekeeping", price: "10", priceCurrency: "USD", unitText: "seat per month" },
+      { "@type": "Offer", name: "Mission Command by Eclipse", price: "18", priceCurrency: "USD", unitText: "seat per month" },
+      { "@type": "Offer", name: "Eclipse", price: "22", priceCurrency: "USD", unitText: "seat per month" },
+      { "@type": "Offer", name: "Eclipse Suite", price: "38", priceCurrency: "USD", unitText: "seat per month" },
+      { "@type": "Offer", name: "Eclipse Legal Add-on", price: "20", priceCurrency: "USD", unitText: "seat per month" }
     ],
     publisher: { "@type": "Organization", name: "Eclipse Systems", url: "https://eclipsesystems.pro" }
   };
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${seatren.variable} ${helvena.variable}`}>
       <body>
         <StructuredData schema={organization} />
         <StructuredData schema={website} />

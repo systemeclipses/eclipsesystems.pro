@@ -1,0 +1,18 @@
+slug: engineering
+name: Engineering
+title: Time Tracking & Project Billing Software for Engineering Firms
+description: Track engineering hours by client, project, phase, deliverable, and billable status without losing visibility into budgets or utilization.
+compliance: Engineering firms should keep clear project records that support client billing, internal utilization review, and contract scope decisions.
+recommendedPlan: Eclipse
+problems:
+  - Engineers split time across design, review, field work, coordination, and client communication.
+  - Project budgets drift when teams only review hours after invoices are prepared.
+  - Fixed-fee and hourly work need different visibility without creating separate workflows.
+featureMap:
+  - problem: Work spans many phases and deliverables.
+    feature: Clients, projects, tasks, tags, and detailed time notes.
+  - problem: Budgets can drift quietly.
+    feature: Budget hours, project reporting, utilization views, and invoice-ready approvals.
+  - problem: Teams need clean billing records.
+    feature: Billable rates, invoice drafts, PDF export, and payment links.
+originalData: Eclipse Systems recommends engineering firms review budget percentage used and unbilled approved time every week for active client projects.

@@ -1,13 +1,14 @@
 # Eclipse Timekeeping
 
-> Eclipse Timekeeping is an all-in-one timekeeping, invoicing, and workforce management SaaS by Eclipse Systems. It serves small businesses, law firms, and shift-based teams in the United States. Pricing is per seat, per month: Starter $10, Pro $18, Business $28, Legal $55. The product is headquartered in Alabama and built for U.S. small businesses with a focus on the Birmingham metro area.
+> Eclipse Systems sells Eclipse Timekeeping, Mission Command by Eclipse, Eclipse project billing, and Eclipse Suite for small businesses, law firms, and shift-based teams in the United States. Eclipse Suite includes the three non-legal products; Eclipse Legal is a specialized add-on for law firms.
 
 ## Product
-- [Pricing](https://eclipsesystems.pro/pricing): All four plans with per-seat prices and feature matrix.
-- [Starter Plan ($10/seat/mo)](https://eclipsesystems.pro/plans/starter): Personal and team time tracking.
-- [Pro Plan ($18/seat/mo)](https://eclipsesystems.pro/plans/pro): Adds clients, projects, invoicing.
-- [Business Plan ($28/seat/mo)](https://eclipsesystems.pro/plans/business): Adds shifts, swaps, chat, admin reporting.
-- [Legal Plan ($55/seat/mo)](https://eclipsesystems.pro/plans/legal): Adds ABA UTBMS codes, LEDES 1998B export, matters, trust accounting.
+- [Pricing](https://eclipsesystems.pro/pricing): Product, bundle, and add-on prices.
+- [Eclipse Timekeeping ($10/seat/mo)](https://eclipsesystems.pro/plans/timekeeping): Personal and team time tracking.
+- [Mission Command by Eclipse ($18/seat/mo)](https://eclipsesystems.pro/plans/mission-command): Shifts, swaps, team chat, and operational approvals.
+- [Eclipse ($22/seat/mo)](https://eclipsesystems.pro/plans/eclipse): Clients, projects, tasks, and invoicing.
+- [Eclipse Suite ($38/seat/mo)](https://eclipsesystems.pro/plans/suite): Timekeeping, Mission Command, and Eclipse project billing together.
+- [Eclipse Legal Add-on ($20/seat/mo)](https://eclipsesystems.pro/plans/legal-addon): ABA UTBMS codes, LEDES 1998B export, matters, trust accounting.
 
 ## Industries
 - [Law Firms](https://eclipsesystems.pro/industries/law-firms)

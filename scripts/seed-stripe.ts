@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { PLAN_PRICES } from "@eclipsesystems/shared/plans";
+import { PLAN_NAMES, PLAN_PRICES } from "@eclipsesystems/shared/plans";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -11,16 +11,9 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2024-12-18.acacia"
 });
 
-const planNames = {
-  starter: "Starter",
-  pro: "Pro",
-  business: "Business",
-  legal: "Legal"
-} as const;
-
 for (const [code, price] of Object.entries(PLAN_PRICES)) {
   const product = await stripe.products.create({
-    name: `${planNames[code as keyof typeof planNames]} Seat`,
+    name: `${PLAN_NAMES[code as keyof typeof PLAN_NAMES]} Seat`,
     metadata: { plan_code: code }
   });
 

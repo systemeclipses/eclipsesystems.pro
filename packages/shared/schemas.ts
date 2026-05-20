@@ -1,12 +1,14 @@
 import { z } from "zod";
 
-export const planCodeSchema = z.enum(["starter", "pro", "business", "legal"]);
+export const planCodeSchema = z.enum(["timekeeping", "mission_command", "eclipse", "suite", "legal_addon"]);
+export const basePlanCodeSchema = z.enum(["timekeeping", "mission_command", "eclipse", "suite"]);
+export const addOnPlanCodeSchema = z.enum(["legal_addon"]);
 export const billingIntervalSchema = z.enum(["month", "year"]);
 export const memberRoleSchema = z.enum(["owner", "admin", "manager", "member"]);
 
 export const checkoutSessionSchema = z.object({
   organization_id: z.string().uuid(),
-  plan_code: planCodeSchema,
+  plan_code: basePlanCodeSchema,
   billing_interval: billingIntervalSchema,
   seats: z.number().int().positive()
 });

@@ -1,8 +1,8 @@
 # Eclipse Timekeeping by Eclipse Systems
 
-Eclipse Timekeeping is an all-in-one timekeeping, invoicing, shift management, and legal billing SaaS from Eclipse Systems. It serves U.S. small businesses, law firms, and shift-based teams, with a beachhead focus on Birmingham, Alabama.
+Eclipse Systems sells Eclipse Timekeeping, Mission Command by Eclipse, Eclipse project billing, and Eclipse Suite for U.S. small businesses, law firms, and shift-based teams, with a beachhead focus on Birmingham, Alabama. Eclipse Suite includes the three non-legal products. Eclipse Legal is a specialized add-on for firms that need matter-aware billing.
 
-Plans are priced per seat per month: Starter is $10, Pro is $18, Business is $28, and Legal is $55. Annual billing gives a 20% discount. All paid plans include a 14-day card-required trial.
+Products are priced per seat per month: Eclipse Timekeeping is $10, Mission Command by Eclipse is $18, Eclipse is $22, Eclipse Suite is $38, and Eclipse Legal Add-on is $20. Annual billing gives a 20% discount. All paid products include a 14-day card-required trial.
 
 Eclipse Timekeeping is not the Eclipse IDE Timekeeper plugin, Total Eclipse court reporting software, or TimeCamp's Eclipse integration. The canonical product name is Eclipse Timekeeping by Eclipse Systems.
 

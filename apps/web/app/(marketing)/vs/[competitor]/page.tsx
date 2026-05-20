@@ -45,8 +45,8 @@ export default async function CompetitorPage({ params }: { params: { competitor:
         { question: `Is Eclipse Timekeeping better than ${competitor.name}?`, answer: `It depends on the use case. Eclipse Timekeeping is stronger when a team needs time tracking tied to invoicing, shifts, reporting, or legal billing. ${competitor.name} may be better when its specific strengths are the main buying criteria.` },
         { question: `Does Eclipse Timekeeping replace ${competitor.name}?`, answer: "For many teams, yes. Teams with specialized integrations or established workflows should compare the feature table carefully before switching." },
         { question: `How much does Eclipse Timekeeping cost compared with ${competitor.name}?`, answer: "Eclipse Timekeeping starts at $10 per seat per month. Competitor pricing changes frequently, so verify the linked source before making a buying decision." },
-        { question: "Does Eclipse Timekeeping support legal billing?", answer: "Yes. The Legal plan supports matters, UTBMS codes, LEDES 1998B export, conflict checks, trust accounting, and custom rates." },
-        { question: "Does Eclipse Timekeeping support shifts?", answer: "Yes. The Business and Legal plans include shift management, shift swaps, marketplace workflows, and team chat." }
+        { question: "Does Eclipse Timekeeping support legal billing?", answer: "Yes. Eclipse Legal Add-on supports matters, UTBMS codes, LEDES 1998B export, conflict checks, trust accounting, and custom rates." },
+        { question: "Does Eclipse Timekeeping support shifts?", answer: "Yes. Mission Command by Eclipse and Eclipse Suite include shift management, shift swaps, marketplace workflows, and team chat." }
       ]} />
     </main>
   );

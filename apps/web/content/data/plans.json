@@ -1,38 +1,47 @@
 [
   {
-    "slug": "starter",
-    "name": "Starter",
+    "slug": "timekeeping",
+    "name": "Eclipse Timekeeping",
     "priceMonthly": 10,
     "annualEffectiveMonthly": 8,
-    "summary": "Personal and team timekeeping with live timers, manual entries, basic reports, and mobile-friendly workflows.",
-    "bestFor": "Solo operators and small teams that need clean time capture before adding billing complexity.",
-    "features": ["Live timer", "Manual time entries", "Basic reports", "Mobile and web access"]
+    "summary": "Focused time capture with live timers, manual entries, timesheets, approvals, and reporting.",
+    "bestFor": "Teams that need accountable time records without project billing or shift operations.",
+    "features": ["Live timer", "Manual time entries", "Timesheets", "Approvals", "Basic reports", "Mobile and web access"]
   },
   {
-    "slug": "pro",
-    "name": "Pro",
+    "slug": "mission-command",
+    "name": "Mission Command",
     "priceMonthly": 18,
     "annualEffectiveMonthly": 14.4,
-    "summary": "Adds clients, projects, tasks, invoicing, PDF export, and payment links.",
-    "bestFor": "Professional services teams that bill clients from tracked time.",
-    "features": ["Clients", "Projects", "Tasks", "Invoicing", "PDF export", "Payment links"]
+    "summary": "Workforce operations for chat, scheduling, shift drops, shift swaps, and manager approvals.",
+    "bestFor": "Shift-based teams that need Connecteam-style coordination around coverage and communication.",
+    "features": ["Shift scheduling", "Shift marketplace", "Shift swaps", "Realtime chat", "Approval workflows", "Manager reporting"]
   },
   {
-    "slug": "business",
-    "name": "Business",
-    "priceMonthly": 28,
-    "annualEffectiveMonthly": 22.4,
-    "summary": "Adds shift management, add/drop marketplace, swaps, chat, subordinate reporting, and approvals.",
-    "bestFor": "Shift-based teams and growing operations with managers, schedules, and approvals.",
-    "features": ["Shift management", "Shift marketplace", "Shift swaps", "Realtime chat", "Approval workflows", "Manager reporting"]
+    "slug": "eclipse",
+    "name": "Eclipse",
+    "priceMonthly": 22,
+    "annualEffectiveMonthly": 17.6,
+    "summary": "Project timekeeping with clients, projects, tasks, billable rates, invoices, PDF export, and payment links.",
+    "bestFor": "Professional services teams that bill clients from tracked project time.",
+    "features": ["Clients", "Projects", "Tasks", "Billable rates", "Invoicing", "PDF export", "Payment links"]
   },
   {
-    "slug": "legal",
-    "name": "Legal",
-    "priceMonthly": 55,
-    "annualEffectiveMonthly": 44,
-    "summary": "Adds UTBMS codes, matters, conflict checks, LEDES 1998B export, trust ledger, and custom rate tables.",
-    "bestFor": "Law firms that need legal billing controls and matter-aware timekeeping.",
+    "slug": "suite",
+    "name": "Eclipse Suite",
+    "priceMonthly": 38,
+    "annualEffectiveMonthly": 30.4,
+    "summary": "The all-inclusive non-legal bundle: Eclipse Timekeeping, Mission Command by Eclipse, and Eclipse project billing.",
+    "bestFor": "Small businesses that want timekeeping, workforce operations, and invoicing in one Eclipse workspace.",
+    "features": ["Timekeeping", "Timesheets", "Project billing", "Invoicing", "Shift operations", "Team chat", "Reporting"]
+  },
+  {
+    "slug": "legal-addon",
+    "name": "Eclipse Legal",
+    "priceMonthly": 20,
+    "annualEffectiveMonthly": 16,
+    "summary": "Legal billing controls for firms that need matters, UTBMS codes, LEDES export, trust ledger, and legal rates.",
+    "bestFor": "Law firms using Eclipse Suite that need matter-aware legal billing.",
     "features": ["ABA UTBMS codes", "Matters", "Conflict checks", "LEDES 1998B export", "Trust accounting ledger", "Custom rates"]
   }
 ]

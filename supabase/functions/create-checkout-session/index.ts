@@ -28,7 +28,8 @@ Deno.serve(async (req) => {
     await service.from("organizations").update({ stripe_customer_id: customerId }).eq("id", organization_id);
   }
 
-  const { data: plan } = await service.from("plans").select("stripe_monthly_price_id,stripe_annual_price_id").eq("code", plan_code).single();
+  const { data: plan } = await service.from("plans").select("kind,stripe_monthly_price_id,stripe_annual_price_id").eq("code", plan_code).single();
+  if (plan.kind === "add_on") return json({ error: "add-ons must be attached to an existing subscription" }, 400);
   const price = billing_interval === "year" ? plan.stripe_annual_price_id : plan.stripe_monthly_price_id;
   if (!price?.startsWith("price_")) return json({ error: "Stripe price ID is not configured" }, 400);
 

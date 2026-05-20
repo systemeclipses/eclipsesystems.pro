@@ -33,6 +33,6 @@
     "slug": "reporting",
     "name": "Reporting",
     "summary": "Member, project, invoice, utilization, and subordinate team reporting.",
-    "questions": ["Can managers see subordinate time?", "Can teams report billable amounts by project?", "What reports are available on Starter?"]
+    "questions": ["Can managers see subordinate time?", "Can teams report billable amounts by project?", "What reports are available on Eclipse Timekeeping?"]
   }
 ]
