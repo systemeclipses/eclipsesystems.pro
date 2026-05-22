@@ -1,9 +1,9 @@
 import postgres from 'postgres';
 
 (async () => {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.DATABASE_URL ?? process.env.DIRECT_URL;
   if (!connectionString) {
-    console.error('DATABASE_URL env missing');
+    console.error('DATABASE_URL or DIRECT_URL env missing');
     process.exit(2);
   }
   const sql = postgres(connectionString, { max: 1, prepare: false });
