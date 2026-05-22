@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase/server";
+import { auth } from "@/src/auth";
 
 const nav = [
   ["Dashboard", "/dashboard"],
@@ -16,9 +16,8 @@ const nav = [
 ] as const;
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await auth();
+  if (!session?.user) redirect("/login");
 
   return (
     <div className="min-h-screen bg-background">

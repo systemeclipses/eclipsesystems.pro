@@ -1,17 +1,17 @@
-import { getActiveOrgId } from "@/lib/org";
-import { createServerClient } from "@/lib/supabase/server";
+import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { getRunningTimerCountForUser } from "@/src/db/queries/dashboard";
 
 export default async function DashboardPage() {
+  const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
-  const supabase = createServerClient();
-  const { data: timers } = await supabase.from("time_entries").select("id").eq("organization_id", orgId).is("ended_at", null);
+  const runningTimerCount = await getRunningTimerCountForUser(userId, orgId);
 
   return (
     <section>
       <h1 className="text-2xl font-semibold">Dashboard</h1>
       <div className="mt-6 rounded-lg border border-border p-5">
         <p className="text-sm text-muted-foreground">Running timers</p>
-        <p className="mt-2 text-3xl font-semibold">{timers?.length ?? 0}</p>
+        <p className="mt-2 text-3xl font-semibold">{runningTimerCount}</p>
       </div>
     </section>
   );

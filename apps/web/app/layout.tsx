@@ -32,6 +32,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Eclipse Systems", url: "https://eclipsesystems.pro" }],
   generator: "Next.js",
   keywords: [],
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }]
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

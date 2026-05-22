@@ -16,51 +16,133 @@ All paid plans have a 14-day card-required trial. Team organizations require at 
 ## Tech Stack
 
 - Next.js 14 App Router, TypeScript strict, Tailwind, shadcn-style primitives, Lucide icons
-- Supabase Auth, Postgres, Row-Level Security, Realtime, Edge Functions
-- `@supabase/supabase-js` v2 and `@supabase/ssr`
+- Auth.js v5 with Google, Apple, Microsoft Entra ID, and GitHub OAuth plus database sessions
+- Supabase Postgres as the database host, accessed through Drizzle ORM
 - Stripe Checkout, Billing Portal, and signed webhooks
 - Vitest, Playwright, pgTAP
 
 ## Local Dev Setup
 
 1. `pnpm install`
-2. Copy `.env.example` to `.env.local` and fill Supabase and Stripe values.
-3. `supabase start`
-4. `supabase db reset`
-5. `pnpm seed:stripe`
-6. Paste the printed Stripe price IDs into `.env.local` and update `plans` Stripe IDs in Supabase.
-7. `pnpm dev`
+2. Copy `.env.example` to `.env.local`.
+3. Fill `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_URL`, and the OAuth client credentials for each enabled provider.
+4. Run `pnpm --filter @eclipsesystems/web db:migrate`.
+5. Optional billing setup: `pnpm seed:stripe`, then paste the printed Stripe price IDs into `.env.local`.
+6. `pnpm dev`
+
+Generate `AUTH_SECRET` with:
+
+```bash
+openssl rand -base64 32
+```
+
+`DATABASE_URL` should be the Supabase pooler connection string on port `6543` with `pgbouncer=true`. `DIRECT_URL` should be the direct Supabase Postgres connection string for migrations.
 
 ## OAuth Providers
 
-Use these redirect URIs for every provider:
+OAuth is configured directly through Auth.js, not Supabase Auth. Use `{AUTH_URL}/api/auth/callback/{provider}` for each redirect URI.
 
-- `https://eclipsesystems.pro/auth/callback`
-- `https://<project-ref>.supabase.co/auth/v1/callback`
-- `http://localhost:3000/auth/callback` for local development
+Google callback:
 
-Google:
-Create OAuth credentials in Google Cloud Console, add the redirect URIs, then paste the client ID and secret into Supabase Dashboard, Auth, Providers, Google.
+- `http://localhost:3000/api/auth/callback/google`
+- `https://eclipsesystems.pro/api/auth/callback/google`
 
-Apple:
-Create a Services ID and private key in Apple Developer, configure web redirect URIs, then paste the service ID, team ID, key ID, and private key into Supabase Dashboard, Auth, Providers, Apple.
+Apple callback:
 
-Microsoft:
-Create an Azure App Registration, enable the web platform redirect URIs, create a client secret, then configure Supabase Dashboard, Auth, Providers, Azure.
+- `http://localhost:3000/api/auth/callback/apple`
+- `https://eclipsesystems.pro/api/auth/callback/apple`
 
-GitHub:
-Create a GitHub OAuth App, add the callback URL, then configure Supabase Dashboard, Auth, Providers, GitHub.
+Microsoft Entra ID callback:
+
+- `http://localhost:3000/api/auth/callback/entra-id`
+- `https://eclipsesystems.pro/api/auth/callback/entra-id`
+
+GitHub callback:
+
+- `http://localhost:3000/api/auth/callback/github`
+- `https://eclipsesystems.pro/api/auth/callback/github`
+
+### Google
+
+In Google Cloud Console, create an OAuth client:
+
+- Application type: Web application
+- Authorized JavaScript origin:
+  - `http://localhost:3000`
+  - `https://eclipsesystems.pro`
+- Authorized redirect URI:
+  - `http://localhost:3000/api/auth/callback/google`
+  - `https://eclipsesystems.pro/api/auth/callback/google`
+
+Copy the client id into `GOOGLE_CLIENT_ID` and the client secret into `GOOGLE_CLIENT_SECRET`.
+
+### Apple
+
+In Apple Developer, create a Services ID for web sign-in, enable Sign in with Apple, and add the return URLs listed above. Create a private key for Sign in with Apple and keep the `.p8` file private.
+
+Generate the six-month Apple client secret with:
+
+```bash
+APPLE_TEAM_ID=... APPLE_KEY_ID=... APPLE_CLIENT_ID=... APPLE_PRIVATE_KEY_PATH=./AuthKey_XXXX.p8 pnpm apple:secret
+```
+
+Paste the output into `APPLE_CLIENT_SECRET`. Repeat this before it expires.
+
+### Microsoft Entra ID
+
+In Microsoft Entra admin center, register an app, add the Entra callback URL, create a client secret, and use these env vars:
+
+- `MICROSOFT_ENTRA_ID_CLIENT_ID`
+- `MICROSOFT_ENTRA_ID_CLIENT_SECRET`
+- `MICROSOFT_ENTRA_ID_TENANT_ID=common` for multi-tenant and personal Microsoft accounts
+
+### GitHub
+
+In GitHub Developer settings, create an OAuth app, set Homepage URL to `AUTH_URL`, set Authorization callback URL to the GitHub callback above, then copy:
+
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+
+Required Auth.js env vars:
+
+- `DATABASE_URL`: Supabase pooler connection string for serverless runtime queries.
+- `DIRECT_URL`: Direct Supabase Postgres connection string for migrations.
+- `AUTH_SECRET`: Secret used by Auth.js to sign/encrypt auth state.
+- `AUTH_URL`: `http://localhost:3000` locally and `https://eclipsesystems.pro` in production.
+- `GOOGLE_CLIENT_ID`: Google OAuth client id.
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret.
+- `APPLE_CLIENT_ID`: Apple Services ID.
+- `APPLE_CLIENT_SECRET`: Apple JWT client secret generated from the private key.
+- `MICROSOFT_ENTRA_ID_CLIENT_ID`: Microsoft Entra application client id.
+- `MICROSOFT_ENTRA_ID_CLIENT_SECRET`: Microsoft Entra client secret.
+- `MICROSOFT_ENTRA_ID_TENANT_ID`: Use `common` unless limiting sign-ins to one tenant.
+- `GITHUB_CLIENT_ID`: GitHub OAuth app client id.
+- `GITHUB_CLIENT_SECRET`: GitHub OAuth app client secret.
+
+## Drizzle Migrations
+
+Generate migrations after schema changes:
+
+```bash
+pnpm --filter @eclipsesystems/web db:generate
+```
+
+Run migrations:
+
+```bash
+pnpm --filter @eclipsesystems/web db:migrate
+```
 
 ## Deploy
 
-Frontend deploys to Vercel. Supabase runs hosted Postgres, Auth, Realtime, and Edge Functions. Stripe webhook endpoint should point at either the Supabase edge function directly or the included Next.js forwarding route:
+Frontend deploys to Vercel. Supabase runs hosted Postgres. Stripe webhook endpoint should point at either the Supabase edge function directly or the included Next.js forwarding route:
 
 - `https://<project-ref>.supabase.co/functions/v1/stripe-webhook`
 - `https://eclipsesystems.pro/api/stripe/webhook`
 
 ## Schema Overview
 
-The schema is multi-tenant by `organization_id`. Auth users mirror into `profiles`; organizations have memberships and a single subscription; domain tables hang off organizations. Feature-gated modules are clients/projects/tasks, invoices, shifts, chat, legal matters, conflict checks, and trust accounting. Sensitive tables write to `audit_log` through triggers.
+The schema is multi-tenant by `organization_id`. Auth.js users mirror into `profiles`; organizations have memberships and a single subscription; domain tables hang off organizations. Feature-gated modules are clients/projects/tasks, invoices, shifts, chat, legal matters, conflict checks, and trust accounting. Sensitive tables write to `audit_log` through triggers.
 
 ## RLS Philosophy
 

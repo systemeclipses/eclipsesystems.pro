@@ -1,11 +1,8 @@
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createServerClient } from "@/lib/supabase/server";
 
 export default async function AcceptInvitePage({ params }: { params: { token: string } }) {
-  const supabase = createServerClient();
-  const { data } = await supabase.rpc("get_invitation_by_token" as never, { invitation_token: params.token } as never);
-  if (!data) redirect("/login");
+  if (!params.token) redirect("/login");
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6">

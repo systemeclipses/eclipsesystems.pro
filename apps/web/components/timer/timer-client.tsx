@@ -3,34 +3,33 @@
 import { useState } from "react";
 import { Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 
 type Project = { id: string; name: string };
 type Running = { id: string; description: string | null; started_at: string } | null;
 
 export function TimerClient({ orgId, projects, running }: { orgId: string; projects: Project[]; running: Running }) {
-  const supabase = createClient();
   const [description, setDescription] = useState(running?.description ?? "");
   const [projectId, setProjectId] = useState("");
   const [active, setActive] = useState(running);
 
   async function start() {
-    const { data: membershipId } = await supabase.rpc("my_membership_id", { org_id: orgId });
-    const { data, error } = await supabase.from("time_entries").insert({
-      organization_id: orgId,
-      membership_id: membershipId,
-      project_id: projectId || null,
-      description,
-      started_at: new Date().toISOString(),
-      source: "timer"
-    } as never).select("id,description,started_at").single();
-    if (!error) setActive(data as Running);
+    const response = await fetch("/api/time-entries/start", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ orgId, projectId: projectId || null, description })
+    });
+
+    if (response.ok) setActive(await response.json() as Running);
   }
 
   async function stop() {
     if (!active) return;
-    await supabase.from("time_entries").update({ ended_at: new Date().toISOString() } as never).eq("id", active.id);
-    setActive(null);
+    const response = await fetch("/api/time-entries/stop", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: active.id })
+    });
+    if (response.ok) setActive(null);
   }
 
   return (

@@ -1,19 +1,17 @@
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createServerClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { auth } from "@/src/auth";
+import { ensurePersonalOrganizationForUser } from "@/src/db/queries/organizations";
 
 export default async function OnboardingPage() {
-  const supabase = createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
 
   async function createOrg() {
     "use server";
-    const server = createServerClient();
-    const { data: { user: currentUser } } = await server.auth.getUser();
-    if (!currentUser) redirect("/login");
-    const { data: org } = await server.from("organizations").insert({ name: "Personal", kind: "personal", owner_id: currentUser.id } as never).select("id").single();
-    if (org && "id" in org) await server.from("profiles").update({ default_organization_id: org.id } as never).eq("id", currentUser.id);
+    const currentSession = await auth();
+    if (!currentSession?.user?.id) redirect("/login");
+    await ensurePersonalOrganizationForUser(currentSession.user);
     redirect("/timer");
   }
 

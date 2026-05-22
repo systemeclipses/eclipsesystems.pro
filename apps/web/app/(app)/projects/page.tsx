@@ -1,13 +1,13 @@
 import { requireFeature } from "@/lib/plan-features";
-import { getActiveOrgId } from "@/lib/org";
-import { createServerClient } from "@/lib/supabase/server";
+import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { getProjectsForUser } from "@/src/db/queries/projects";
 
 export default async function ProjectsPage() {
+  const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
   await requireFeature(orgId, "projects");
-  const supabase = createServerClient();
-  const { data } = await supabase.from("projects").select("id,name,code").eq("organization_id", orgId);
-  return <List title="Projects" items={(data ?? []).map((item) => item.name)} />;
+  const data = await getProjectsForUser(userId, orgId);
+  return <List title="Projects" items={data.map((item) => item.name)} />;
 }
 
 function List({ title, items }: { title: string; items: string[] }) {

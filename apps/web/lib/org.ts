@@ -1,17 +1,18 @@
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase/server";
+import { auth } from "@/src/auth";
+import { getDefaultOrganizationForUser } from "@/src/db/queries/organizations";
 
 export async function getActiveOrgId() {
-  const supabase = createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const userId = await getAuthenticatedUserId();
+  const defaultOrganizationId = await getDefaultOrganizationForUser(userId);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("default_organization_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  if (!defaultOrganizationId) redirect("/onboarding");
+  return defaultOrganizationId;
+}
 
-  if (!profile?.default_organization_id) redirect("/onboarding");
-  return profile.default_organization_id;
+export async function getAuthenticatedUserId() {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) redirect("/login");
+  return userId;
 }

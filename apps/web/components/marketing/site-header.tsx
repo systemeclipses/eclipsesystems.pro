@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ChevronUp, Mail, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const resourceLinks = [
   ["Blog", "/blog"],
@@ -41,9 +40,12 @@ export function SiteHeader() {
               </svg>
             </a>
             <Link href="/login" className="font-semibold text-cream hover:text-white">Login</Link>
-            <Button asChild className="h-8 bg-white px-3 text-primary hover:bg-cream">
-              <Link href="/signup">Start Trial</Link>
-            </Button>
+            <Link
+              href="/signup"
+              className="inline-flex h-8 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-primary transition hover:bg-cream"
+            >
+              Start Trial
+            </Link>
           </div>
         </div>
       </div>

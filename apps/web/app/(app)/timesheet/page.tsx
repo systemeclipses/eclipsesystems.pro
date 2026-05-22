@@ -1,11 +1,11 @@
 import { format } from "date-fns";
-import { getActiveOrgId } from "@/lib/org";
-import { createServerClient } from "@/lib/supabase/server";
+import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { getTimesheetEntriesForUser } from "@/src/db/queries/time-entries";
 
 export default async function TimesheetPage() {
+  const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
-  const supabase = createServerClient();
-  const { data: entries } = await supabase.from("time_entries").select("id,description,started_at,ended_at,duration_seconds,status").eq("organization_id", orgId).order("started_at", { ascending: false });
+  const entries = await getTimesheetEntriesForUser(userId, orgId);
 
   return (
     <section>
@@ -14,7 +14,7 @@ export default async function TimesheetPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted text-left"><tr><th className="p-3">Date</th><th>Description</th><th>Hours</th><th>Status</th></tr></thead>
           <tbody>
-            {(entries ?? []).map((entry) => (
+            {entries.map((entry) => (
               <tr key={entry.id} className="border-t border-border">
                 <td className="p-3">{format(new Date(entry.started_at), "MMM d")}</td>
                 <td>{entry.description ?? "Timer entry"}</td>
