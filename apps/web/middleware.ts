@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/src/auth";
+import type { NextRequest } from "next/server";
 
 const protectedPrefixes = [
   "/admin",
@@ -17,17 +17,28 @@ const protectedPrefixes = [
   "/timesheet"
 ];
 
-export default auth((request) => {
+const sessionCookieNames = [
+  "authjs.session-token",
+  "__Secure-authjs.session-token",
+  "next-auth.session-token",
+  "__Secure-next-auth.session-token"
+];
+
+function hasSessionCookie(request: NextRequest) {
+  return sessionCookieNames.some((name) => request.cookies.has(name));
+}
+
+export default function middleware(request: NextRequest) {
   const isProtectedRoute = protectedPrefixes.some((path) => request.nextUrl.pathname.startsWith(path));
 
-  if (isProtectedRoute && !request.auth?.user) {
+  if (isProtectedRoute && !hasSessionCookie(request)) {
     const loginUrl = new URL("/login", request.nextUrl);
-    loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+    loginUrl.searchParams.set("callbackUrl", `${request.nextUrl.pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"]

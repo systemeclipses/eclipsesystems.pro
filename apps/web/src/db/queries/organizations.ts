@@ -28,6 +28,30 @@ export async function getMembershipIdForUser(userId: string, organizationId: str
   return membership?.id ?? null;
 }
 
+export async function getOrganizationForUser(userId: string, organizationId: string) {
+  const [organization] = await db
+    .select({
+      id: organizations.id,
+      name: organizations.name,
+      kind: organizations.kind,
+      defaultCurrency: organizations.defaultCurrency,
+      timezone: organizations.timezone
+    })
+    .from(organizations)
+    .innerJoin(memberships, eq(memberships.organizationId, organizations.id))
+    .where(
+      and(
+        eq(organizations.id, organizationId),
+        eq(memberships.userId, userId),
+        isNull(organizations.deletedAt),
+        isNull(memberships.deletedAt)
+      )
+    )
+    .limit(1);
+
+  return organization ?? null;
+}
+
 export async function ensurePersonalOrganizationForUser(user: {
   id: string;
   email?: string | null;

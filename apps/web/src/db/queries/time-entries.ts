@@ -66,3 +66,34 @@ export async function getTimesheetEntriesForUser(userId: string, organizationId:
     .where(and(eq(timeEntries.organizationId, organizationId), isNull(timeEntries.deletedAt)))
     .orderBy(desc(timeEntries.startedAt));
 }
+
+export async function createManualTimeEntryForUser(input: {
+  organizationId: string;
+  membershipId: string;
+  projectId?: string | null;
+  description?: string | null;
+  startedAt: Date;
+  endedAt: Date;
+}) {
+  const [entry] = await db
+    .insert(timeEntries)
+    .values({
+      organizationId: input.organizationId,
+      membershipId: input.membershipId,
+      projectId: input.projectId || null,
+      description: input.description || null,
+      startedAt: input.startedAt,
+      endedAt: input.endedAt,
+      source: "manual",
+      status: "draft"
+    })
+    .returning({ id: timeEntries.id });
+
+  return entry;
+}
+
+export function getTimeEntrySeconds(entry: { started_at: Date; ended_at: Date | null; duration_seconds: number | null }) {
+  if (entry.duration_seconds !== null) return entry.duration_seconds;
+  if (!entry.ended_at) return Math.max(0, Math.floor((Date.now() - entry.started_at.getTime()) / 1000));
+  return Math.max(0, Math.floor((entry.ended_at.getTime() - entry.started_at.getTime()) / 1000));
+}

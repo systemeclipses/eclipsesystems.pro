@@ -108,8 +108,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <html lang="en" className={`${seatren.variable} ${helvena.variable}`}>
+    <html lang="en" className={`${seatren.variable} ${helvena.variable}`} suppressHydrationWarning>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => { try { const stored = localStorage.getItem("eclipse-theme"); const mode = stored || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); document.documentElement.classList.toggle("dark", mode === "dark"); document.documentElement.style.colorScheme = mode; } catch (_) {} })();`
+          }}
+        />
         <StructuredData schema={organization} />
         <StructuredData schema={website} />
         <StructuredData schema={software} />

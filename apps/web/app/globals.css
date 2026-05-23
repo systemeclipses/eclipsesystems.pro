@@ -15,14 +15,247 @@
   --ink: 132 16% 13%;
 }
 
+.dark {
+  --background: 138 19% 8%;
+  --foreground: 42 42% 91%;
+  --muted: 135 13% 20%;
+  --muted-foreground: 43 20% 70%;
+  --border: 132 12% 24%;
+  --primary: 138 19% 15%;
+  --primary-foreground: 42 42% 91%;
+  --secondary: 70 28% 56%;
+  --cream: 42 42% 91%;
+  --ink: 42 42% 91%;
+}
+
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-helvena), Arial, sans-serif;
   letter-spacing: 0;
+  transition: background-color 220ms ease, color 220ms ease;
 }
 
 ::selection {
   background: hsl(var(--secondary));
   color: hsl(var(--ink));
+}
+
+.dark .bg-white,
+.dark .bg-white\/55,
+.dark .bg-white\/65,
+.dark .bg-white\/75 {
+  background-color: rgba(20, 31, 24, 0.86);
+}
+
+.dark .bg-cream,
+.dark .bg-cream\/60,
+.dark .bg-cream\/70 {
+  background-color: rgba(14, 22, 17, 0.74);
+}
+
+.dark .text-ink,
+.dark .text-foreground {
+  color: hsl(var(--foreground));
+}
+
+.dark .text-muted-foreground {
+  color: hsl(var(--muted-foreground));
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: rgba(14, 22, 17, 0.9);
+  color: hsl(var(--foreground));
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.theme-eclipse-toggle {
+  --toggle-track: rgba(255, 255, 255, 0.12);
+  --toggle-border: rgba(255, 255, 255, 0.18);
+}
+
+.theme-eclipse-toggle[data-mode="dark"] .theme-sun {
+  transform: translateX(34px) scale(0.82);
+  opacity: 0.88;
+}
+
+.theme-eclipse-toggle[data-mode="dark"] .theme-moon {
+  transform: translateX(-34px) scale(1);
+  opacity: 1;
+}
+
+.theme-eclipse-toggle[data-mode="dark"] .theme-eclipse-core {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.theme-eclipse-toggle[data-mode="light"] .theme-sun {
+  transform: translateX(0) scale(1);
+}
+
+.theme-eclipse-toggle[data-mode="light"] .theme-moon {
+  transform: translateX(0) scale(0.88);
+  opacity: 0.78;
+}
+
+.theme-eclipse-toggle[data-mode="light"] .theme-eclipse-core {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.45);
+}
+
+.theme-transitioning body {
+  overflow: hidden;
+}
+
+.theme-eclipse-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: rgba(14, 22, 17, 0.28);
+  backdrop-filter: blur(10px);
+  animation: eclipse-overlay-fade 1700ms ease both;
+}
+
+.theme-eclipse-overlay::before,
+.theme-eclipse-overlay::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  width: min(42vw, 280px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+}
+
+.theme-eclipse-overlay::before {
+  background:
+    radial-gradient(circle at 34% 30%, #fff4b8 0 10%, transparent 11%),
+    radial-gradient(circle at 50% 50%, #ffd76f 0 48%, #f5a742 72%, #d77b28 100%);
+  box-shadow:
+    0 0 0 14px rgba(246, 210, 127, 0.12),
+    0 0 0 34px rgba(246, 210, 127, 0.08),
+    0 0 130px rgba(246, 210, 127, 0.72);
+  animation: eclipse-sun-pulse 1700ms ease both;
+}
+
+.theme-eclipse-overlay::after {
+  background:
+    radial-gradient(circle at 34% 32%, rgba(255,255,255,.14) 0 8%, transparent 9%),
+    radial-gradient(circle at 62% 55%, rgba(255,255,255,.1) 0 6%, transparent 7%),
+    radial-gradient(circle at 48% 72%, rgba(0,0,0,.24) 0 7%, transparent 8%),
+    radial-gradient(circle at 42% 38%, #243226 0 28%, #121c15 64%, #080d0a 100%);
+  box-shadow:
+    inset -18px -22px 34px rgba(0, 0, 0, 0.38),
+    inset 12px 10px 22px rgba(255, 255, 255, 0.08),
+    0 0 0 2px rgba(180, 194, 146, 0.42),
+    0 0 90px rgba(180, 194, 146, 0.44);
+  animation: eclipse-moon-pass 1700ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.theme-eclipse-overlay .sun-rays {
+  position: absolute;
+  z-index: 1;
+  width: min(58vw, 390px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: repeating-conic-gradient(from 0deg, rgba(246,210,127,.56) 0deg 7deg, transparent 7deg 17deg);
+  mask: radial-gradient(circle, transparent 0 50%, #000 51% 70%, transparent 71%);
+  animation: eclipse-rays 1700ms ease both;
+}
+
+.theme-eclipse-overlay .light-wipe {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: none;
+  background: rgba(14, 22, 17, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.theme-eclipse-overlay[data-target="light"] .light-wipe {
+  display: block;
+  animation: eclipse-light-wipe 1700ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.theme-eclipse-overlay[data-target="light"]::before {
+  animation-name: eclipse-sun-return;
+}
+
+.theme-eclipse-overlay[data-target="light"]::after {
+  animation-name: eclipse-moon-release;
+}
+
+@keyframes eclipse-overlay-fade {
+  0% { opacity: 0; }
+  14% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes eclipse-sun-pulse {
+  0% { transform: scale(0.72); opacity: 0; }
+  18% { transform: scale(1); opacity: 1; }
+  62% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.12; }
+}
+
+@keyframes eclipse-moon-pass {
+  0% { transform: translateX(-52vw) scale(0.74); opacity: 0; }
+  22% { opacity: 1; }
+  58% { transform: translateX(0) scale(1); opacity: 1; }
+  100% { transform: translateX(0) scale(1.08); opacity: 0; }
+}
+
+@keyframes eclipse-rays {
+  0% { transform: scale(0.72) rotate(0deg); opacity: 0; }
+  18% { transform: scale(1) rotate(12deg); opacity: 1; }
+  58% { transform: scale(1.02) rotate(24deg); opacity: 0.86; }
+  100% { transform: scale(0.92) rotate(36deg); opacity: 0; }
+}
+
+@keyframes eclipse-sun-return {
+  0% { transform: scale(0.84); opacity: 0.1; }
+  38% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.08); opacity: 0; }
+}
+
+@keyframes eclipse-moon-release {
+  0% { transform: translateX(0) scale(1.08); opacity: 1; }
+  42% { transform: translateX(0) scale(1); opacity: 1; }
+  100% { transform: translateX(52vw) scale(0.74); opacity: 0; }
+}
+
+@keyframes eclipse-light-wipe {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  34% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  82% {
+    clip-path: inset(0 0 0 86%);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-eclipse-overlay,
+  .theme-eclipse-overlay::before,
+  .theme-eclipse-overlay::after {
+    animation-duration: 1ms;
+  }
 }

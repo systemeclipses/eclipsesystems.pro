@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, type CSSProperties, type FormEvent } from "react";
 import { ArrowRight, Github, Sparkles } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ const fallbackStyles = {
   },
   above: { position: "relative", zIndex: 1 },
   logo: {
-    color: "#F9E8D2",
+    color: "#fff",
     fontFamily: "var(--font-seatren), Georgia, serif",
     fontSize: "30px",
     lineHeight: 1,
@@ -56,7 +57,7 @@ const fallbackStyles = {
   },
   heroTitle: {
     marginTop: "20px",
-    color: "#F9E8D2",
+    color: "#fff",
     fontFamily: "var(--font-seatren), Georgia, serif",
     fontSize: "clamp(64px, 8vw, 96px)",
     lineHeight: 0.88
@@ -90,7 +91,7 @@ const fallbackStyles = {
   },
   card: {
     width: "100%",
-    maxWidth: "448px",
+    maxWidth: "760px",
     border: "1px solid #d9c7aa",
     borderRadius: "6px",
     background: "rgba(255,255,255,.75)",
@@ -145,10 +146,11 @@ const fallbackStyles = {
     fontWeight: 400
   },
   divider: {
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
+    display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    gap: "12px",
+    justifyContent: "center",
+    gap: "10px",
     color: "#6d7f70",
     fontSize: "12px",
     fontWeight: 700,
@@ -162,11 +164,11 @@ const fallbackStyles = {
   },
   note: {
     marginTop: "28px",
-    border: "1px solid #d9c7aa",
+    border: "1px solid #47624F",
     borderRadius: "6px",
-    background: "rgba(249,232,210,.7)",
+    background: "#47624F",
     padding: "16px",
-    color: "#496052",
+    color: "#F9E8D2",
     fontSize: "14px",
     lineHeight: 1.7
   }
@@ -223,22 +225,68 @@ const authProviders = [
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const isLogin = mode === "login";
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [loadingPassword, setLoadingPassword] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const label = isLogin ? "Welcome back." : "Start your Eclipse.";
   const supporting = isLogin
     ? "Sign in to get back to time, billing, shifts, matters, and the operating work already in motion."
     : "Create your workspace and bring timekeeping, billing, shifts, and legal workflows into one orbit.";
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   async function signInWithProvider(providerId: string) {
     setLoadingProvider(providerId);
     setMessage(null);
 
     try {
-      await signIn(providerId, { callbackUrl: "/dashboard" });
+      await signIn(providerId, { callbackUrl });
     } catch (error) {
       setMessage({ type: "error", text: error instanceof Error ? error.message : "Unable to start sign-in." });
       setLoadingProvider(null);
+    }
+  }
+
+  async function submitPasswordForm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoadingPassword(true);
+    setMessage(null);
+
+    if (!isLogin && password !== confirmPassword) {
+      setMessage({ type: "error", text: "Passwords do not match." });
+      setLoadingPassword(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(isLogin ? "/api/password/login" : "/api/password/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          confirmPassword
+        })
+      });
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+
+      if (!response.ok) {
+        setMessage({ type: "error", text: payload?.error ?? "Unable to continue with email and password." });
+        return;
+      }
+
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Unable to continue with email and password." });
+    } finally {
+      setLoadingPassword(false);
     }
   }
 
@@ -270,17 +318,17 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </div>
 
         <div className="flex items-center justify-center bg-cream p-5 md:p-10" style={fallbackStyles.panel}>
-          <div className="w-full max-w-md rounded-md border border-border bg-white/75 p-6 text-ink shadow-2xl shadow-primary/15 md:p-8" style={fallbackStyles.card}>
+          <div className="w-full max-w-[760px] rounded-md border border-border bg-white/75 p-5 text-ink shadow-2xl shadow-primary/15 md:p-8" style={fallbackStyles.card}>
             <p className="text-sm font-semibold text-primary">{isLogin ? "Sign in" : "Create account"}</p>
             <h2 className="mt-3 font-title text-5xl leading-none" style={fallbackStyles.cardTitle}>{isLogin ? "Enter the workspace." : "Build the workspace."}</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground" style={fallbackStyles.mutedCopy}>
-              Use your work identity. We will bring you back to Eclipse after your provider confirms the session.
+              Use email and password, or continue with a connected provider.
             </p>
 
-            <div className="mt-7 grid gap-3">
+            <div className="mt-7 grid gap-5 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-stretch">
               {message ? (
                 <p
-                  className={message.type === "error" ? "bg-red-50 text-red-700" : "bg-secondary/35 text-primary"}
+                  className={message.type === "error" ? "bg-red-50 text-red-700 md:col-span-3" : "bg-secondary/35 text-primary md:col-span-3"}
                   role="status"
                   style={{
                     ...fallbackStyles.status,
@@ -291,34 +339,121 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
                   {message.text}
                 </p>
               ) : null}
-              {authProviders.map((provider) => {
-                const Icon = provider.icon;
-                const isLoading = loadingProvider === provider.id;
+              <form className="grid content-start gap-3" onSubmit={submitPasswordForm}>
+                {!isLogin ? (
+                  <label className="grid gap-2 text-sm font-medium text-muted-foreground" style={fallbackStyles.label}>
+                    Name
+                    <input
+                      className="h-11 rounded-md border border-border bg-white px-3 text-ink outline-none ring-primary/25 focus:ring-2"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      autoComplete="name"
+                      style={fallbackStyles.input}
+                    />
+                  </label>
+                ) : null}
+                <label className="grid gap-2 text-sm font-medium text-muted-foreground" style={fallbackStyles.label}>
+                  Email
+                  <input
+                    className="h-11 rounded-md border border-border bg-white px-3 text-ink outline-none ring-primary/25 focus:ring-2"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    autoComplete="email"
+                    required
+                    style={fallbackStyles.input}
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-muted-foreground" style={fallbackStyles.label}>
+                  Password
+                  <input
+                    className="h-11 rounded-md border border-border bg-white px-3 text-ink outline-none ring-primary/25 focus:ring-2"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
+                    minLength={8}
+                    required
+                    style={fallbackStyles.input}
+                  />
+                </label>
+                {!isLogin ? (
+                  <label className="grid gap-2 text-sm font-medium text-muted-foreground" style={fallbackStyles.label}>
+                    Confirm password
+                    <input
+                      className="h-11 rounded-md border border-border bg-white px-3 text-ink outline-none ring-primary/25 focus:ring-2"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      autoComplete="new-password"
+                      minLength={8}
+                      required
+                      style={fallbackStyles.input}
+                    />
+                  </label>
+                ) : null}
+                <Button
+                  className="h-11 justify-between bg-primary px-4 text-primary-foreground hover:bg-[#314839]"
+                  disabled={loadingPassword || loadingProvider !== null}
+                  type="submit"
+                  style={fallbackStyles.primaryButton}
+                >
+                  <span>{loadingPassword ? (isLogin ? "Signing in..." : "Creating account...") : isLogin ? "Sign in with email" : "Create account"}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </form>
 
-                return (
-                  <Button
-                    key={provider.id}
-                    onClick={() => signInWithProvider(provider.id)}
-                    className="h-11 justify-between bg-primary px-4 text-primary-foreground hover:bg-[#314839]"
-                    disabled={loadingProvider !== null}
-                    style={fallbackStyles.primaryButton}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {isLoading ? provider.loadingLabel : provider.label}
-                    </span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                );
-              })}
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-xs font-semibold uppercase text-muted-foreground md:grid-cols-1 md:grid-rows-[1fr_auto_1fr]" style={fallbackStyles.divider}>
+                <span className="h-px bg-border md:h-full md:w-px" />
+                <span>or</span>
+                <span className="h-px bg-border md:h-full md:w-px" />
+              </div>
+
+              <div className="grid content-center gap-3">
+                {authProviders.map((provider) => {
+                  const Icon = provider.icon;
+                  const isLoading = loadingProvider === provider.id;
+
+                  return (
+                    <Button
+                      key={provider.id}
+                      onClick={() => signInWithProvider(provider.id)}
+                      className="h-11 justify-between border border-secondary bg-secondary px-4 text-white hover:bg-[#a7b582]"
+                      disabled={loadingProvider !== null}
+                      style={{
+                        ...fallbackStyles.primaryButton,
+                        border: "1px solid #b4c292",
+                        background: "#b4c292",
+                        color: "#fff"
+                      }}
+                    >
+                      <span className="inline-flex min-w-0 items-center gap-2">
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{isLoading ? provider.loadingLabel : provider.label}</span>
+                      </span>
+                      <ArrowRight className="h-4 w-4 shrink-0" />
+                    </Button>
+                  );
+                })}
+                {!isLogin ? (
+                  <div className="rounded-md border border-primary bg-primary p-4 text-sm leading-6 text-white" style={{ ...fallbackStyles.note, marginTop: 0 }}>
+                    <span style={{ color: "#fff" }}>Already have a workspace?</span>{" "}
+                    <Link href="/login" className="font-semibold text-white hover:underline">
+                      Sign in.
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
-            <div className="mt-7 rounded-md border border-border bg-cream/70 p-4 text-sm leading-6 text-muted-foreground" style={fallbackStyles.note}>
-              {isLogin ? "New to Eclipse? " : "Already have a workspace? "}
-              <Link href={isLogin ? "/signup" : "/login"} className="font-semibold text-primary hover:underline">
-                {isLogin ? "Create an account." : "Sign in."}
-              </Link>
-            </div>
+            {isLogin ? (
+              <div className="mt-7 rounded-md border border-primary bg-primary p-4 text-sm leading-6 text-white" style={fallbackStyles.note}>
+                <span style={{ color: "#fff" }}>New to Eclipse?</span>{" "}
+                <Link href="/signup" className="font-semibold text-white hover:underline">
+                  Create an account.
+                </Link>
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

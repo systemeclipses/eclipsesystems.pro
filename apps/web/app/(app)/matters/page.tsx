@@ -1,8 +1,16 @@
-import { requireFeature } from "@/lib/plan-features";
-import { getActiveOrgId } from "@/lib/org";
+import { Scale } from "lucide-react";
+import { EmptyState, PageHeader, Surface } from "@/components/app/page-shell";
+import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
 
 export default async function MattersPage() {
+  await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
-  await requireFeature(orgId, "legal");
-  return <section><h1 className="text-2xl font-semibold">Matters</h1><p className="mt-4 text-muted-foreground">Matter list, custom rates, conflict checks, trust ledger, and LEDES export.</p></section>;
+  return (
+    <section className="space-y-5">
+      <PageHeader eyebrow="Legal add-on" title="Matters" description="Matter billing, UTBMS, trust-aware workflows, and LEDES exports will connect here." />
+      <Surface>
+        <EmptyState icon={Scale} title="No matters yet" description={`Workspace ${orgId} has no legal matter records. Add-on workflows will appear here when enabled.`} />
+      </Surface>
+    </section>
+  );
 }

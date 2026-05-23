@@ -8,6 +8,20 @@
       "when": 1779417600000,
       "tag": "0000_authjs_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779550800000,
+      "tag": "0001_password_credentials",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779552000000,
+      "tag": "0002_subscription_deleted_at",
+      "breakpoints": true
     }
   ]
 }
