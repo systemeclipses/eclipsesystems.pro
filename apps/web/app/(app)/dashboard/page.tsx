@@ -1,14 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Clock3, FileText, MessageSquareText, ReceiptText, ShieldCheck, TimerReset, UsersRound } from "lucide-react";
+import { ArrowRight, BarChart3, CalendarDays, Clock3, FileText, FolderKanban, LockKeyhole, MessageSquareText, ReceiptText, Scale, TimerReset, UsersRound } from "lucide-react";
 import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { ProductRecommendations } from "@/components/billing/product-recommendations";
 import { getRunningTimerCountForUser } from "@/src/db/queries/dashboard";
+import { getActiveSubscriptionForUser } from "@/src/db/queries/billing";
 import { auth } from "@/src/auth";
+import { hasPlanFeature, PLAN_NAMES, type PlanCode, type PlanFeature } from "@eclipsesystems/shared/plans";
 
 const workTiles = [
-  { label: "Timesheet", href: "/timesheet", icon: CalendarDays, note: "Review tracked hours" },
-  { label: "Projects", href: "/projects", icon: FileText, note: "Client work and budgets" },
-  { label: "Invoices", href: "/invoices", icon: ReceiptText, note: "Draft and send billing" },
-  { label: "Mission", href: "/shifts", icon: UsersRound, note: "Shifts and coverage" }
+  { label: "Timer", href: "/timer", icon: Clock3, note: "Track work as it happens", feature: null },
+  { label: "Timesheet", href: "/timesheet", icon: CalendarDays, note: "Review tracked hours", feature: null },
+  { label: "Eclipse Invoicing", href: "/projects", icon: FolderKanban, note: "Clients, projects, and invoices", feature: "projects" },
+  { label: "Shifts", href: "/shifts", icon: FileText, note: "Schedules and coverage", feature: "shifts" },
+  { label: "Reports", href: "/reports", icon: BarChart3, note: "Operational visibility", feature: "reporting" }
 ] as const;
 
 const operations = [
@@ -17,11 +21,30 @@ const operations = [
   ["Coverage alerts", "0", "No open gaps"]
 ] as const;
 
+function isPlanCode(plan: string | null | undefined): plan is PlanCode {
+  return plan === "timekeeping" || plan === "mission_command" || plan === "eclipse" || plan === "suite" || plan === "legal_addon";
+}
+
+function canUseFeature(plan: PlanCode | null, feature: PlanFeature | null) {
+  return !feature || (plan ? hasPlanFeature(plan, feature) : false);
+}
+
+function requiredProductLabel(feature: PlanFeature | null) {
+  if (feature === "shifts" || feature === "chat") return "Mission Command";
+  if (feature === "projects" || feature === "invoicing") return "Eclipse Invoicing";
+  if (feature === "reporting") return "Eclipse Timekeeping";
+  if (feature === "legal") return "Eclipse Legal";
+  return "Eclipse Timekeeping";
+}
+
 export default async function DashboardPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
   const session = await auth();
   const runningTimerCount = await getRunningTimerCountForUser(userId, orgId);
+  const subscription = await getActiveSubscriptionForUser(userId, orgId);
+  const currentPlan = isPlanCode(subscription?.plan) ? subscription.plan : null;
+  const currentPlanName = currentPlan ? PLAN_NAMES[currentPlan] : "your current plan";
   const firstName = session?.user?.name?.split(" ")[0] ?? "there";
   const runningLabel = runningTimerCount === 1 ? "timer" : "timers";
 
@@ -70,24 +93,57 @@ export default async function DashboardPage() {
 
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="grid gap-5">
-          <div className="grid gap-3 md:grid-cols-4">
+          <div className="grid auto-rows-[156px] content-start gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
             {workTiles.map((tile) => {
               const Icon = tile.icon;
+              const locked = !canUseFeature(currentPlan, tile.feature);
+              const requiredProduct = requiredProductLabel(tile.feature);
+              const upgradeHref = tile.feature ? `/settings/billing?upgrade=${tile.feature}` : "/settings/billing";
+              const cardClassName = locked
+                ? "h-full rounded-md border border-secondary/45 bg-secondary/18 p-3 text-foreground shadow-sm shadow-black/5 dark:border-secondary/25 dark:bg-[#1f2d23]"
+                : "group h-full rounded-md border border-border bg-white/65 p-3 transition hover:-translate-y-0.5 hover:bg-white dark:bg-white/8 dark:hover:bg-white/12";
 
-              return (
+              const content = (
+                <div className="flex h-full flex-col justify-between gap-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className={locked ? "grid h-8 w-8 place-items-center rounded-sm bg-primary text-secondary" : "grid h-8 w-8 place-items-center rounded-sm bg-secondary text-primary"}>
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    {locked ? (
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-sm border border-primary/15 bg-cream text-primary dark:border-secondary/25 dark:bg-secondary/15 dark:text-secondary" aria-label="Locked">
+                        <LockKeyhole className="h-3.5 w-3.5" />
+                      </span>
+                    ) : (
+                      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                    )}
+                  </div>
+                  <div>
+                    <p className={locked ? "text-base font-semibold leading-tight text-foreground dark:text-white" : "text-base font-semibold leading-tight"}>{tile.label}</p>
+                    <p className="mt-1 text-xs leading-4 text-muted-foreground">{tile.note}</p>
+                  </div>
+                  {locked ? (
+                    <Link
+                      href={upgradeHref}
+                      className="inline-flex h-7 w-fit items-center gap-2 rounded-md bg-primary px-2.5 text-xs font-semibold text-white transition hover:bg-[#3b5243]"
+                    >
+                      <LockKeyhole className="h-3 w-3" />
+                      {requiredProduct}
+                    </Link>
+                  ) : null}
+                </div>
+              );
+
+              return locked ? (
+                <div key={tile.href} className={cardClassName} aria-disabled="true" title={`${tile.label} needs ${requiredProduct}. Your current plan is ${currentPlanName}.`}>
+                  {content}
+                </div>
+              ) : (
                 <Link
                   key={tile.href}
                   href={tile.href}
-                  className="group rounded-md border border-border bg-white/65 p-4 transition hover:-translate-y-0.5 hover:bg-white"
+                  className={cardClassName}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="grid h-9 w-9 place-items-center rounded-sm bg-secondary text-primary">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-                  </div>
-                  <p className="mt-5 text-lg font-semibold">{tile.label}</p>
-                  <p className="mt-1 text-sm leading-5 text-muted-foreground">{tile.note}</p>
+                  {content}
                 </Link>
               );
             })}
@@ -97,7 +153,7 @@ export default async function DashboardPage() {
             <section className="rounded-md border border-border bg-white/65 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-primary">Today&apos;s flow</p>
+                  <p className="text-sm font-semibold text-primary dark:text-white">Today&apos;s flow</p>
                   <h2 className="mt-2 font-title text-4xl leading-none text-ink dark:text-white">From time to invoice</h2>
                 </div>
                 <Clock3 className="h-6 w-6 text-primary" />
@@ -105,19 +161,36 @@ export default async function DashboardPage() {
 
               <div className="mt-6 grid gap-3">
                 {[
-                  ["Capture", "Start or resume timers as work happens.", "/timer"],
-                  ["Review", "Check timesheets before billing.", "/timesheet"],
-                  ["Bill", "Prepare invoices from approved work.", "/invoices"]
-                ].map(([label, text, href], index) => (
-                  <Link key={label} href={href} className="grid grid-cols-[36px_1fr_auto] items-center gap-3 rounded-md border border-border bg-cream/70 p-3">
-                    <span className="grid h-9 w-9 place-items-center rounded-sm bg-primary text-sm font-semibold text-white">0{index + 1}</span>
-                    <span>
-                      <span className="block text-sm font-semibold">{label}</span>
-                      <span className="block text-sm text-muted-foreground">{text}</span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 text-primary" />
-                  </Link>
-                ))}
+                  { label: "Capture", text: "Start or resume timers as work happens.", href: "/timer", feature: null },
+                  { label: "Review", text: "Check timesheets before billing.", href: "/timesheet", feature: null },
+                  { label: "Bill", text: "Prepare invoices from approved work.", href: "/invoices", feature: "invoicing" }
+                ].map((step, index) => {
+                  const locked = !canUseFeature(currentPlan, step.feature as PlanFeature | null);
+                  const requiredProduct = requiredProductLabel(step.feature as PlanFeature | null);
+                  const rowClassName = locked
+                    ? "grid grid-cols-[36px_1fr_auto] items-center gap-3 rounded-md border border-border bg-cream/45 p-3 text-muted-foreground dark:bg-white/8"
+                    : "grid grid-cols-[36px_1fr_auto] items-center gap-3 rounded-md border border-border bg-cream/70 p-3 dark:text-white";
+                  const rowContent = (
+                    <>
+                      <span className={locked ? "grid h-9 w-9 place-items-center rounded-sm bg-muted text-sm font-semibold text-muted-foreground" : "grid h-9 w-9 place-items-center rounded-sm bg-primary text-sm font-semibold text-white"}>0{index + 1}</span>
+                      <span>
+                        <span className={locked ? "block text-sm font-semibold text-foreground/70 dark:text-white/70" : "block text-sm font-semibold dark:text-white"}>{step.label}</span>
+                        <span className="block text-sm text-muted-foreground">{locked ? requiredProduct : step.text}</span>
+                      </span>
+                      {locked ? <LockKeyhole className="h-4 w-4 text-primary" /> : <ArrowRight className="h-4 w-4 text-primary" />}
+                    </>
+                  );
+
+                  return locked ? (
+                    <div key={step.label} className={rowClassName} aria-disabled="true">
+                      {rowContent}
+                    </div>
+                  ) : (
+                    <Link key={step.label} href={step.href} className={rowClassName}>
+                      {rowContent}
+                    </Link>
+                  );
+                })}
               </div>
             </section>
 
@@ -159,16 +232,7 @@ export default async function DashboardPage() {
             </div>
           </section>
 
-          <section className="rounded-md border border-border bg-secondary p-5 text-ink">
-            <ShieldCheck className="h-6 w-6 text-primary" />
-            <h2 className="mt-5 font-title text-4xl leading-none">Ready for deeper records.</h2>
-            <p className="mt-4 text-sm leading-6 text-[#35483b]">
-              Projects, invoices, shifts, chat, and legal matter workflows are already in the workspace when you need them.
-            </p>
-            <Link href="/settings/billing" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary">
-              Manage plan <ArrowRight className="h-4 w-4" />
-            </Link>
-          </section>
+          <ProductRecommendations currentPlan={subscription?.plan} context="dashboard" compact />
         </aside>
       </div>
     </section>

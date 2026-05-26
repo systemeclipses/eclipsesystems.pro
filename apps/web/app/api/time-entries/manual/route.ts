@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     projectId,
     description,
     startedAt,
-    endedAt
+    endedAt,
+    reason: typeof body.reason === "string" ? body.reason : null
   });
 
   return NextResponse.json(entry);

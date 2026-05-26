@@ -12,5 +12,5 @@ export async function POST(request: NextRequest) {
   });
   const { origin } = new URL(request.url);
   if (!response.ok) return NextResponse.redirect(`${origin}/login`);
-  return NextResponse.redirect(`${origin}/dashboard`);
+  return NextResponse.redirect(`${origin}/onboarding`);
 }

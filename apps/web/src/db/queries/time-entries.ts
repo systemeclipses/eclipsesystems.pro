@@ -1,14 +1,42 @@
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/src/db";
-import { timeEntries } from "@/src/db/schema";
+import { auditLog, geofenceAssignments, geofences, memberships, timeEntries } from "@/src/db/schema";
+
+export type PunchLocation = { latitude: number; longitude: number; accuracy?: number | null; offline?: boolean };
+export type PunchDevice = { userAgent?: string | null; platform?: string | null; offline?: boolean };
+
+function distanceMeters(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
+  const radius = 6371000;
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const dLat = toRadians(b.latitude - a.latitude);
+  const dLng = toRadians(b.longitude - a.longitude);
+  const lat1 = toRadians(a.latitude);
+  const lat2 = toRadians(b.latitude);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * radius * Math.asin(Math.sqrt(h));
+}
+
+export async function getMembershipForUser(userId: string, organizationId: string) {
+  const [membership] = await db
+    .select()
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), eq(memberships.organizationId, organizationId), isNull(memberships.deletedAt)))
+    .limit(1);
+
+  return membership ?? null;
+}
 
 export async function getRunningTimeEntryForUser(userId: string, organizationId: string) {
+  const membership = await getMembershipForUser(userId, organizationId);
+  if (!membership) return null;
+
   const [entry] = await db
     .select()
     .from(timeEntries)
     .where(
       and(
         eq(timeEntries.organizationId, organizationId),
+        eq(timeEntries.membershipId, membership.id),
         isNull(timeEntries.endedAt),
         isNull(timeEntries.deletedAt)
       )
@@ -18,13 +46,53 @@ export async function getRunningTimeEntryForUser(userId: string, organizationId:
   return entry ?? null;
 }
 
+export async function getAssignedGeofences(membershipId: string, organizationId: string) {
+  return db
+    .select({
+      id: geofences.id,
+      name: geofences.name,
+      address: geofences.address,
+      latitude: geofences.latitude,
+      longitude: geofences.longitude,
+      radiusMeters: geofences.radiusMeters,
+      outOfBoundsBehavior: geofences.outOfBoundsBehavior
+    })
+    .from(geofenceAssignments)
+    .innerJoin(geofences, eq(geofences.id, geofenceAssignments.geofenceId))
+    .where(and(eq(geofenceAssignments.membershipId, membershipId), eq(geofences.organizationId, organizationId), isNull(geofences.deletedAt)));
+}
+
+async function evaluateGeofence(input: { organizationId: string; membershipId: string; location?: PunchLocation | null }) {
+  const assigned = await getAssignedGeofences(input.membershipId, input.organizationId);
+  if (!assigned.length) return { allowed: true, reviewFlag: null as string | null, outsideGeofence: false };
+  if (!input.location) return { allowed: true, reviewFlag: "gps_unavailable", outsideGeofence: false };
+
+  const inside = assigned.some((site) => {
+    const siteLocation = { latitude: Number(site.latitude), longitude: Number(site.longitude) };
+    return distanceMeters(input.location!, siteLocation) <= site.radiusMeters;
+  });
+
+  if (inside) return { allowed: true, reviewFlag: null, outsideGeofence: false };
+  const warnOnly = assigned.some((site) => site.outOfBoundsBehavior === "warn");
+  return { allowed: warnOnly, reviewFlag: "outside_geofence", outsideGeofence: true };
+}
+
 export async function startTimerForUser(input: {
   userId: string;
   organizationId: string;
   membershipId: string;
   projectId?: string | null;
   description?: string | null;
+  punchNote?: string | null;
+  location?: PunchLocation | null;
+  deviceInfo?: PunchDevice | null;
 }) {
+  const running = await getRunningTimeEntryForUser(input.userId, input.organizationId);
+  if (running) throw new Error("You are already clocked in.");
+
+  const geofenceResult = await evaluateGeofence(input);
+  if (!geofenceResult.allowed) throw new Error("You must be inside an assigned job-site geofence to clock in.");
+
   const [entry] = await db
     .insert(timeEntries)
     .values({
@@ -32,9 +100,13 @@ export async function startTimerForUser(input: {
       membershipId: input.membershipId,
       projectId: input.projectId || null,
       description: input.description || null,
+      punchNote: input.punchNote || null,
       startedAt: new Date(),
+      startedLocation: input.location ? { ...input.location, outsideGeofence: geofenceResult.outsideGeofence } : null,
+      deviceInfo: input.deviceInfo ?? null,
+      reviewFlag: geofenceResult.reviewFlag,
       source: "timer",
-      status: "draft"
+      status: geofenceResult.reviewFlag ? "flagged" : "draft"
     })
     .returning({
       id: timeEntries.id,
@@ -42,14 +114,57 @@ export async function startTimerForUser(input: {
       startedAt: timeEntries.startedAt
     });
 
+  await db.insert(auditLog).values({
+    organizationId: input.organizationId,
+    actorMembershipId: input.membershipId,
+    action: "punch.clock_in",
+    targetType: "time_entry",
+    targetId: entry.id,
+    after: entry
+  });
+
   return entry;
 }
 
-export async function stopTimerForUser(userId: string, organizationId: string, entryId: string) {
-  await db
+export async function stopTimerForUser(input: {
+  userId: string;
+  organizationId: string;
+  membershipId: string;
+  entryId: string;
+  punchNote?: string | null;
+  location?: PunchLocation | null;
+  deviceInfo?: PunchDevice | null;
+}) {
+  const [before] = await db.select().from(timeEntries).where(and(eq(timeEntries.id, input.entryId), eq(timeEntries.organizationId, input.organizationId), eq(timeEntries.membershipId, input.membershipId))).limit(1);
+  if (!before) throw new Error("Running entry not found.");
+
+  const endedAt = new Date();
+  const durationSeconds = Math.max(0, Math.floor((endedAt.getTime() - before.startedAt.getTime()) / 1000));
+  const geofenceResult = await evaluateGeofence(input);
+
+  const [after] = await db
     .update(timeEntries)
-    .set({ endedAt: new Date() })
-    .where(and(eq(timeEntries.id, entryId), eq(timeEntries.organizationId, organizationId)));
+    .set({
+      endedAt,
+      durationSeconds,
+      endedLocation: input.location ? { ...input.location, outsideGeofence: geofenceResult.outsideGeofence } : null,
+      punchNote: input.punchNote || before.punchNote,
+      deviceInfo: input.deviceInfo || before.deviceInfo,
+      reviewFlag: before.reviewFlag ?? geofenceResult.reviewFlag,
+      status: before.reviewFlag || geofenceResult.reviewFlag ? "flagged" : before.status
+    })
+    .where(and(eq(timeEntries.id, input.entryId), eq(timeEntries.organizationId, input.organizationId), eq(timeEntries.membershipId, input.membershipId)))
+    .returning();
+
+  await db.insert(auditLog).values({
+    organizationId: input.organizationId,
+    actorMembershipId: input.membershipId,
+    action: "punch.clock_out",
+    targetType: "time_entry",
+    targetId: input.entryId,
+    before,
+    after
+  });
 }
 
 export async function getTimesheetEntriesForUser(userId: string, organizationId: string) {
@@ -57,13 +172,16 @@ export async function getTimesheetEntriesForUser(userId: string, organizationId:
     .select({
       id: timeEntries.id,
       description: timeEntries.description,
+      punch_note: timeEntries.punchNote,
       started_at: timeEntries.startedAt,
       ended_at: timeEntries.endedAt,
       duration_seconds: timeEntries.durationSeconds,
+      review_flag: timeEntries.reviewFlag,
       status: timeEntries.status
     })
     .from(timeEntries)
-    .where(and(eq(timeEntries.organizationId, organizationId), isNull(timeEntries.deletedAt)))
+    .innerJoin(memberships, eq(memberships.id, timeEntries.membershipId))
+    .where(and(eq(timeEntries.organizationId, organizationId), eq(memberships.userId, userId), isNull(timeEntries.deletedAt)))
     .orderBy(desc(timeEntries.startedAt));
 }
 
@@ -74,7 +192,9 @@ export async function createManualTimeEntryForUser(input: {
   description?: string | null;
   startedAt: Date;
   endedAt: Date;
+  reason?: string | null;
 }) {
+  const durationSeconds = Math.max(0, Math.floor((input.endedAt.getTime() - input.startedAt.getTime()) / 1000));
   const [entry] = await db
     .insert(timeEntries)
     .values({
@@ -84,10 +204,22 @@ export async function createManualTimeEntryForUser(input: {
       description: input.description || null,
       startedAt: input.startedAt,
       endedAt: input.endedAt,
+      durationSeconds,
+      punchNote: input.reason || null,
       source: "manual",
       status: "draft"
     })
     .returning({ id: timeEntries.id });
+
+  await db.insert(auditLog).values({
+    organizationId: input.organizationId,
+    actorMembershipId: input.membershipId,
+    action: "time_entry.manual_create",
+    targetType: "time_entry",
+    targetId: entry.id,
+    after: { ...input, id: entry.id, durationSeconds },
+    reason: input.reason || null
+  });
 
   return entry;
 }

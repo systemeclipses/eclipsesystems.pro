@@ -2,11 +2,13 @@ import { FolderKanban } from "lucide-react";
 import { CreateRecordForm } from "@/components/app/app-card-form";
 import { EmptyState, PageHeader, Surface } from "@/components/app/page-shell";
 import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { requireFeature } from "@/lib/plan-features";
 import { getProjectsForUser } from "@/src/db/queries/projects";
 
 export default async function ProjectsPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
+  await requireFeature(orgId, "projects");
   const data = await getProjectsForUser(userId, orgId);
 
   return (

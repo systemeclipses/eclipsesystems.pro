@@ -3,22 +3,60 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
-type ThemeMode = "light" | "dark";
+export type ThemeMode = "light" | "dark";
+export type ThemePreference = ThemeMode | "system";
 
-function getInitialMode(): ThemeMode {
+const storageKey = "eclipse-theme";
+
+function getSystemMode(): ThemeMode {
   if (typeof window === "undefined") return "light";
-  const stored = window.localStorage.getItem("eclipse-theme");
-  if (stored === "light" || stored === "dark") return stored;
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-function applyMode(mode: ThemeMode) {
-  document.documentElement.classList.toggle("dark", mode === "dark");
-  document.documentElement.style.colorScheme = mode;
-  window.localStorage.setItem("eclipse-theme", mode);
+export function resolveThemePreference(preference: ThemePreference): ThemeMode {
+  return preference === "system" ? getSystemMode() : preference;
 }
 
-function playEclipseTransition(targetMode: ThemeMode) {
+export function getStoredThemePreference(): ThemePreference {
+  if (typeof window === "undefined") return "light";
+  const stored = window.localStorage.getItem(storageKey);
+  if (isThemePreference(stored)) return stored;
+  return "light";
+}
+
+export function isThemePreference(value: unknown): value is ThemePreference {
+  return value === "light" || value === "dark" || value === "system";
+}
+
+export async function loadAccountThemePreference() {
+  const response = await fetch("/api/account/theme", { cache: "no-store" });
+  if (!response.ok) return null;
+  const data = (await response.json().catch(() => null)) as { preference?: unknown } | null;
+  return isThemePreference(data?.preference) ? data.preference : null;
+}
+
+export async function saveAccountThemePreference(preference: ThemePreference) {
+  await fetch("/api/account/theme", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ preference })
+  });
+}
+
+function paintTheme(mode: ThemeMode) {
+  document.documentElement.classList.toggle("dark", mode === "dark");
+  document.documentElement.style.colorScheme = mode;
+}
+
+export function applyEclipseTheme(preference: ThemePreference) {
+  const mode = resolveThemePreference(preference);
+  paintTheme(mode);
+  window.localStorage.setItem(storageKey, preference);
+  window.dispatchEvent(new CustomEvent("eclipse-theme-change", { detail: { preference, mode } }));
+  return mode;
+}
+
+export function playEclipseTransition(targetMode: ThemeMode) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   document.querySelector(".theme-eclipse-overlay")?.remove();
@@ -36,19 +74,42 @@ function playEclipseTransition(targetMode: ThemeMode) {
 }
 
 export function ThemeToggle() {
-  const [mode, setMode] = useState<ThemeMode>("light");
+  const [preference, setPreference] = useState<ThemePreference>("light");
+  const mode = resolveThemePreference(preference);
 
   useEffect(() => {
-    const initial = getInitialMode();
-    setMode(initial);
-    applyMode(initial);
+    const initial = getStoredThemePreference();
+    setPreference(initial);
+    applyEclipseTheme(initial);
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    function syncSystem() {
+      if (getStoredThemePreference() === "system") {
+        setPreference("system");
+        paintTheme(getSystemMode());
+      }
+    }
+    function syncCustom(event: Event) {
+      const next = (event as CustomEvent<{ preference: ThemePreference }>).detail?.preference;
+      if (next === "light" || next === "dark" || next === "system") setPreference(next);
+    }
+
+    media.addEventListener("change", syncSystem);
+    window.addEventListener("eclipse-theme-change", syncCustom);
+
+    return () => {
+      media.removeEventListener("change", syncSystem);
+      window.removeEventListener("eclipse-theme-change", syncCustom);
+    };
   }, []);
 
   function toggle() {
-    setMode((current) => {
-      const next = current === "dark" ? "light" : "dark";
+    setPreference((current) => {
+      const currentMode = resolveThemePreference(current);
+      const next: ThemePreference = currentMode === "dark" ? "light" : "dark";
       playEclipseTransition(next);
-      applyMode(next);
+      applyEclipseTheme(next);
+      void saveAccountThemePreference(next).catch(() => undefined);
       return next;
     });
   }

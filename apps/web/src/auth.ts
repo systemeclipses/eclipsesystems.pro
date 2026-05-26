@@ -6,6 +6,7 @@ import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/src/db";
 import { accounts, sessions, users, verificationTokens } from "@/src/db/schema";
+import { ensureTrialSubscriptionForOrganization } from "@/src/db/queries/billing";
 import { ensurePersonalOrganizationForUser } from "@/src/db/queries/organizations";
 
 const microsoftTenantId = process.env.MICROSOFT_ENTRA_ID_TENANT_ID || "common";
@@ -48,7 +49,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   events: {
     async createUser({ user }) {
-      if (user.id) await ensurePersonalOrganizationForUser({ ...user, id: user.id });
+      if (user.id) {
+        const organizationId = await ensurePersonalOrganizationForUser({ ...user, id: user.id });
+        await ensureTrialSubscriptionForOrganization(organizationId);
+      }
     }
   },
   session: {

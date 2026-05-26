@@ -4,6 +4,7 @@ import { ArrowRight, Clock3, FileCheck2, LayoutDashboard, MessageSquareText, Shi
 import { Button } from "@/components/ui/button";
 import { FAQ } from "@/components/seo/faq";
 import { loadFeatures } from "@/lib/seo/content";
+import { EclipseModePromo } from "@/components/marketing/eclipse-mode-promo";
 
 export const metadata: Metadata = {
   title: "Eclipse Systems",
@@ -215,6 +216,10 @@ export default async function LandingPage() {
             );
           })}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-[92rem] px-5 pb-4">
+        <EclipseModePromo />
       </section>
 
       <section className="px-3">

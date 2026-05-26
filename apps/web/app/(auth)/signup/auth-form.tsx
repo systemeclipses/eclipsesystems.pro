@@ -234,10 +234,10 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const label = isLogin ? "Welcome back." : "Start your Eclipse.";
+  const label = isLogin ? "Welcome back." : "Start your trial.";
   const supporting = isLogin
     ? "Sign in to get back to time, billing, shifts, matters, and the operating work already in motion."
-    : "Create your workspace and bring timekeeping, billing, shifts, and legal workflows into one orbit.";
+    : "Create your workspace with a free trial, then grow into billing, shifts, and legal workflows when the work calls for it.";
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   async function signInWithProvider(providerId: string) {
@@ -319,10 +319,10 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
         <div className="flex items-center justify-center bg-cream p-5 md:p-10" style={fallbackStyles.panel}>
           <div className="w-full max-w-[760px] rounded-md border border-border bg-white/75 p-5 text-ink shadow-2xl shadow-primary/15 md:p-8" style={fallbackStyles.card}>
-            <p className="text-sm font-semibold text-primary">{isLogin ? "Sign in" : "Create account"}</p>
+            <p className="text-sm font-semibold text-primary">{isLogin ? "Sign in" : "Free trial"}</p>
             <h2 className="mt-3 font-title text-5xl leading-none" style={fallbackStyles.cardTitle}>{isLogin ? "Enter the workspace." : "Build the workspace."}</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground" style={fallbackStyles.mutedCopy}>
-              Use email and password, or continue with a connected provider.
+              {isLogin ? "Use email and password, or continue with a connected provider." : "Create an account to start a trial workspace. No app access starts without a trial or subscription."}
             </p>
 
             <div className="mt-7 grid gap-5 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-stretch">
@@ -398,7 +398,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
                   type="submit"
                   style={fallbackStyles.primaryButton}
                 >
-                  <span>{loadingPassword ? (isLogin ? "Signing in..." : "Creating account...") : isLogin ? "Sign in with email" : "Create account"}</span>
+                  <span>{loadingPassword ? (isLogin ? "Signing in..." : "Starting trial...") : isLogin ? "Sign in with email" : "Start free trial"}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </form>
@@ -450,7 +450,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
               <div className="mt-7 rounded-md border border-primary bg-primary p-4 text-sm leading-6 text-white" style={fallbackStyles.note}>
                 <span style={{ color: "#fff" }}>New to Eclipse?</span>{" "}
                 <Link href="/signup" className="font-semibold text-white hover:underline">
-                  Create an account.
+                  Start a free trial.
                 </Link>
               </div>
             ) : null}

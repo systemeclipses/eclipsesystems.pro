@@ -1,11 +1,13 @@
 import { ReceiptText } from "lucide-react";
 import { EmptyState, PageHeader, StatPill, Surface } from "@/components/app/page-shell";
 import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { requireFeature } from "@/lib/plan-features";
 import { getInvoicesForOrganization } from "@/src/db/queries/invoices";
 
 export default async function InvoicesPage() {
   await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
+  await requireFeature(orgId, "invoicing");
   const invoices = await getInvoicesForOrganization(orgId);
   const total = invoices.reduce((sum, invoice) => sum + Number(invoice.total ?? 0), 0);
 

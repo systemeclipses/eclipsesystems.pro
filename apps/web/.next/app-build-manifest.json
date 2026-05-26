@@ -26,11 +26,6 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(marketing)/industries/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/industries/page.js"
-    ],
     "/(auth)/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -45,11 +40,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(auth)/loading.js"
-    ],
-    "/(auth)/signup/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/signup/page.js"
     ],
     "/(app)/dashboard/page": [
       "static/chunks/webpack.js",
@@ -71,45 +61,35 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(app)/loading.js"
     ],
-    "/(app)/timer/page": [
+    "/(app)/account/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/timer/page.js"
+      "static/chunks/app/(app)/account/page.js"
     ],
-    "/(app)/timesheet/page": [
+    "/(app)/settings/account/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/timesheet/page.js"
+      "static/chunks/app/(app)/settings/account/page.js"
+    ],
+    "/(app)/settings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/settings/page.js"
+    ],
+    "/(auth)/signup/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(auth)/signup/page.js"
     ],
     "/(app)/shifts/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(app)/shifts/page.js"
     ],
-    "/(app)/reports/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/reports/page.js"
-    ],
     "/(app)/settings/billing/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(app)/settings/billing/page.js"
-    ],
-    "/(app)/matters/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/matters/page.js"
-    ],
-    "/(app)/clients/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/clients/page.js"
-    ],
-    "/(app)/chat/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(app)/chat/page.js"
     ],
     "/(app)/invoices/page": [
       "static/chunks/webpack.js",
@@ -121,10 +101,35 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(app)/projects/page.js"
     ],
-    "/(app)/settings/members/page": [
+    "/(app)/clients/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/settings/members/page.js"
+      "static/chunks/app/(app)/clients/page.js"
+    ],
+    "/(app)/matters/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/matters/page.js"
+    ],
+    "/(app)/settings/timekeeping/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/settings/timekeeping/page.js"
+    ],
+    "/(app)/reports/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/reports/page.js"
+    ],
+    "/(app)/chat/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/chat/page.js"
+    ],
+    "/(app)/timekeeping/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/timekeeping/page.js"
     ]
   }
 }

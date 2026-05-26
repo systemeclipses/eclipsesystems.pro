@@ -1,11 +1,13 @@
 import { BarChart3 } from "lucide-react";
 import { EmptyState, PageHeader, StatPill, Surface } from "@/components/app/page-shell";
 import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { requireFeature } from "@/lib/plan-features";
 import { getTimeEntrySeconds, getTimesheetEntriesForUser } from "@/src/db/queries/time-entries";
 
 export default async function ReportsPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
+  await requireFeature(orgId, "reporting");
   const entries = await getTimesheetEntriesForUser(userId, orgId);
   const totalSeconds = entries.reduce((sum, entry) => sum + getTimeEntrySeconds(entry), 0);
   const running = entries.filter((entry) => !entry.ended_at).length;

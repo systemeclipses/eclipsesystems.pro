@@ -112,7 +112,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(() => { try { const stored = localStorage.getItem("eclipse-theme"); const mode = stored || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); document.documentElement.classList.toggle("dark", mode === "dark"); document.documentElement.style.colorScheme = mode; } catch (_) {} })();`
+            __html: `(() => { try { const stored = localStorage.getItem("eclipse-theme"); const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; const mode = stored === "system" ? system : stored === "dark" || stored === "light" ? stored : "light"; document.documentElement.classList.toggle("dark", mode === "dark"); document.documentElement.style.colorScheme = mode; } catch (_) {} })();`
           }}
         />
         <StructuredData schema={organization} />

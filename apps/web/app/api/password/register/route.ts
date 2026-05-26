@@ -4,6 +4,7 @@ import { createPasswordSession, setAuthSessionCookie } from "@/src/auth-session"
 import { hashPassword, normalizeEmail, validatePassword } from "@/src/auth-password";
 import { db } from "@/src/db";
 import { passwordCredentials, users } from "@/src/db/schema";
+import { ensureTrialSubscriptionForOrganization } from "@/src/db/queries/billing";
 import { ensurePersonalOrganizationForUser } from "@/src/db/queries/organizations";
 
 export const runtime = "nodejs";
@@ -57,7 +58,8 @@ export async function POST(request: NextRequest) {
     ...credential
   });
 
-  await ensurePersonalOrganizationForUser(user);
+  const organizationId = await ensurePersonalOrganizationForUser(user);
+  await ensureTrialSubscriptionForOrganization(organizationId);
 
   const session = await createPasswordSession(user.id);
   const response = NextResponse.json({ ok: true });

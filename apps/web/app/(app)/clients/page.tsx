@@ -2,11 +2,13 @@ import { Building2 } from "lucide-react";
 import { CreateRecordForm } from "@/components/app/app-card-form";
 import { EmptyState, PageHeader, Surface } from "@/components/app/page-shell";
 import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { requireFeature } from "@/lib/plan-features";
 import { getClientsForUser } from "@/src/db/queries/clients";
 
 export default async function ClientsPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
+  await requireFeature(orgId, "projects");
   const data = await getClientsForUser(userId, orgId);
 
   return (

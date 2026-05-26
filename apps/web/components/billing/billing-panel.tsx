@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ProductRecommendations } from "@/components/billing/product-recommendations";
 import { PLAN_NAMES, type PlanCode } from "@eclipsesystems/shared/plans";
 
 type Subscription = { plan: string; seats: number; status: string; billing_interval: string | null } | null;
@@ -10,6 +11,11 @@ export function BillingPanel({ orgId, subscription }: { orgId: string; subscript
     const response = await fetch("/api/billing/portal", { method: "POST", body: JSON.stringify({ organization_id: orgId }) });
     const data = await response.json();
     if (data.url) location.href = data.url;
+  }
+
+  async function startTrial() {
+    const response = await fetch("/api/billing/trial", { method: "POST" });
+    if (response.ok) location.reload();
   }
 
   return (
@@ -29,8 +35,12 @@ export function BillingPanel({ orgId, subscription }: { orgId: string; subscript
           <div className="rounded-md bg-cream/70 p-4"><p className="text-sm text-muted-foreground">Seats</p><p className="mt-2 font-semibold">{subscription?.seats ?? 0}</p></div>
           <div className="rounded-md bg-cream/70 p-4"><p className="text-sm text-muted-foreground">Interval</p><p className="mt-2 font-semibold">{subscription?.billing_interval ?? "none"}</p></div>
         </div>
-        <Button className="mt-5" onClick={openPortal}>Open Stripe portal</Button>
+        <div className="mt-5 flex flex-wrap gap-3">
+          {!subscription ? <Button onClick={startTrial}>Start free trial</Button> : null}
+          <Button variant={subscription ? "default" : "outline"} onClick={openPortal}>Open Stripe portal</Button>
+        </div>
       </div>
+      <ProductRecommendations currentPlan={subscription?.plan} />
     </section>
   );
 }

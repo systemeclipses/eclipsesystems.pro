@@ -1,5 +1,27 @@
 {
   "framework": "nextjs",
   "buildCommand": "pnpm --filter @eclipsesystems/web build",
-  "outputDirectory": "apps/web/.next"
+  "outputDirectory": "apps/web/.next",
+  "crons": [
+    {
+      "path": "/api/cron/auto-clock-out",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/monthly-accrual",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/anniversary-accrual",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/carryover-check",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/expiring-pto-warning",
+      "schedule": "0 4 * * *"
+    }
+  ]
 }
