@@ -9,12 +9,14 @@ import {
   ChevronDown,
   Download,
   Eye,
+  Activity,
   LockKeyhole,
   Plus,
   ShieldCheck,
   SlidersHorizontal,
   UserCog,
   UsersRound,
+  RefreshCw,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -131,6 +133,26 @@ export function RolesPermissionsClient({ members, roleCounts, customRoles, custo
   const [modal, setModal] = useState<ModalKind>(null);
   const [selectedRole, setSelectedRole] = useState<BuiltInRoleKey>("manager");
   const [expandedCategory, setExpandedCategory] = useState("Time & Attendance");
+  const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
+
+  async function runMaintenance() {
+    setIsRunningMaintenance(true);
+    try {
+      const res = await fetch("/api/admin/maintenance", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET}` // Ensure this is available or use a session-based check
+        }
+      });
+      if (res.ok) alert("Maintenance completed successfully.");
+      else alert("Maintenance failed. Check server logs.");
+    } catch (e) {
+      alert("Error triggering maintenance.");
+    } finally {
+      setIsRunningMaintenance(false);
+    }
+  }
+
   const departments = useMemo(() => Array.from(new Set(members.map((member) => member.department).filter(Boolean))) as string[], [members]);
   const privilegedInactive = members.filter((member) => ["owner", "admin", "manager"].includes(member.role)).slice(0, 2);
   const customRoleRows = customRoles.length
@@ -198,6 +220,24 @@ export function RolesPermissionsClient({ members, roleCounts, customRoles, custo
 
         <aside className="space-y-4">
           <GovernanceCard members={members} privilegedInactive={privilegedInactive} />
+          
+          <div className="rounded-md border border-border bg-white/70 p-4">
+            <div className="flex items-center gap-2 font-semibold">
+              <Activity className="h-4 w-4 text-primary" />
+              System Maintenance
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">Run background tasks like auto clock-out and PTO accruals manually.</p>
+            <Button 
+              className="mt-4 w-full" 
+              variant="outline" 
+              onClick={runMaintenance}
+              disabled={isRunningMaintenance}
+            >
+              <RefreshCw className={cn("mr-2 h-4 w-4", isRunningMaintenance && "animate-spin")} />
+              {isRunningMaintenance ? "Running..." : "Run System Jobs"}
+            </Button>
+          </div>
+
           <div className="rounded-md border border-border bg-white/70 p-4">
             <p className="font-semibold">Custom groups</p>
             <p className="mt-1 text-sm text-muted-foreground">Groups become reusable permission scopes.</p>
