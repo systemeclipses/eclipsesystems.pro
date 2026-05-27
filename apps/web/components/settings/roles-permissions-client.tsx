@@ -353,7 +353,7 @@ function GovernanceCard({ members, privilegedInactive }: { members: Member[]; pr
         {builtInRoles.map((role) => (
           <div key={role.key} className="flex justify-between gap-3">
             <dt className="text-muted-foreground">{role.name}</dt>
-            <dd className="font-semibold">{members.filter((member) => member.role === role.key || (role.key === "employee" && member.role === "member")).length}</dd>
+            <dd className="font-semibold">{members.filter((member) => member.role === role.key || (role.key === "employee" && (member.role === "member" || member.role === "employee"))).length}</dd>
           </div>
         ))}
       </dl>
