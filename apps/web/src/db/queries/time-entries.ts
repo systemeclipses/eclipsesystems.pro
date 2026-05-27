@@ -106,7 +106,7 @@ export async function startTimerForUser(input: {
       deviceInfo: input.deviceInfo ?? null,
       reviewFlag: geofenceResult.reviewFlag,
       source: "timer",
-      status: geofenceResult.reviewFlag ? "flagged" : "draft"
+      status: "draft"
     })
     .returning({
       id: timeEntries.id,
@@ -151,7 +151,7 @@ export async function stopTimerForUser(input: {
       punchNote: input.punchNote || before.punchNote,
       deviceInfo: input.deviceInfo || before.deviceInfo,
       reviewFlag: before.reviewFlag ?? geofenceResult.reviewFlag,
-      status: before.reviewFlag || geofenceResult.reviewFlag ? "flagged" : before.status
+      status: before.status
     })
     .where(and(eq(timeEntries.id, input.entryId), eq(timeEntries.organizationId, input.organizationId), eq(timeEntries.membershipId, input.membershipId)))
     .returning();

@@ -58,10 +58,10 @@ function buildRecommendations(currentPlan: string | null | undefined) {
   const picks: PlanCode[] =
     plan === "timekeeping"
       ? ["suite", "eclipse", "mission_command"]
-      : plan === "mission_command"
-        ? ["suite", "eclipse", "legal_addon"]
+    : plan === "mission_command"
+        ? ["suite", "eclipse"]
         : plan === "eclipse"
-          ? ["suite", "mission_command", "legal_addon"]
+          ? ["suite", "mission_command"]
           : plan === "suite"
             ? ["legal_addon"]
             : plan === "legal_addon"

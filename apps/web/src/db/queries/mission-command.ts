@@ -40,7 +40,8 @@ export async function getMissionCommandOverview(organizationId: string) {
         name: profiles.fullName,
         email: profiles.email,
         role: memberships.role,
-        department: memberships.department
+        department: memberships.department,
+        payRateCents: memberships.payRateCents
       })
       .from(memberships)
       .innerJoin(profiles, eq(profiles.id, memberships.userId))

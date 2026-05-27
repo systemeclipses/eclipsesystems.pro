@@ -4,6 +4,7 @@ import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
 import { ProductRecommendations } from "@/components/billing/product-recommendations";
 import { getRunningTimerCountForUser } from "@/src/db/queries/dashboard";
 import { getActiveSubscriptionForUser } from "@/src/db/queries/billing";
+import { getProductUiContext } from "@/src/billing/entitlements";
 import { auth } from "@/src/auth";
 import { hasPlanFeature, PLAN_NAMES, type PlanCode, type PlanFeature } from "@eclipsesystems/shared/plans";
 
@@ -43,10 +44,18 @@ export default async function DashboardPage() {
   const session = await auth();
   const runningTimerCount = await getRunningTimerCountForUser(userId, orgId);
   const subscription = await getActiveSubscriptionForUser(userId, orgId);
+  const productContext = await getProductUiContext(userId, orgId);
   const currentPlan = isPlanCode(subscription?.plan) ? subscription.plan : null;
   const currentPlanName = currentPlan ? PLAN_NAMES[currentPlan] : "your current plan";
   const firstName = session?.user?.name?.split(" ")[0] ?? "there";
   const runningLabel = runningTimerCount === 1 ? "timer" : "timers";
+  const visibleWorkTiles = productContext.showLockedProducts ? workTiles : workTiles.filter((tile) => canUseFeature(currentPlan, tile.feature));
+  const flowSteps = [
+    { label: "Capture", text: "Start or resume timers as work happens.", href: "/timer", feature: null },
+    { label: "Review", text: "Check timesheets before billing.", href: "/timesheet", feature: null },
+    { label: "Bill", text: "Prepare invoices from approved work.", href: "/invoices", feature: "invoicing" }
+  ].filter((step) => productContext.showLockedProducts || canUseFeature(currentPlan, step.feature as PlanFeature | null));
+  const showMissionPanel = productContext.showLockedProducts || canUseFeature(currentPlan, "shifts");
 
   return (
     <section className="space-y-5">
@@ -94,7 +103,7 @@ export default async function DashboardPage() {
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="grid gap-5">
           <div className="grid auto-rows-[156px] content-start gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-            {workTiles.map((tile) => {
+            {visibleWorkTiles.map((tile) => {
               const Icon = tile.icon;
               const locked = !canUseFeature(currentPlan, tile.feature);
               const requiredProduct = requiredProductLabel(tile.feature);
@@ -121,7 +130,7 @@ export default async function DashboardPage() {
                     <p className={locked ? "text-base font-semibold leading-tight text-foreground dark:text-white" : "text-base font-semibold leading-tight"}>{tile.label}</p>
                     <p className="mt-1 text-xs leading-4 text-muted-foreground">{tile.note}</p>
                   </div>
-                  {locked ? (
+                  {locked && productContext.showUpgradePrompts ? (
                     <Link
                       href={upgradeHref}
                       className="inline-flex h-7 w-fit items-center gap-2 rounded-md bg-primary px-2.5 text-xs font-semibold text-white transition hover:bg-[#3b5243]"
@@ -129,7 +138,7 @@ export default async function DashboardPage() {
                       <LockKeyhole className="h-3 w-3" />
                       {requiredProduct}
                     </Link>
-                  ) : null}
+                  ) : locked ? <span className="inline-flex h-7 w-fit items-center gap-2 rounded-md bg-cream px-2.5 text-xs font-semibold text-primary"><LockKeyhole className="h-3 w-3" /> Locked</span> : null}
                 </div>
               );
 
@@ -160,11 +169,7 @@ export default async function DashboardPage() {
               </div>
 
               <div className="mt-6 grid gap-3">
-                {[
-                  { label: "Capture", text: "Start or resume timers as work happens.", href: "/timer", feature: null },
-                  { label: "Review", text: "Check timesheets before billing.", href: "/timesheet", feature: null },
-                  { label: "Bill", text: "Prepare invoices from approved work.", href: "/invoices", feature: "invoicing" }
-                ].map((step, index) => {
+                {flowSteps.map((step, index) => {
                   const locked = !canUseFeature(currentPlan, step.feature as PlanFeature | null);
                   const requiredProduct = requiredProductLabel(step.feature as PlanFeature | null);
                   const rowClassName = locked
@@ -194,7 +199,7 @@ export default async function DashboardPage() {
               </div>
             </section>
 
-            <section className="rounded-md border border-border bg-[#2f4135] p-5 text-white">
+            {showMissionPanel ? <section className="rounded-md border border-border bg-[#2f4135] p-5 text-white">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-cream">Mission Command</p>
                 <MessageSquareText className="h-5 w-5 text-secondary" />
@@ -211,7 +216,7 @@ export default async function DashboardPage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </section> : null}
           </div>
         </div>
 
@@ -232,7 +237,7 @@ export default async function DashboardPage() {
             </div>
           </section>
 
-          <ProductRecommendations currentPlan={subscription?.plan} context="dashboard" compact />
+          {productContext.showUpgradePrompts ? <ProductRecommendations currentPlan={subscription?.plan} context="dashboard" compact /> : null}
         </aside>
       </div>
     </section>

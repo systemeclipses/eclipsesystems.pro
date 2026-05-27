@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  index,
   integer,
   jsonb,
   numeric,
@@ -564,6 +565,21 @@ export const missionShiftSwaps = pgTable("mission_shift_swaps", {
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
 });
 
+export const missionAvailability = pgTable("mission_availability", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  membershipId: uuid("membership_id").notNull().references(() => memberships.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(),
+  startsAtTime: text("starts_at_time"),
+  endsAtTime: text("ends_at_time"),
+  available: boolean("available").notNull().default(true),
+  effectiveFrom: date("effective_from", { mode: "date" }),
+  effectiveTo: date("effective_to", { mode: "date" }),
+  notes: text("notes"),
+  status: text("status").$type<"pending" | "approved" | "denied">().notNull().default("approved"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+});
+
 export const missionChannels = pgTable("mission_channels", {
   id: uuid("id").defaultRandom().primaryKey(),
   organizationId: uuid("organization_id").notNull(),
@@ -696,6 +712,579 @@ export const missionAuditEvents = pgTable("mission_audit_events", {
   metadata: jsonb("metadata").notNull().default({}),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
 });
+
+export const missionShiftTemplates = pgTable("mission_shift_templates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  roleName: text("role_name"),
+  siteId: uuid("site_id"),
+  startsAtTime: text("starts_at_time").notNull(),
+  endsAtTime: text("ends_at_time").notNull(),
+  breakMinutes: integer("break_minutes").notNull().default(0),
+  paidBreak: boolean("paid_break").notNull().default(false),
+  defaultNotes: text("default_notes"),
+  color: text("color"),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const missionScheduleTemplates = pgTable("mission_schedule_templates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  templateData: jsonb("template_data").notNull().default({ shifts: [] }),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const missionTaskTemplates = pgTable("mission_task_templates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  priority: text("priority").$type<"low" | "normal" | "high" | "urgent">().notNull().default("normal"),
+  requirePhoto: boolean("require_photo").notNull().default(false),
+  requireNote: boolean("require_note").notNull().default(false),
+  subtasks: jsonb("subtasks").notNull().default([]),
+  assigneeRule: jsonb("assignee_rule").notNull().default({ type: "manual" }),
+  recurrenceRule: jsonb("recurrence_rule"),
+  dueRule: text("due_rule").notNull().default("fixed"),
+  dueOffsetMinutes: integer("due_offset_minutes").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const missionSmsVerificationCodes = pgTable("mission_sms_verification_codes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  membershipId: uuid("membership_id").notNull().references(() => memberships.id, { onDelete: "cascade" }),
+  phoneNumber: text("phone_number").notNull(),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  consumedAt: timestamp("consumed_at", { mode: "date" }),
+  attempts: integer("attempts").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(5),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const missionSmsMessages = pgTable("mission_sms_messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  membershipId: uuid("membership_id").references(() => memberships.id, { onDelete: "set null" }),
+  direction: text("direction").$type<"in" | "out">().notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  body: text("body").notNull(),
+  channelId: uuid("channel_id").references(() => missionChannels.id, { onDelete: "set null" }),
+  messageId: uuid("message_id").references(() => missionMessages.id, { onDelete: "set null" }),
+  provider: text("provider").notNull().default("twilio"),
+  providerSid: text("provider_sid"),
+  providerStatus: text("provider_status"),
+  sentAt: timestamp("sent_at", { mode: "date" }),
+  deliveredAt: timestamp("delivered_at", { mode: "date" }),
+  failedAt: timestamp("failed_at", { mode: "date" }),
+  failureReason: text("failure_reason"),
+  receivedAt: timestamp("received_at", { mode: "date" }),
+  parsedCommand: text("parsed_command"),
+  segmentCount: integer("segment_count"),
+  costCents: numeric("cost_cents", { precision: 8, scale: 4 }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const missionSkills = pgTable("mission_skills", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category"),
+  requiresExpiration: boolean("requires_expiration").notNull().default(false),
+  expirationWarningDays: integer("expiration_warning_days").notNull().default(30),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const missionMembershipSkills = pgTable("mission_membership_skills", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  membershipId: uuid("membership_id").notNull().references(() => memberships.id, { onDelete: "cascade" }),
+  skillId: uuid("skill_id").notNull().references(() => missionSkills.id, { onDelete: "cascade" }),
+  certifiedAt: date("certified_at", { mode: "date" }),
+  expiresAt: date("expires_at", { mode: "date" }),
+  documentUrl: text("document_url"),
+  verifiedByMembershipId: uuid("verified_by_membership_id"),
+  verifiedAt: timestamp("verified_at", { mode: "date" }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const integrationConnections = pgTable("integration_connections", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  providerCategory: text("provider_category").notNull(),
+  displayName: text("display_name"),
+  externalAccountId: text("external_account_id"),
+  config: jsonb("config").notNull().default({}),
+  state: text("state").$type<"active" | "paused" | "error" | "disconnected">().notNull().default("active"),
+  lastError: text("last_error"),
+  lastErrorAt: timestamp("last_error_at", { mode: "date" }),
+  lastSyncAt: timestamp("last_sync_at", { mode: "date" }),
+  lastHealthCheckAt: timestamp("last_health_check_at", { mode: "date" }),
+  healthStatus: text("health_status"),
+  connectedByMembershipId: uuid("connected_by_membership_id"),
+  connectedAt: timestamp("connected_at", { mode: "date" }).notNull().defaultNow(),
+  disconnectedAt: timestamp("disconnected_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const integrationCredentials = pgTable("integration_credentials", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  connectionId: uuid("connection_id").notNull().references(() => integrationConnections.id, { onDelete: "cascade" }),
+  credentialType: text("credential_type").notNull(),
+  encryptedData: text("encrypted_data").notNull(),
+  encryptionKeyId: text("encryption_key_id").notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }),
+  scopes: jsonb("scopes").notNull().default([]),
+  lastRotatedAt: timestamp("last_rotated_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const integrationMappings = pgTable("integration_mappings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  entityType: text("entity_type").notNull(),
+  localId: uuid("local_id").notNull(),
+  remoteId: text("remote_id").notNull(),
+  remoteData: jsonb("remote_data").notNull().default({}),
+  syncDirection: text("sync_direction").$type<"local_to_remote" | "remote_to_local" | "bidirectional">().notNull().default("bidirectional"),
+  lastSyncedAt: timestamp("last_synced_at", { mode: "date" }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const payrollSubmissions = pgTable("payroll_submissions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  payPeriodId: uuid("pay_period_id").references(() => payPeriods.id, { onDelete: "set null" }),
+  providerId: text("provider_id").notNull(),
+  submittedByMembershipId: uuid("submitted_by_membership_id"),
+  state: text("state").$type<"queued" | "submitted" | "processed" | "failed" | "partial">().notNull().default("queued"),
+  recordsCount: integer("records_count").notNull().default(0),
+  recordsFailed: integer("records_failed").notNull().default(0),
+  providerReference: text("provider_reference"),
+  requestPayload: jsonb("request_payload"),
+  responsePayload: jsonb("response_payload"),
+  errorMessage: text("error_message"),
+  submittedAt: timestamp("submitted_at", { mode: "date" }).notNull().defaultNow(),
+  completedAt: timestamp("completed_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const webhookSubscriptions = pgTable("webhook_subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  name: text("name").notNull(),
+  endpointUrl: text("endpoint_url").notNull(),
+  eventTypes: jsonb("event_types").notNull().default([]),
+  secretHash: text("secret_hash").notNull(),
+  active: boolean("active").notNull().default(true),
+  maxRetries: integer("max_retries").notNull().default(5),
+  retryBackoffSeconds: integer("retry_backoff_seconds").notNull().default(30),
+  lastDeliveredAt: timestamp("last_delivered_at", { mode: "date" }),
+  lastFailedAt: timestamp("last_failed_at", { mode: "date" }),
+  consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+  createdByMembershipId: uuid("created_by_membership_id"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const webhookDeliveries = pgTable("webhook_deliveries", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  subscriptionId: uuid("subscription_id").notNull().references(() => webhookSubscriptions.id, { onDelete: "cascade" }),
+  eventType: text("event_type").notNull(),
+  eventId: text("event_id").notNull(),
+  payload: jsonb("payload").notNull().default({}),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  nextRetryAt: timestamp("next_retry_at", { mode: "date" }),
+  lastAttemptedAt: timestamp("last_attempted_at", { mode: "date" }),
+  responseStatus: integer("response_status"),
+  responseBody: text("response_body"),
+  responseTimeMs: integer("response_time_ms"),
+  state: text("state").$type<"pending" | "delivered" | "failed" | "abandoned">().notNull().default("pending"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at", { mode: "date" })
+});
+
+export const oauthApps = pgTable("oauth_apps", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  clientId: text("client_id").notNull(),
+  clientSecretEncrypted: text("client_secret_encrypted").notNull(),
+  redirectUri: text("redirect_uri").notNull(),
+  scopes: jsonb("scopes").notNull().default([]),
+  enabled: boolean("enabled").notNull().default(true),
+  displayName: text("display_name"),
+  description: text("description"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const notificationPreferences = pgTable("notification_preferences", {
+  membershipId: uuid("membership_id").primaryKey().references(() => memberships.id, { onDelete: "cascade" }),
+  organizationId: uuid("organization_id").notNull(),
+  preferences: jsonb("preferences").notNull().default({}),
+  quietHoursEnabled: boolean("quiet_hours_enabled").notNull().default(true),
+  quietHoursStart: text("quiet_hours_start").notNull().default("21:00"),
+  quietHoursEnd: text("quiet_hours_end").notNull().default("07:00"),
+  quietHoursTimezone: text("quiet_hours_timezone"),
+  emergencyBypassQuietHours: boolean("emergency_bypass_quiet_hours").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const pushTokens = pgTable("push_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  membershipId: uuid("membership_id").notNull().references(() => memberships.id, { onDelete: "cascade" }),
+  organizationId: uuid("organization_id").notNull(),
+  token: text("token").notNull(),
+  platform: text("platform").$type<"ios" | "android" | "web">().notNull(),
+  deviceId: text("device_id"),
+  deviceName: text("device_name"),
+  appVersion: text("app_version"),
+  active: boolean("active").notNull().default(true),
+  registeredAt: timestamp("registered_at", { mode: "date" }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { mode: "date" }).notNull().defaultNow(),
+  deactivatedAt: timestamp("deactivated_at", { mode: "date" })
+});
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  membershipId: uuid("membership_id").notNull().references(() => memberships.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  category: text("category").notNull(),
+  title: text("title").notNull(),
+  body: text("body"),
+  actionUrl: text("action_url"),
+  actionLabel: text("action_label"),
+  relatedEntityType: text("related_entity_type"),
+  relatedEntityId: uuid("related_entity_id"),
+  priority: text("priority").$type<"low" | "normal" | "high" | "emergency">().notNull().default("normal"),
+  readAt: timestamp("read_at", { mode: "date" }),
+  archivedAt: timestamp("archived_at", { mode: "date" }),
+  deliveredVia: jsonb("delivered_via").notNull().default({}),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const apiKeys = pgTable("api_keys", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  keyPrefix: text("key_prefix").notNull(),
+  keyHash: text("key_hash").notNull(),
+  scopes: jsonb("scopes").notNull().default([]),
+  allowedIps: jsonb("allowed_ips").notNull().default([]),
+  rateLimitPerMinute: integer("rate_limit_per_minute").notNull().default(100),
+  createdByMembershipId: uuid("created_by_membership_id"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  lastUsedAt: timestamp("last_used_at", { mode: "date" }),
+  expiresAt: timestamp("expires_at", { mode: "date" }),
+  revokedAt: timestamp("revoked_at", { mode: "date" }),
+  revokedByMembershipId: uuid("revoked_by_membership_id")
+});
+
+export const jobRuns = pgTable("job_runs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id"),
+  jobName: text("job_name").notNull(),
+  state: text("state").$type<"queued" | "running" | "completed" | "failed" | "cancelled">().notNull().default("queued"),
+  queuedAt: timestamp("queued_at", { mode: "date" }).notNull().defaultNow(),
+  startedAt: timestamp("started_at", { mode: "date" }),
+  completedAt: timestamp("completed_at", { mode: "date" }),
+  recordsProcessed: integer("records_processed").notNull().default(0),
+  recordsFailed: integer("records_failed").notNull().default(0),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata").notNull().default({}),
+  scheduledFor: timestamp("scheduled_for", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const productEntitlements = pgTable("product_entitlements", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull(),
+  product: text("product").$type<"timekeeping" | "eclipse" | "mission_command" | "legal_addon">().notNull(),
+  status: text("status").$type<"active" | "trial" | "expired" | "suspended">().notNull().default("active"),
+  acquiredVia: text("acquired_via").$type<"individual" | "suite" | "trial" | "partner_bundle">().notNull().default("individual"),
+  features: jsonb("features").notNull().default([]),
+  trialEndsAt: timestamp("trial_ends_at", { mode: "date" }),
+  startsAt: timestamp("starts_at", { mode: "date" }).notNull().defaultNow(),
+  endsAt: timestamp("ends_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const billingPermissionGrants = pgTable(
+  "billing_permission_grants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    membershipId: uuid("membership_id")
+      .notNull()
+      .references(() => memberships.id, { onDelete: "cascade" }),
+    permission: text("permission").$type<
+      | "billing.view"
+      | "billing.usage.view"
+      | "billing.payment.update"
+      | "billing.plan.modify"
+      | "billing.cancel"
+      | "billing.owner"
+    >().notNull(),
+    grantedByMembershipId: uuid("granted_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { mode: "date" }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { mode: "date" }),
+    revokedByMembershipId: uuid("revoked_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    revokeReason: text("revoke_reason")
+  },
+  (grant) => ({
+    membershipIdx: index("billing_permission_grants_membership_idx").on(grant.membershipId)
+  })
+);
+
+export const permissionRoles = pgTable(
+  "permission_roles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    roleKey: text("role_key").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    kind: text("kind").$type<"built_in" | "custom">().notNull().default("custom"),
+    baseRole: text("base_role").$type<"owner" | "admin" | "manager" | "team_lead" | "employee">(),
+    color: text("color"),
+    icon: text("icon"),
+    defaultScopeType: text("default_scope_type").$type<"self" | "direct_reports" | "department" | "site" | "role" | "custom_group" | "all">().notNull().default("self"),
+    defaultScopeConfig: jsonb("default_scope_config").notNull().default({}),
+    createdByMembershipId: uuid("created_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { mode: "date" })
+  },
+  (role) => ({
+    orgIdx: index("permission_roles_org_idx").on(role.organizationId, role.kind)
+  })
+);
+
+export const permissionGrants = pgTable(
+  "permission_grants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    roleId: uuid("role_id").references(() => permissionRoles.id, { onDelete: "cascade" }),
+    membershipId: uuid("membership_id").references(() => memberships.id, { onDelete: "cascade" }),
+    permission: text("permission").notNull(),
+    effect: text("effect").$type<"allow" | "deny">().notNull().default("allow"),
+    scopeType: text("scope_type").$type<"self" | "direct_reports" | "department" | "site" | "role" | "custom_group" | "all">().notNull().default("self"),
+    scopeConfig: jsonb("scope_config").notNull().default({}),
+    reason: text("reason"),
+    grantedByMembershipId: uuid("granted_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { mode: "date" }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { mode: "date" }),
+    revokedByMembershipId: uuid("revoked_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    revokeReason: text("revoke_reason")
+  },
+  (grant) => ({
+    roleIdx: index("permission_grants_role_idx").on(grant.roleId, grant.permission),
+    membershipIdx: index("permission_grants_membership_idx").on(grant.membershipId, grant.permission),
+    orgIdx: index("permission_grants_org_idx").on(grant.organizationId, grant.permission)
+  })
+);
+
+export const permissionCustomGroups = pgTable("permission_custom_groups", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdByMembershipId: uuid("created_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const permissionCustomGroupMembers = pgTable(
+  "permission_custom_group_members",
+  {
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => permissionCustomGroups.id, { onDelete: "cascade" }),
+    membershipId: uuid("membership_id")
+      .notNull()
+      .references(() => memberships.id, { onDelete: "cascade" }),
+    addedByMembershipId: uuid("added_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    addedAt: timestamp("added_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (member) => ({
+    compoundKey: primaryKey({ columns: [member.groupId, member.membershipId] }),
+    membershipIdx: index("permission_custom_group_members_membership_idx").on(member.membershipId)
+  })
+);
+
+export const ownershipTransferRequests = pgTable(
+  "ownership_transfer_requests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    fromMembershipId: uuid("from_membership_id")
+      .notNull()
+      .references(() => memberships.id, { onDelete: "cascade" }),
+    toMembershipId: uuid("to_membership_id")
+      .notNull()
+      .references(() => memberships.id, { onDelete: "cascade" }),
+    reason: text("reason"),
+    state: text("state").$type<"pending" | "accepted" | "declined" | "expired" | "cancelled">().notNull().default("pending"),
+    requestedAt: timestamp("requested_at", { mode: "date" }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+    decidedAt: timestamp("decided_at", { mode: "date" })
+  },
+  (request) => ({
+    pendingIdx: index("ownership_transfer_requests_pending_idx").on(request.organizationId, request.expiresAt)
+  })
+);
+
+export const securitySettings = pgTable("security_settings", {
+  organizationId: uuid("organization_id")
+    .primaryKey()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  requireMfaForAdmins: boolean("require_mfa_for_admins").notNull().default(true),
+  requireMfaForAll: boolean("require_mfa_for_all").notNull().default(false),
+  enforceStrongPasswords: boolean("enforce_strong_passwords").notNull().default(true),
+  blockNonUsSignins: boolean("block_non_us_signins").notNull().default(false),
+  idleTimeoutDays: integer("idle_timeout_days").notNull().default(30),
+  absoluteTimeoutDays: integer("absolute_timeout_days").notNull().default(90),
+  ssoProvider: text("sso_provider"),
+  ssoStatus: text("sso_status").$type<"not_configured" | "active" | "error" | "paused">().notNull().default("not_configured"),
+  allowEmployeeDataExports: boolean("allow_employee_data_exports").notNull().default(true),
+  notifySuspiciousSignins: boolean("notify_suspicious_signins").notNull().default(true),
+  dataResidency: text("data_residency").notNull().default("US East"),
+  logRetentionHotDays: integer("log_retention_hot_days").notNull().default(90),
+  logRetentionColdYears: integer("log_retention_cold_years").notNull().default(7),
+  updatedByMembershipId: uuid("updated_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+});
+
+export const securityEvents = pgTable(
+  "security_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    actorMembershipId: uuid("actor_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    eventType: text("event_type").notNull(),
+    severity: text("severity").$type<"info" | "warning" | "error" | "critical">().notNull().default("info"),
+    outcome: text("outcome").$type<"success" | "failure" | "blocked" | "partial">().notNull().default("success"),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    traceId: text("trace_id"),
+    requestId: text("request_id"),
+    metadata: jsonb("metadata").notNull().default({}),
+    hashPrevious: text("hash_previous"),
+    hashCurrent: text("hash_current"),
+    occurredAt: timestamp("occurred_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (event) => ({
+    orgTimeIdx: index("security_events_org_time_idx").on(event.organizationId, event.occurredAt),
+    typeIdx: index("security_events_type_idx").on(event.organizationId, event.eventType, event.occurredAt),
+    severityIdx: index("security_events_severity_idx").on(event.organizationId, event.severity, event.occurredAt)
+  })
+);
+
+export const observabilityServiceChecks = pgTable(
+  "observability_service_checks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    serviceName: text("service_name").notNull(),
+    environment: text("environment").notNull().default("production"),
+    status: text("status").$type<"ok" | "degraded" | "down" | "maintenance">().notNull(),
+    latencyP95Ms: integer("latency_p95_ms"),
+    errorRateBasisPoints: integer("error_rate_basis_points"),
+    saturationBasisPoints: integer("saturation_basis_points"),
+    checkedAt: timestamp("checked_at", { mode: "date" }).notNull().defaultNow(),
+    metadata: jsonb("metadata").notNull().default({})
+  },
+  (check) => ({
+    serviceIdx: index("observability_service_checks_service_idx").on(check.serviceName, check.environment, check.checkedAt)
+  })
+);
+
+export const observabilitySyntheticMonitors = pgTable(
+  "observability_synthetic_monitors",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    serviceName: text("service_name").notNull(),
+    cadenceMinutes: integer("cadence_minutes").notNull().default(5),
+    status: text("status").$type<"passing" | "failing" | "paused">().notNull().default("passing"),
+    lastRunAt: timestamp("last_run_at", { mode: "date" }),
+    lastDurationMs: integer("last_duration_ms"),
+    lastError: text("last_error"),
+    runbookUrl: text("runbook_url"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (monitor) => ({
+    statusIdx: index("observability_synthetic_monitors_status_idx").on(monitor.status, monitor.serviceName)
+  })
+);
+
+export const observabilityIncidents = pgTable(
+  "observability_incidents",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    severity: text("severity").$type<"sev_0" | "sev_1" | "sev_2" | "sev_3" | "sev_4">().notNull(),
+    status: text("status").$type<"investigating" | "identified" | "monitoring" | "resolved">().notNull().default("investigating"),
+    affectedServices: text("affected_services").array().notNull().default([]),
+    customerImpact: text("customer_impact"),
+    startedAt: timestamp("started_at", { mode: "date" }).notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at", { mode: "date" }),
+    runbookUrl: text("runbook_url"),
+    postmortemUrl: text("postmortem_url"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (incident) => ({
+    statusIdx: index("observability_incidents_status_idx").on(incident.status, incident.severity, incident.startedAt)
+  })
+);
 
 export const subscriptions = pgTable("subscriptions", {
   id: uuid("id").defaultRandom().primaryKey(),

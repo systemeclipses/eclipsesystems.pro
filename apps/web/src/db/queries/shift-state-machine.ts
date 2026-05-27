@@ -175,7 +175,7 @@ export async function transitionShift(event: PunchEvent, payload: PunchPayload) 
         deviceInfo: payload.deviceInfo ?? null,
         reviewFlag: flags[0] ?? null,
         source: "timer",
-        status: flags.length ? "flagged" : "draft"
+        status: "draft"
       })
       .returning({ id: timeEntries.id });
 
@@ -224,7 +224,7 @@ export async function transitionShift(event: PunchEvent, payload: PunchPayload) 
           durationSeconds,
           endedLocation: payload.location ? { ...payload.location, outsideGeofence: flags.some((flag) => flag.includes("geofence")) } : null,
           reviewFlag: flags[0] ?? currentShift.flagReason,
-          status: flags.length || currentShift.flagReason ? "flagged" : "draft"
+          status: "draft"
         })
         .where(eq(timeEntries.id, currentShift.timeEntryId));
 

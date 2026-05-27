@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "open http://localhost:3000 && next dev --port 3000",
+    "dev": "next dev --port 3000",
+    "dev:open": "open http://localhost:3000 && next dev --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -92,6 +92,41 @@
       "when": 1780416000000,
       "tag": "0012_mission_command",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1780502400000,
+      "tag": "0013_platform_infrastructure",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1780588800000,
+      "tag": "0014_product_entitlements",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1780675200000,
+      "tag": "0015_billing_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1780761600000,
+      "tag": "0016_role_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1780848000000,
+      "tag": "0017_observability_security",
+      "breakpoints": true
     }
   ]
 }

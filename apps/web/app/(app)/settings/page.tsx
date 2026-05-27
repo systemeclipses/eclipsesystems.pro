@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, BadgeDollarSign, Building2, CalendarClock, CreditCard, ShieldCheck, UserRound, UsersRound } from "lucide-react";
+import { ArrowRight, BadgeDollarSign, Building2, CalendarClock, CreditCard, LockKeyhole, RadioTower, ShieldCheck, UserCog, UserRound, UsersRound } from "lucide-react";
 import { PageHeader } from "@/components/app/page-shell";
+import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
+import { PRODUCT_DETAILS, getProductUiContext } from "@/src/billing/entitlements";
 
 const settings = [
   {
@@ -20,6 +22,18 @@ const settings = [
     description: "Workspace access, roles, and member visibility.",
     href: "/settings/members",
     icon: UsersRound
+  },
+  {
+    title: "Roles & Permissions",
+    description: "Built-in roles, custom roles, scopes, access reviews, and audit trails.",
+    href: "/settings/roles",
+    icon: UserCog
+  },
+  {
+    title: "Security & Observability",
+    description: "MFA, SSO, audit logs, service health, synthetic monitoring, and incident controls.",
+    href: "/settings/security",
+    icon: RadioTower
   },
   {
     title: "Billing",
@@ -47,7 +61,12 @@ const settings = [
   }
 ] as const;
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const userId = await getAuthenticatedUserId();
+  const orgId = await getActiveOrgId();
+  const context = await getProductUiContext(userId, orgId);
+  const visibleSettings = settings.filter((item) => item.href !== "/settings/billing" || context.showBilling);
+
   return (
     <section className="space-y-5">
       <PageHeader
@@ -57,7 +76,7 @@ export default function SettingsPage() {
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {settings.map((item) => {
+        {visibleSettings.map((item) => {
           const Icon = item.icon;
 
           return (
@@ -81,6 +100,44 @@ export default function SettingsPage() {
           );
         })}
       </div>
+
+      {context.showMarketplace ? (
+        <section className="rounded-md border border-border bg-white/65 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-primary">Products & Plans</p>
+              <h2 className="mt-2 text-2xl font-semibold">Your product lineup</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Active products are available to the team. Locked products stay visible here for admins only.
+              </p>
+            </div>
+            <Link href="/settings/billing" className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary">
+              Manage billing <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {(["timekeeping", "eclipse", "mission_command", "legal_addon"] as const).map((product) => {
+              const active = context.entitledProducts.includes(product);
+              const detail = PRODUCT_DETAILS[product];
+              return (
+                <div key={product} className={`rounded-md border p-4 ${active ? "border-primary/25 bg-cream/70" : "border-border bg-white"}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className={`font-semibold ${detail.accentClass}`}>{detail.shortName}</p>
+                    {active ? <span className="rounded-sm bg-green-50 px-2 py-1 text-xs font-semibold text-green-700">Active</span> : <LockKeyhole className="h-4 w-4 text-muted-foreground" />}
+                  </div>
+                  <p className="mt-3 text-sm leading-5 text-muted-foreground">{detail.description}</p>
+                  {!active ? <Link href={`/settings/billing?product=${product}`} className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</Link> : null}
+                </div>
+              );
+            })}
+          </div>
+          {context.suiteSavingsMonthlyCents > 0 && !context.isSuite ? (
+            <p className="mt-4 rounded-md bg-secondary/70 p-3 text-sm font-semibold text-primary">
+              Suite pricing is ${context.suiteSavingsMonthlyCents / 100}/seat/month less than buying Timekeeping, Eclipse, and Mission Command separately.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
     </section>
   );
 }

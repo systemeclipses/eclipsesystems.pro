@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { auditLog, holidays, memberships, profiles, ptoBalances, ptoCategories, ptoRequests, timeEntries } from "@/src/db/schema";
 import { getMembershipForUser, getTimeEntrySeconds } from "./time-entries";
@@ -207,7 +207,7 @@ export async function calculateTimesheetForMembership(input: {
       breaks: [] as Array<{ start: string; end: string; paid: boolean }>,
       pto,
       holiday: null as null | { name: string; multiplier: number },
-      status: punches.some((entry) => entry.status === "flagged" || entry.review_flag) ? "flagged" : punches.length || pto.length ? "pending" : "open"
+      status: punches.some((entry) => entry.review_flag) ? "flagged" : punches.length || pto.length ? "pending" : "open"
     });
   }
 
@@ -222,7 +222,7 @@ export async function calculateTimesheetForMembership(input: {
   const ptoPay = paidPtoHours * rate;
   const holidayHours = 0;
   const holidayPay = 0;
-  const flagged = periodPunches.some((entry) => entry.status === "flagged" || entry.review_flag);
+  const flagged = periodPunches.some((entry) => entry.review_flag);
   const status = flagged ? "flagged" : period.end > new Date() ? "open" : "pending";
 
   return {
@@ -312,7 +312,7 @@ export async function getManagerTimekeepingQueue(organizationId: string) {
     .from(timeEntries)
     .innerJoin(memberships, eq(memberships.id, timeEntries.membershipId))
     .innerJoin(profiles, eq(profiles.id, memberships.userId))
-    .where(and(eq(timeEntries.organizationId, organizationId), eq(timeEntries.status, "flagged"), isNull(timeEntries.deletedAt)))
+    .where(and(eq(timeEntries.organizationId, organizationId), isNotNull(timeEntries.reviewFlag), isNull(timeEntries.deletedAt)))
     .orderBy(desc(timeEntries.startedAt))
     .limit(25);
 
