@@ -1,0 +1,36 @@
+name: Scheduled Tasks
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Every 10 minutes
+    - cron: '0 1-4 * * *'  # Hourly between 1 AM and 4 AM UTC for daily jobs
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Clock-Out (Every 10m)
+        run: |
+          curl -f -X GET "https://eclipsesystems.pro/api/cron/auto-clock-out" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Process Jobs (Every 10m)
+        run: |
+          curl -f -X GET "https://eclipsesystems.pro/api/cron/process-jobs" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Daily PTO Accruals
+        if: github.event.schedule == '0 1 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -f -X GET "https://eclipsesystems.pro/api/cron/monthly-accrual" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+          curl -f -X GET "https://eclipsesystems.pro/api/cron/anniversary-accrual" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Carryover Check
+        if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -f -X GET "https://eclipsesystems.pro/api/cron/carryover-check" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Expiring PTO Warning
+        if: github.event.schedule == '0 4 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -f -X GET "https://eclipsesystems.pro/api/cron/expiring-pto-warning" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
