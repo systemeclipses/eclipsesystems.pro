@@ -19,9 +19,8 @@ import {
   RefreshCw,
   X
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type PlanTier, isFeatureLocked, isRoleLocked } from "@/lib/permissions/plan-config";
+import { type PlanTier, isFeatureLocked, isRoleLocked } from "@/lib/permissions";
 
 type BuiltInRoleKey = "owner" | "admin" | "manager" | "team_lead" | "employee";
 type ModalKind = "role" | "customize" | "builder" | "assign" | "bulk" | "groups" | "audit" | "transfer" | null;
