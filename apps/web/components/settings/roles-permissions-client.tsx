@@ -19,6 +19,7 @@ import {
   RefreshCw,
   X
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type PlanTier, isFeatureLocked, isRoleLocked } from "@/lib/permissions";
 
@@ -120,7 +121,7 @@ const rolePermissions: Record<BuiltInRoleKey, Record<string, string[]>> = {
   }
 };
 
-export function RolesPermissionsClient({ members, roleCounts, customRoles, customGroups, canManage, canTransferOwnership, currentPlan = "starter" }: {
+export function RolesPermissionsClient({ members, roleCounts, customRoles, customGroups, canManage, canTransferOwnership, currentPlan = "timekeeping" }: {
   members: Member[];
   roleCounts: Record<string, number>;
   customRoles: CustomRole[];
@@ -300,7 +301,7 @@ function SectionTitle({ title, subtitle }: { title: string; subtitle: string }) 
   );
 }
 
-function RoleRow({ title, description, count, badge, locked, custom, onView, onCustomize }: {
+function RoleRow({ title, description, count, badge, locked, planLocked, custom, onView, onCustomize }: {
   title: string;
   description: string;
   count: number;
@@ -476,7 +477,7 @@ function CustomRoleBuilder({ expanded, setExpanded, departments }: { expanded: s
   );
 }
 
-function PermissionSections({ expanded, setExpanded, currentPlan = "legal" }: { expanded: string; setExpanded: (value: string) => void; currentPlan?: PlanTier }) {
+function PermissionSections({ expanded, setExpanded, currentPlan = "timekeeping" }: { expanded: string; setExpanded: (value: string) => void; currentPlan?: PlanTier }) {
   return (
     <div className="rounded-md border border-border">
       {categories.map((category) => {

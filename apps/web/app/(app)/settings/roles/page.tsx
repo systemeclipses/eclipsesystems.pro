@@ -19,6 +19,7 @@ export default async function RolesSettingsPage() {
       customGroups={overview.customGroups}
       canManage={context.role === "owner" || context.role === "admin"}
       canTransferOwnership={context.role === "owner"}
+      currentPlan={context.plan ?? "timekeeping"}
     />
   );
 }
