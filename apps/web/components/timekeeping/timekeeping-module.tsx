@@ -191,6 +191,22 @@ function formatDuration(totalSeconds: number) {
   return [h, m, s].map((value) => String(value).padStart(2, "0")).join(":");
 }
 
+function parseJson<T>(text: string): T | null {
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
+function responseErrorMessage(response: Response, text: string, fallback: string) {
+  const payload = parseJson<{ error?: string }>(text);
+  if (payload?.error) return payload.error;
+  const pageTitle = text.match(/<title>(.*?)<\/title>/i)?.[1]?.trim();
+  if (pageTitle) return `${fallback} (${response.status}: ${pageTitle})`;
+  return `${fallback} (${response.status})`;
+}
+
 export function TimekeepingModule({ running, entries, categories, requests, managerQueue, hasPtoToday, role, summary, paidBreaks, timesheet, teamTimesheets, managerV2, currentShift }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("clock");
@@ -289,6 +305,25 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
     setClockPending(true);
     setClockError(null);
     setClockNotice(null);
+    if (active) {
+      const currentResponse = await fetch("/api/punches/current", { cache: "no-store" });
+      if (currentResponse.ok) {
+        const current = parseJson<{ state?: typeof shiftState; current_break_start?: string | null }>(await currentResponse.text());
+        if (current?.state === "CLOCKED_OUT") {
+          setActive(null);
+          setBreakStartedAt(null);
+          setShiftState("CLOCKED_OUT");
+          setClockPending(false);
+          setClockNotice("You were already clocked out. The timer has been refreshed.");
+          router.refresh();
+          return;
+        }
+        if (current?.state) {
+          setShiftState(current.state);
+          setBreakStartedAt(current.current_break_start ?? null);
+        }
+      }
+    }
     const location = await getLocation();
     setGpsUnavailable(!location);
     const response = await fetch(active ? "/api/time-entries/stop" : "/api/time-entries/start", {
@@ -303,10 +338,11 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
         offline: !navigator.onLine
       })
     });
-    const payload = (await response.json().catch(() => null)) as { error?: string; current_state?: typeof shiftState; id?: string; started_at?: string; flags?: string[] } | null;
+    const responseText = await response.text();
+    const payload = parseJson<{ error?: string; current_state?: typeof shiftState; id?: string; started_at?: string; flags?: string[] }>(responseText);
     setClockPending(false);
     if (!response.ok) {
-      setClockError(payload && "error" in payload ? payload.error ?? "Unable to punch." : "Unable to punch.");
+      setClockError(payload?.error ?? responseErrorMessage(response, responseText, "Unable to punch."));
       return;
     }
 
