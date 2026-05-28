@@ -216,12 +216,10 @@ export async function transitionShift(event: PunchEvent, payload: PunchPayload) 
     await db.update(shifts).set(patch).where(eq(shifts.id, currentShift.id));
 
     if ((event === "CLOCK_OUT" || event === "AUTO_CLOCK_OUT" || event === "RESOLVE_FLAG") && currentShift.timeEntryId) {
-      const durationSeconds = Math.max(0, Math.floor((timestamp.getTime() - currentShift.startedAt.getTime()) / 1000));
       await db
         .update(timeEntries)
         .set({
           endedAt: timestamp,
-          durationSeconds,
           endedLocation: payload.location ? { ...payload.location, outsideGeofence: flags.some((flag) => flag.includes("geofence")) } : null,
           reviewFlag: flags[0] ?? currentShift.flagReason,
           status: "draft"

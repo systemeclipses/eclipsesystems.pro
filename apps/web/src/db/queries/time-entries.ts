@@ -101,12 +101,10 @@ export async function reconcileStaleRunningTimeEntries(input: {
     const endedAt = latestCompletedShift?.endedAt && latestCompletedShift.endedAt > entry.startedAt
       ? latestCompletedShift.endedAt
       : new Date();
-    const durationSeconds = Math.max(0, Math.floor((endedAt.getTime() - entry.startedAt.getTime()) / 1000));
     const [updated] = await db
       .update(timeEntries)
       .set({
-        endedAt,
-        durationSeconds
+        endedAt
       })
       .where(eq(timeEntries.id, entry.id))
       .returning({ id: timeEntries.id });
@@ -209,14 +207,12 @@ export async function stopTimerForUser(input: {
   if (!before) throw new Error("Running entry not found.");
 
   const endedAt = new Date();
-  const durationSeconds = Math.max(0, Math.floor((endedAt.getTime() - before.startedAt.getTime()) / 1000));
   const geofenceResult = await evaluateGeofence(input);
 
   const [after] = await db
     .update(timeEntries)
     .set({
       endedAt,
-      durationSeconds,
       endedLocation: input.location ? { ...input.location, outsideGeofence: geofenceResult.outsideGeofence } : null,
       punchNote: input.punchNote || before.punchNote,
       deviceInfo: input.deviceInfo || before.deviceInfo,
@@ -274,7 +270,6 @@ export async function createManualTimeEntryForUser(input: {
       description: input.description || null,
       startedAt: input.startedAt,
       endedAt: input.endedAt,
-      durationSeconds,
       punchNote: input.reason || null,
       source: "manual",
       status: "draft"
