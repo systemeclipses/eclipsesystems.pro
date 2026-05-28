@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/src/auth";
 import { getDefaultOrganizationForUser, getMembershipIdForUser } from "@/src/db/queries/organizations";
 import { transitionShift } from "@/src/db/queries/shift-state-machine";
+import { reconcileStaleRunningTimeEntries } from "@/src/db/queries/time-entries";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   try {
+    await reconcileStaleRunningTimeEntries({ organizationId, membershipId });
     const result = await transitionShift("CLOCK_IN", {
       userId,
       organizationId,

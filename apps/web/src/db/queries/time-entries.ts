@@ -1,6 +1,6 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { db } from "@/src/db";
-import { auditLog, geofenceAssignments, geofences, memberships, timeEntries } from "@/src/db/schema";
+import { auditLog, geofenceAssignments, geofences, memberships, shifts, timeEntries } from "@/src/db/schema";
 
 export type PunchLocation = { latitude: number; longitude: number; accuracy?: number | null; offline?: boolean };
 export type PunchDevice = { userAgent?: string | null; platform?: string | null; offline?: boolean };
@@ -44,6 +44,76 @@ export async function getRunningTimeEntryForUser(userId: string, organizationId:
     .limit(1);
 
   return entry ?? null;
+}
+
+export async function reconcileStaleRunningTimeEntries(input: {
+  organizationId: string;
+  membershipId: string;
+}) {
+  const [activeShift] = await db
+    .select({ id: shifts.id })
+    .from(shifts)
+    .where(
+      and(
+        eq(shifts.organizationId, input.organizationId),
+        eq(shifts.membershipId, input.membershipId),
+        isNull(shifts.deletedAt),
+        ne(shifts.state, "CLOCKED_OUT")
+      )
+    )
+    .limit(1);
+
+  if (activeShift) return [];
+
+  const runningEntries = await db
+    .select({
+      id: timeEntries.id,
+      startedAt: timeEntries.startedAt
+    })
+    .from(timeEntries)
+    .where(
+      and(
+        eq(timeEntries.organizationId, input.organizationId),
+        eq(timeEntries.membershipId, input.membershipId),
+        isNull(timeEntries.endedAt),
+        isNull(timeEntries.deletedAt)
+      )
+    );
+
+  if (!runningEntries.length) return [];
+
+  const [latestCompletedShift] = await db
+    .select({ endedAt: shifts.endedAt })
+    .from(shifts)
+    .where(
+      and(
+        eq(shifts.organizationId, input.organizationId),
+        eq(shifts.membershipId, input.membershipId),
+        eq(shifts.state, "CLOCKED_OUT"),
+        isNull(shifts.deletedAt)
+      )
+    )
+    .orderBy(desc(shifts.createdAt))
+    .limit(1);
+
+  const reconciled = [];
+  for (const entry of runningEntries) {
+    const endedAt = latestCompletedShift?.endedAt && latestCompletedShift.endedAt > entry.startedAt
+      ? latestCompletedShift.endedAt
+      : new Date();
+    const durationSeconds = Math.max(0, Math.floor((endedAt.getTime() - entry.startedAt.getTime()) / 1000));
+    const [updated] = await db
+      .update(timeEntries)
+      .set({
+        endedAt,
+        durationSeconds
+      })
+      .where(eq(timeEntries.id, entry.id))
+      .returning({ id: timeEntries.id });
+    reconciled.push(updated);
+  }
+
+  return reconciled;
 }
 
 export async function getAssignedGeofences(membershipId: string, organizationId: string) {
