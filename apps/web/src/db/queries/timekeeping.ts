@@ -1,6 +1,6 @@
 import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/src/db";
-import { auditLog, holidays, memberships, profiles, ptoBalances, ptoCategories, ptoRequests, timeEntries } from "@/src/db/schema";
+import { auditLog, holidays, memberships, profiles, ptoBalances, ptoCategories, ptoRequests, shifts, timeEntries } from "@/src/db/schema";
 import { getMembershipForUser, getTimeEntrySeconds } from "./time-entries";
 import type { TimekeepingSettings } from "./timekeeping-settings";
 import type { ValidationResult } from "./pto-validation";
@@ -42,7 +42,16 @@ export async function getTimekeepingOverview(userId: string, organizationId: str
     .orderBy(desc(timeEntries.startedAt))
     .limit(60);
 
-  const running = entries.find((entry) => !entry.ended_at) ?? null;
+  const [latestShift] = await db
+    .select()
+    .from(shifts)
+    .where(and(eq(shifts.organizationId, organizationId), eq(shifts.membershipId, membership.id), isNull(shifts.deletedAt)))
+    .orderBy(desc(shifts.createdAt))
+    .limit(1);
+
+  const running = latestShift && latestShift.state !== "CLOCKED_OUT"
+    ? entries.find((entry) => entry.id === latestShift.timeEntryId) ?? entries.find((entry) => !entry.ended_at) ?? null
+    : null;
   const categories = await db
     .select({
       id: ptoCategories.id,
