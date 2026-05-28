@@ -1,16 +1,31 @@
 import Link from "next/link";
-import { ArrowRight, BadgeDollarSign, Building2, CalendarClock, CreditCard, LockKeyhole, RadioTower, ShieldCheck, UserCog, UserRound, UsersRound } from "lucide-react";
+import { ArrowRight, BadgeDollarSign, Bell, Building2, CalendarClock, CreditCard, LockKeyhole, Monitor, PlugZap, RadioTower, ScrollText, ShieldCheck, UserCog, UserRound, UsersRound } from "lucide-react";
 import { PageHeader } from "@/components/app/page-shell";
 import { getActiveOrgId, getAuthenticatedUserId } from "@/lib/org";
 import { PRODUCT_DETAILS, getProductUiContext } from "@/src/billing/entitlements";
 
-const settings = [
+const personalSettings = [
   {
-    title: "Account",
-    description: "Profile details, user identity, and Appearance preferences.",
+    title: "Profile",
+    description: "Name, contact details, password, and account security.",
     href: "/settings/account",
     icon: UserRound
   },
+  {
+    title: "Notifications",
+    description: "Timekeeping, PTO, approval, and account notification preferences.",
+    href: "/settings/account#notifications",
+    icon: Bell
+  },
+  {
+    title: "Display",
+    description: "Timezone, language, theme, and display preferences.",
+    href: "/settings/account#display",
+    icon: Monitor
+  }
+] as const;
+
+const adminSettings = [
   {
     title: "Organization",
     description: "Workspace name, currency, timezone, and operating defaults.",
@@ -31,7 +46,7 @@ const settings = [
   },
   {
     title: "Security & Observability",
-    description: "MFA, SSO, audit logs, service health, synthetic monitoring, and incident controls.",
+    description: "MFA, SSO, service health, synthetic monitoring, and incident controls.",
     href: "/settings/security",
     icon: RadioTower
   },
@@ -54,6 +69,18 @@ const settings = [
     icon: CalendarClock
   },
   {
+    title: "Integrations",
+    description: "Connected systems, service hooks, and data exchange controls.",
+    href: "/settings/security",
+    icon: PlugZap
+  },
+  {
+    title: "Audit Log",
+    description: "Review important account, access, billing, and workflow events.",
+    href: "/settings/security",
+    icon: ScrollText
+  },
+  {
     title: "Admin",
     description: "Owner controls, audit visibility, and advanced workspace tools.",
     href: "/admin",
@@ -65,7 +92,8 @@ export default async function SettingsPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
   const context = await getProductUiContext(userId, orgId);
-  const visibleSettings = settings.filter((item) => item.href !== "/settings/billing" || context.showBilling);
+  const isAdminRole = context.role !== "employee";
+  const visibleAdminSettings = adminSettings.filter((item) => item.href !== "/settings/billing" || context.showBilling);
 
   return (
     <section className="space-y-5">
@@ -76,7 +104,7 @@ export default async function SettingsPage() {
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {visibleSettings.map((item) => {
+        {personalSettings.map((item) => {
           const Icon = item.icon;
 
           return (
@@ -100,6 +128,39 @@ export default async function SettingsPage() {
           );
         })}
       </div>
+
+      {isAdminRole ? (
+        <>
+          <div className="pt-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Organization controls</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {visibleAdminSettings.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  className="group flex min-h-44 flex-col justify-between rounded-md border border-border bg-white/65 p-5 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-white/80 hover:shadow-lg hover:shadow-primary/10 dark:hover:bg-white/10"
+                >
+                  <div>
+                    <div className="grid h-11 w-11 place-items-center rounded-sm bg-secondary text-primary">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h2 className="mt-5 text-xl font-semibold text-ink dark:text-white">{item.title}</h2>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary dark:text-secondary">
+                    Open {item.title}
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </>
+      ) : null}
 
       {context.showMarketplace ? (
         <section className="rounded-md border border-border bg-white/65 p-5">

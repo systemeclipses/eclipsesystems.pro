@@ -19,8 +19,9 @@ export default async function AccountSettingsPage() {
 
   return (
     <section className="space-y-5">
-      <PageHeader eyebrow="Personal settings" title="Account" description="Your profile information as Eclipse sees it today." />
+      <PageHeader eyebrow="Personal settings" title="Profile" description="Manage your identity, password, notifications, and display preferences." />
       <Surface>
+        <div id="profile" className="-mt-24 pt-24" />
         <div className="grid gap-4 md:grid-cols-3">
           <div>
             <p className="text-sm text-muted-foreground">Name</p>
@@ -37,7 +38,19 @@ export default async function AccountSettingsPage() {
         </div>
       </Surface>
       <PasswordSettings hasPassword={Boolean(credential)} />
-      <ThemeSettings />
+      <Surface>
+        <div id="notifications" className="-mt-24 pt-24" />
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Notifications</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">Timekeeping and PTO notification preferences will appear here as notification channels are connected.</p>
+          </div>
+          <span className="rounded-sm bg-secondary px-2 py-1 text-xs font-semibold text-primary">Coming soon</span>
+        </div>
+      </Surface>
+      <div id="display" className="-mt-24 pt-24">
+        <ThemeSettings />
+      </div>
     </section>
   );
 }

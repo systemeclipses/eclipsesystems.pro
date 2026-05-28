@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { AlertTriangle, Bell, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Coffee, FileDown, MapPin, MessageSquare, MoreHorizontal, Plus, Send, ShieldCheck, Sparkles, Square, Timer, UserRound, WifiOff, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AlertTriangle, Bell, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Coffee, FileDown, MapPin, MessageSquare, MoreHorizontal, Plus, Send, Settings, ShieldCheck, Sparkles, Square, Timer, WifiOff, X } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 
@@ -162,8 +162,14 @@ const tabs = [
   { id: "clock", label: "Clock", icon: Clock3 },
   { id: "timesheet", label: "Hours", icon: Timer },
   { id: "pto", label: "PTO", icon: CalendarDays },
-  { id: "profile", label: "Profile", icon: UserRound }
+  { id: "settings", label: "Settings", icon: Settings }
 ] as const;
+
+type TabId = (typeof tabs)[number]["id"];
+
+function readTab(value: string | null): TabId {
+  return tabs.some((tab) => tab.id === value) ? (value as TabId) : "clock";
+}
 
 function secondsFor(entry: Entry) {
   if (entry.duration_seconds !== null) return entry.duration_seconds;
@@ -209,7 +215,8 @@ function responseErrorMessage(response: Response, text: string, fallback: string
 
 export function TimekeepingModule({ running, entries, categories, requests, managerQueue, hasPtoToday, role, summary, paidBreaks, timesheet, teamTimesheets, managerV2, currentShift }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("clock");
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<TabId>(() => readTab(searchParams.get("tab")));
   const [active, setActive] = useState(running);
   const [shiftState, setShiftState] = useState(currentShift.state);
   const [breakStartedAt, setBreakStartedAt] = useState<string | null>(currentShift.shift?.currentBreakStartedAt ?? null);
@@ -233,6 +240,10 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
   const [ptoStep, setPtoStep] = useState(0);
   const [selectedRequest, setSelectedRequest] = useState<RequestRow | null>(null);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+
+  useEffect(() => {
+    setTab(readTab(searchParams.get("tab")));
+  }, [searchParams]);
 
   useEffect(() => {
     setOnline(navigator.onLine);
@@ -979,10 +990,10 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
         </div>
       ) : null}
 
-      {tab === "profile" ? (
+      {tab === "settings" ? (
         <div className="mx-auto max-w-xl space-y-5">
           <div className="rounded-md border border-border bg-white/65 p-5">
-            <p className="text-sm font-semibold text-muted-foreground">Employee Profile</p>
+            <p className="text-sm font-semibold text-muted-foreground">Profile</p>
             <h1 className="mt-2 text-3xl font-semibold">{timesheet.employee.employee_name ?? "Employee"}</h1>
             <p className="mt-1 text-sm text-muted-foreground">Pay rate {money(summary.payRateCents)} · {summary.totalHours.toFixed(1)}h this week</p>
           </div>
@@ -1009,7 +1020,8 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
             <h2 className="font-semibold">Settings</h2>
             <div className="mt-4 grid gap-2">
               <button onClick={() => setShowNotificationSettings(true)} className="flex h-11 items-center justify-between rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink">Notifications <ChevronRight className="h-4 w-4 text-muted-foreground" /></button>
-              <button className="flex h-11 items-center justify-between rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink">Display preferences <ChevronRight className="h-4 w-4 text-muted-foreground" /></button>
+              <button onClick={() => router.push("/settings/account#display")} className="flex h-11 items-center justify-between rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink">Display preferences <ChevronRight className="h-4 w-4 text-muted-foreground" /></button>
+              <button onClick={() => router.push("/settings/account")} className="flex h-11 items-center justify-between rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink">Profile and password <ChevronRight className="h-4 w-4 text-muted-foreground" /></button>
               <button className="flex h-11 items-center justify-between rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink">Help center <ChevronRight className="h-4 w-4 text-muted-foreground" /></button>
             </div>
           </div>
