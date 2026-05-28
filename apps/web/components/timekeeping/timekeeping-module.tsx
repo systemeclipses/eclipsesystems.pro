@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, Bell, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Coffee, FileDown, MapPin, MessageSquare, MoreHorizontal, Plus, Send, Settings, ShieldCheck, Sparkles, Square, Timer, WifiOff, X } from "lucide-react";
+import { AlertTriangle, Bell, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Coffee, FileDown, MapPin, MessageSquare, MoreHorizontal, Plus, Send, Settings, ShieldCheck, Sparkles, Timer, WifiOff, X } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 
@@ -195,6 +195,20 @@ function formatDuration(totalSeconds: number) {
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
   return [h, m, s].map((value) => String(value).padStart(2, "0")).join(":");
+}
+
+function formatShortDuration(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  if (h <= 0) return `${m}m`;
+  return `${h}h ${String(m).padStart(2, "0")}m`;
+}
+
+function greetingFor(date: Date) {
+  const hour = date.getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
 }
 
 function parseJson<T>(text: string): T | null {
@@ -489,9 +503,20 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
     return "bg-cream text-primary";
   }
 
+  const employeeName = timesheet.employee.employee_name?.split(" ")[0] ?? "there";
+  const lastCompletedEntry = entries.find((entry) => entry.ended_at);
+  const todayKey = format(now, "yyyy-MM-dd");
+  const todaySeconds = entries
+    .filter((entry) => format(new Date(entry.started_at), "yyyy-MM-dd") === todayKey)
+    .reduce((sum, entry) => sum + secondsFor(entry), 0);
+  const currentShiftEarned = money(Math.round((runningDuration / 3600) * summary.payRateCents));
+  const todayEarned = money(Math.round((todaySeconds / 3600) * summary.payRateCents));
+  const clockActionLabel = active ? shiftState === "ON_BREAK" ? "End Break" : "Clock Out" : hasPtoToday ? "Clock In Anyway" : "Clock In";
+  const clockButtonTone = active ? shiftState === "ON_BREAK" ? "bg-[#D97706] hover:bg-[#b96305]" : "bg-[#DC2626] hover:bg-[#b91c1c]" : "bg-[#16A34A] hover:bg-[#15803d]";
+
   return (
     <section className="space-y-5 pb-24 md:pb-0">
-      <div className="hidden overflow-hidden rounded-md bg-primary p-5 text-white md:block md:p-7">
+      {tab !== "clock" ? <div className="hidden overflow-hidden rounded-md bg-primary p-5 text-white md:block md:p-7">
         <p className="text-sm font-semibold text-secondary">Timekeeping and PTO</p>
         <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -505,9 +530,9 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
             <Metric label="Earned" value={money(Math.round(summary.earnings * 100))} />
           </div>
         </div>
-      </div>
+      </div> : null}
 
-      <div className="hidden gap-2 overflow-x-auto rounded-md border border-border bg-white/65 p-2 md:flex">
+      <div className={`${tab === "clock" ? "md:hidden" : "hidden md:flex"} gap-2 overflow-x-auto rounded-md border border-border bg-white/65 p-2`}>
         {tabs.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)} className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-semibold ${tab === id ? "bg-primary text-white" : "text-muted-foreground hover:bg-secondary/70 hover:text-ink"}`}>
             <Icon className="h-4 w-4" />
@@ -517,137 +542,125 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
       </div>
 
       {tab === "clock" ? (
-        <div className="mx-auto grid w-full max-w-6xl gap-5 lg:grid-cols-[minmax(0,480px)_minmax(280px,1fr)] lg:justify-center">
-          <div className="rounded-md border border-border bg-white/65 p-4 sm:p-5">
-            {hasPtoToday ? (
-              <div className="mb-4 flex gap-3 rounded-md border border-[#d7ddbc] bg-secondary/70 p-3 text-sm text-[#35483b]">
+        <div className="mx-auto w-full max-w-5xl space-y-10 px-0 py-2 sm:px-2 md:py-6">
+          {!online ? (
+            <div className="flex items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+              <WifiOff className="h-4 w-4 shrink-0" />
+              Offline - your punches will sync when you are back online.
+            </div>
+          ) : null}
+
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-ink md:text-3xl">
+              {active ? shiftState === "ON_BREAK" ? "On break" : "You're clocked in" : `${greetingFor(now)}, ${employeeName}`}
+            </h1>
+            <p className="text-base text-muted-foreground">
+              {active
+                ? shiftState === "ON_BREAK"
+                  ? `Started at ${breakStartedAt ? format(new Date(breakStartedAt), "h:mm a") : "now"} · Break is ${paidBreaks ? "paid" : "unpaid"}`
+                  : `Started at ${format(new Date(active.started_at), "h:mm a")} at Main Site`
+                : format(now, "EEEE, MMMM d, yyyy")}
+            </p>
+          </div>
+
+          <div className="mx-auto flex max-w-[720px] flex-col items-center">
+            {hasPtoToday && !active ? (
+              <div className="mb-5 flex w-full gap-3 rounded-md border border-[#d7ddbc] bg-secondary/70 p-3 text-sm text-[#35483b]">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p>You have approved PTO today. Clocking in is not required; if you do clock in, managers can review the overlap.</p>
-              </div>
-            ) : null}
-            {!online ? (
-              <div className="mb-4 flex gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>Network is unavailable. Your punch can be queued locally in the offline sync pass.</p>
+                <p>You have approved PTO today. Clocking in is not required.</p>
               </div>
             ) : null}
             {gpsUnavailable ? (
-              <div className="mb-4 flex gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <div className="mb-5 flex w-full gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>Location could not be verified. The punch will be flagged for manager review.</p>
+                <p>Could not verify your location. This punch will be flagged for review.</p>
               </div>
             ) : null}
-            {clockNotice ? <p className="mb-4 rounded-md bg-secondary/70 p-3 text-sm font-semibold text-primary">{clockNotice}</p> : null}
-            {shiftState === "PENDING_REVIEW" ? <p className="mb-4 rounded-md bg-amber-50 p-3 text-sm font-semibold text-amber-800">This shift is pending manager review. You can continue, but edits and approval will require manager attention.</p> : null}
-            {shiftState === "LOCKED" ? <p className="mb-4 rounded-md bg-red-50 p-3 text-sm font-semibold text-red-700">This pay period is locked. Contact an admin to unlock before making changes.</p> : null}
+            {clockNotice ? <p className="mb-5 w-full rounded-md bg-secondary/70 p-3 text-sm font-semibold text-primary">{clockNotice}</p> : null}
+            {clockError ? <p className="mb-5 w-full rounded-md bg-red-50 p-3 text-sm text-red-700">{clockError}</p> : null}
 
-            <div className={`rounded-md p-5 text-center text-white ${active ? shiftState === "ON_BREAK" ? "bg-amber-700" : "bg-[#7c2d12]" : "bg-[#2f6f4f]"}`}>
-              <div className="flex items-center justify-between gap-3 text-left">
-                <div>
-                  <p className="text-sm font-semibold text-white/70">{active ? shiftState === "ON_BREAK" ? `On break since ${breakStartedAt ? format(new Date(breakStartedAt), "h:mm a") : "now"}` : `Clocked in at ${format(new Date(active.started_at), "h:mm a")}` : `Good ${now.getHours() < 12 ? "morning" : now.getHours() < 17 ? "afternoon" : "evening"}`}</p>
-                  <p className="mt-1 text-sm text-white/70">{format(now, "EEEE, MMMM d")}</p>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-sm bg-white/12 px-2 py-1 text-xs font-semibold text-white/80">
-                  <MapPin className="h-3.5 w-3.5" />
-                  Main Site
-                </span>
-              </div>
-              {active && shiftState === "ON_BREAK" ? (
-                <div className="mt-5 rounded-md border border-white/15 bg-white/12 p-5">
-                  <p className="font-title text-6xl leading-none">{formatDuration(breakDuration)}</p>
-                  <p className="mt-2 text-sm font-semibold uppercase text-white/70">break timer</p>
-                  <p className="mt-5 font-mono text-2xl text-white/80">Shift {formatDuration(runningDuration)}</p>
-                </div>
-              ) : null}
-              <button
-                onClick={shiftState === "ON_BREAK" ? toggleBreak : punch}
-                disabled={clockPending || shiftState === "LOCKED"}
-                aria-live="polite"
-                className={`${shiftState === "ON_BREAK" ? "mt-4 min-h-[180px]" : "mt-5 min-h-[260px]"} grid w-full place-items-center rounded-md border border-white/15 bg-white/12 p-5 text-white transition active:scale-[0.99] disabled:opacity-70`}
-              >
-                {active ? (
-                  <span>
-                    {shiftState !== "ON_BREAK" ? (
-                      <>
-                        <span className="block font-title text-7xl leading-none md:text-8xl">{formatDuration(runningDuration)}</span>
-                        <span className="mt-2 block text-sm font-semibold uppercase text-white/70">hrs : min : sec</span>
-                      </>
-                    ) : null}
-                    <span className="mt-6 inline-flex items-center gap-2 text-2xl font-semibold"><Square className="h-6 w-6" /> {clockPending ? "Working..." : shiftState === "ON_BREAK" ? "End Break" : "Clock Out"}</span>
-                  </span>
+            {active ? (
+              <div className="mb-8 w-full rounded-md border border-border bg-white/80 px-5 py-6 text-center shadow-sm">
+                {shiftState === "ON_BREAK" ? (
+                  <>
+                    <p className="font-mono text-5xl font-semibold tabular-nums text-ink md:text-7xl">Break: {formatDuration(breakDuration)}</p>
+                    <p className="mt-4 font-mono text-2xl text-muted-foreground md:text-3xl">Shift: {formatDuration(runningDuration)}</p>
+                  </>
                 ) : (
-                  <span>
-                    <span className="block text-4xl font-semibold uppercase tracking-[0.08em] md:text-5xl">{clockPending ? "Capturing..." : "Clock In"}</span>
-                    <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/80"><MapPin className="h-4 w-4" /> Assigned site detected</span>
-                  </span>
+                  <>
+                    <p className="font-mono text-6xl font-semibold tabular-nums text-ink md:text-8xl">{formatDuration(runningDuration)}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">hours · minutes · seconds</p>
+                  </>
                 )}
-              </button>
-              {active && paidBreaks && shiftState !== "PENDING_REVIEW" ? (
-                <button onClick={shiftState === "ON_BREAK" ? punch : toggleBreak} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-white/12 text-sm font-semibold text-white hover:bg-white/18">
-                  <Coffee className="h-4 w-4" />
-                  {shiftState === "ON_BREAK" ? "Clock Out" : "Start Break"}
-                </button>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
 
-            <div className="mt-4 grid gap-3 rounded-md border border-border bg-cream/55 p-4 text-sm sm:grid-cols-2">
-              <div>
-                <p className="text-muted-foreground">Last shift</p>
-                <p className="mt-1 font-semibold">{entries.find((entry) => entry.ended_at) ? `${format(new Date(entries.find((entry) => entry.ended_at)!.started_at), "EEE, MMM d")} · ${(secondsFor(entries.find((entry) => entry.ended_at)!) / 3600).toFixed(1)} hrs` : "No completed shift yet"}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">This week</p>
-                <p className="mt-1 font-semibold">{summary.totalHours.toFixed(1)} hrs · {money(Math.round(summary.earnings * 100))}</p>
-              </div>
-              {active ? (
-                <>
-                  <div>
-                    <p className="text-muted-foreground">Earned this shift</p>
-                    <p className="mt-1 font-semibold">{money(Math.round((runningDuration / 3600) * summary.payRateCents))}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Today total</p>
-                    <p className="mt-1 font-semibold">{money(Math.round((runningDuration / 3600) * summary.payRateCents))}</p>
-                  </div>
-                </>
-              ) : null}
-            </div>
-            {active && shiftState === "ON_BREAK" && breakStartedAt ? <div className="mt-4 rounded-md bg-amber-50 p-3 text-sm font-semibold text-amber-800">On break since {format(new Date(breakStartedAt), "h:mm a")}.</div> : null}
-            <label className="mt-4 grid gap-2 text-sm font-medium text-muted-foreground">
+            <button
+              onClick={shiftState === "ON_BREAK" ? toggleBreak : punch}
+              disabled={clockPending || shiftState === "LOCKED"}
+              aria-label={clockActionLabel}
+              className={`grid min-h-[260px] w-full place-items-center rounded-2xl px-8 py-16 text-center text-white shadow-xl shadow-black/10 transition hover:scale-[1.01] hover:shadow-2xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-65 md:min-h-[300px] ${clockButtonTone}`}
+            >
+              <span>
+                <span className="block text-5xl font-bold uppercase tracking-[0.02em] md:text-6xl">{clockPending ? "Processing..." : clockActionLabel}</span>
+                {!active ? (
+                  <span className="mt-8 inline-flex items-center gap-2 text-xl font-semibold text-white/90 md:text-2xl"><MapPin className="h-6 w-6" /> Main Site</span>
+                ) : null}
+              </span>
+            </button>
+
+            {active && paidBreaks ? (
+              <button onClick={shiftState === "ON_BREAK" ? punch : toggleBreak} className="mt-5 inline-flex min-h-12 min-w-52 items-center justify-center gap-2 rounded-md border border-border bg-white px-5 text-sm font-semibold text-ink shadow-sm hover:bg-cream">
+                <Coffee className="h-4 w-4" />
+                {shiftState === "ON_BREAK" ? "Clock Out (skip break end)" : "Take a Break"}
+              </button>
+            ) : null}
+          </div>
+
+          <div className="mx-auto grid max-w-[720px] gap-4 md:grid-cols-2">
+            <ClockSummaryCard
+              label={active ? "This Shift" : "Last Shift"}
+              value={active ? formatShortDuration(runningDuration) : lastCompletedEntry ? formatShortDuration(secondsFor(lastCompletedEntry)) : "No shift yet"}
+              detail={active ? `${currentShiftEarned} earned` : lastCompletedEntry ? `${format(new Date(lastCompletedEntry.started_at), "EEE, MMM d")} · ${money(Math.round((secondsFor(lastCompletedEntry) / 3600) * summary.payRateCents))}` : "Start your first shift"}
+              href="/timekeeping?tab=timesheet"
+            />
+            <ClockSummaryCard
+              label={active ? "Today Total" : "This Week"}
+              value={active ? formatShortDuration(todaySeconds) : `${summary.totalHours.toFixed(1)} hrs`}
+              detail={active ? todayEarned : `${money(Math.round(summary.earnings * 100))} earned`}
+              href="/timekeeping?tab=timesheet"
+            />
+          </div>
+
+          <div className="mx-auto grid max-w-[720px] gap-4 border-t border-border pt-8 md:grid-cols-[1fr_240px]">
+            <label className="grid gap-2 text-sm font-medium text-muted-foreground">
               Punch note
               <textarea value={note} onChange={(event) => setNote(event.target.value)} className="min-h-24 rounded-md border border-border bg-white px-3 py-2 text-ink outline-none ring-primary/25 focus:ring-2" placeholder="Forgot badge, GPS issue, starting break..." />
             </label>
-            {!active ? (
-              <button onClick={() => setPastPunchOpen(true)} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold text-primary">
+            <div className="grid content-start gap-2">
+              <button onClick={() => setPastPunchOpen(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-white px-3 text-sm font-semibold text-primary">
                 <Plus className="h-4 w-4" />
                 Add a past punch
               </button>
-            ) : null}
-            {clockError ? <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{clockError}</p> : null}
-          </div>
-          <aside className="space-y-4 rounded-md border border-border bg-white/65 p-5">
-            <h2 className="font-semibold">Today and recent punches</h2>
-            <div className="space-y-3">
-              {entries.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="rounded-md border border-border bg-white p-3 text-sm">
-                  <p className="font-semibold">{format(new Date(entry.started_at), "MMM d, h:mm a")} {entry.ended_at ? `- ${format(new Date(entry.ended_at), "h:mm a")}` : "- now"}</p>
-                  <p className="mt-1 text-muted-foreground">{(secondsFor(entry) / 3600).toFixed(2)} hrs · {entry.status}</p>
-                  {entry.review_flag ? <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-amber-700"><AlertTriangle className="h-3.5 w-3.5" /> {entry.review_flag.replaceAll("_", " ")}</p> : null}
-                </div>
-              ))}
-              {!entries.length ? <p className="text-sm text-muted-foreground">Recent punches appear here after the first shift.</p> : null}
+              <button onClick={() => setTab("timesheet")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-white px-3 text-sm font-semibold text-primary">
+                View this period
+              </button>
             </div>
-            <div className="rounded-md border border-dashed border-border bg-cream/50 p-4 text-sm text-muted-foreground">Correction requests and offline sync queue are prepared for the next pass.</div>
-            <h2 className="pt-2 font-semibold">Punch controls</h2>
-            {[
-              "Duplicate clock-ins are blocked.",
-              "Assigned geofences can block or flag outside-site punches.",
-              "GPS failures are flagged instead of silently discarded.",
-              "Manager edits and approvals write audit entries."
-            ].map((item) => (
-              <p key={item} className="flex gap-2 text-sm leading-6 text-muted-foreground"><Check className="mt-1 h-4 w-4 shrink-0 text-primary" /> {item}</p>
+          </div>
+
+          <section className="mx-auto max-w-[720px] space-y-3">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recent Activity</h2>
+            {entries.slice(0, 5).map((entry) => (
+              <div key={entry.id} className="flex items-start justify-between gap-4 border-b border-border pb-3 text-sm last:border-b-0">
+                <div>
+                  <p className="font-semibold">{format(new Date(entry.started_at), "MMM d, h:mm a")}{entry.ended_at ? ` - ${format(new Date(entry.ended_at), "h:mm a")}` : " - now"}</p>
+                  <p className="mt-1 text-muted-foreground">{entry.ended_at ? `${formatShortDuration(secondsFor(entry))} worked` : "Clocked in at Main Site"}</p>
+                </div>
+                {entry.review_flag ? <span className="inline-flex items-center gap-1 rounded-sm bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700"><AlertTriangle className="h-3.5 w-3.5" /> Review</span> : null}
+              </div>
             ))}
-          </aside>
+            {!entries.length ? <p className="text-sm text-muted-foreground">Recent punches appear here after the first shift.</p> : null}
+          </section>
         </div>
       ) : null}
 
@@ -1211,7 +1224,10 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setTab(id)} className={`grid min-h-14 place-items-center rounded-md px-2 text-[11px] font-semibold ${tab === id ? "bg-primary text-white" : "text-muted-foreground"}`}>
-              <Icon className="mb-1 h-5 w-5" />
+              <span className="relative mb-1">
+                <Icon className="h-5 w-5" />
+                {id === "clock" && shiftState !== "CLOCKED_OUT" ? <span className={`absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full ${shiftState === "ON_BREAK" ? "bg-amber-400" : shiftState === "PENDING_REVIEW" || shiftState === "LOCKED" ? "bg-amber-500" : "bg-green-500"}`} /> : null}
+              </span>
               {label}
             </button>
           ))}
@@ -1227,6 +1243,17 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-white/60">{label}</p>
       <p className="mt-1 font-semibold text-cream">{value}</p>
     </div>
+  );
+}
+
+function ClockSummaryCard({ label, value, detail, href }: { label: string; value: string; detail: string; href: string }) {
+  return (
+    <a href={href} className="block min-h-40 rounded-md border border-border bg-white/75 p-5 text-left shadow-sm transition hover:border-primary/40 hover:bg-white">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+      <p className="mt-6 text-2xl font-semibold text-ink">{value}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{detail}</p>
+      <span className="mt-5 inline-flex text-sm font-semibold text-primary">View hours →</span>
+    </a>
   );
 }
 

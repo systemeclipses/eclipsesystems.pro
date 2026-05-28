@@ -29,7 +29,8 @@ import { ThemeToggle } from "@/components/app/theme-toggle";
 import { PRODUCT_DETAILS, getProductUiContext, type ProductCode, type RoleLevel } from "@/src/billing/entitlements";
 import { auth } from "@/src/auth";
 import { hasUsableSubscription } from "@/src/db/queries/billing";
-import { getDefaultOrganizationForUser } from "@/src/db/queries/organizations";
+import { getDefaultOrganizationForUser, getMembershipIdForUser } from "@/src/db/queries/organizations";
+import { getCurrentShiftState, type ShiftState } from "@/src/db/queries/shift-state-machine";
 
 type NavItem = {
   label: string;
@@ -153,6 +154,17 @@ function navLinkClass(active: boolean) {
   }`;
 }
 
+function isClockItem(item: NavItem) {
+  return item.href.startsWith("/timekeeping?tab=clock");
+}
+
+function ClockStatusIndicator({ state }: { state: ShiftState | null }) {
+  if (!state || state === "CLOCKED_OUT") return null;
+  if (state === "ON_BREAK") return <span aria-label="On break" className="ml-auto text-sm font-semibold text-amber-300">◐</span>;
+  if (state === "PENDING_REVIEW" || state === "LOCKED") return <span aria-label="Needs attention" className="ml-auto text-xs font-semibold text-amber-300">⚠</span>;
+  return <span aria-label="Clocked in" className="ml-auto h-2.5 w-2.5 rounded-full bg-green-400" />;
+}
+
 function isAdminRole(role: RoleLevel) {
   return role === "admin" || role === "owner";
 }
@@ -270,6 +282,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!organizationId) redirect("/onboarding");
   if (!canBypassSubscription && !(await hasUsableSubscription(organizationId))) redirect("/settings/billing");
   const context = await getProductUiContext(session.user.id, organizationId);
+  const membershipId = context.entitledProducts.includes("timekeeping") ? await getMembershipIdForUser(session.user.id, organizationId) : null;
+  const currentClockState = membershipId ? (await getCurrentShiftState(organizationId, membershipId)).state : null;
   const sections = sidebarSections(context);
   const lockedCoreProducts = lockedProductsFor(context);
   const productCount = context.entitledProducts.filter((product) => product === "timekeeping" || product === "eclipse" || product === "mission_command").length;
@@ -290,6 +304,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                   <Link key={`${section.title ?? "primary"}-${label}-${href}`} href={href} className={navLinkClass(isActivePath(pathname, href))}>
                     <Icon className="h-[18px] w-[18px] text-secondary" />
                     {label}
+                    {isClockItem({ label, href, icon: Icon }) ? <ClockStatusIndicator state={currentClockState} /> : null}
                   </Link>
                 ))}
               </nav>
