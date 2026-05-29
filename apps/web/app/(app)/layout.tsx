@@ -13,6 +13,7 @@ import {
   FileCheck2,
   FileText,
   FolderKanban,
+  LayoutDashboard,
   LockKeyhole,
   MapPinned,
   Megaphone,
@@ -42,6 +43,8 @@ type NavSection = {
   title?: string;
   items: NavItem[];
 };
+
+const dashboardNavItem = { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard } satisfies NavItem;
 
 const timekeepingEmployeeNav = [
   { label: "Clock", href: "/timekeeping?tab=clock", icon: Clock3 },
@@ -243,8 +246,11 @@ function multiProductSections(products: ProductCode[], role: RoleLevel): NavSect
 }
 
 function sidebarSections(context: Awaited<ReturnType<typeof getProductUiContext>>) {
-  if (context.entitledProducts.length === 1) return singleProductSections(context.entitledProducts[0], context.role);
-  return multiProductSections(context.entitledProducts, context.role);
+  const sections = context.entitledProducts.length === 1
+    ? singleProductSections(context.entitledProducts[0], context.role)
+    : multiProductSections(context.entitledProducts, context.role);
+
+  return [{ items: [dashboardNavItem] }, ...sections];
 }
 
 function lockedProductsFor(context: Awaited<ReturnType<typeof getProductUiContext>>) {
