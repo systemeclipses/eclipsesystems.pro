@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { db } from "@/src/db";
 import { auditLog, holidays, memberships, profiles, ptoBalances, ptoCategories, ptoRequests, shifts, timeEntries } from "@/src/db/schema";
 import { getMembershipForUser, getTimeEntrySeconds } from "./time-entries";
@@ -326,6 +326,146 @@ export async function getManagerTimekeepingQueue(organizationId: string) {
     .limit(25);
 
   return { pendingRequests, flaggedEntries };
+}
+
+export async function getTimekeepingDashboardPulse(organizationId: string) {
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+  const nextThirtyDays = new Date(todayStart);
+  nextThirtyDays.setDate(nextThirtyDays.getDate() + 30);
+
+  const activeShifts = await db
+    .select({
+      id: shifts.id,
+      state: shifts.state,
+      started_at: shifts.startedAt,
+      employee_name: profiles.fullName,
+      employee_email: profiles.email,
+      pay_rate_cents: memberships.payRateCents
+    })
+    .from(shifts)
+    .innerJoin(memberships, eq(memberships.id, shifts.membershipId))
+    .innerJoin(profiles, eq(profiles.id, memberships.userId))
+    .where(and(eq(shifts.organizationId, organizationId), inArray(shifts.state, ["CLOCKED_IN", "ON_BREAK", "PENDING_REVIEW"]), isNull(shifts.deletedAt), isNull(memberships.deletedAt)))
+    .orderBy(desc(shifts.startedAt))
+    .limit(12);
+
+  const todayEntries = await db
+    .select({
+      started_at: timeEntries.startedAt,
+      ended_at: timeEntries.endedAt,
+      duration_seconds: timeEntries.durationSeconds,
+      pay_rate_cents: memberships.payRateCents
+    })
+    .from(timeEntries)
+    .innerJoin(memberships, eq(memberships.id, timeEntries.membershipId))
+    .where(and(eq(timeEntries.organizationId, organizationId), gte(timeEntries.startedAt, todayStart), lt(timeEntries.startedAt, tomorrowStart), isNull(timeEntries.deletedAt), isNull(memberships.deletedAt)));
+
+  const todayPto = await db
+    .select({
+      id: ptoRequests.id,
+      employee_name: profiles.fullName,
+      category_name: ptoCategories.name,
+      starts_at: ptoRequests.startsAt,
+      ends_at: ptoRequests.endsAt
+    })
+    .from(ptoRequests)
+    .innerJoin(memberships, eq(memberships.id, ptoRequests.membershipId))
+    .innerJoin(profiles, eq(profiles.id, memberships.userId))
+    .innerJoin(ptoCategories, eq(ptoCategories.id, ptoRequests.categoryId))
+    .where(and(eq(ptoRequests.organizationId, organizationId), eq(ptoRequests.status, "approved"), lt(ptoRequests.startsAt, tomorrowStart), gte(ptoRequests.endsAt, todayStart), isNull(ptoRequests.deletedAt), isNull(memberships.deletedAt)))
+    .limit(25);
+
+  const upcomingPto = await db
+    .select({
+      id: ptoRequests.id,
+      starts_at: ptoRequests.startsAt,
+      ends_at: ptoRequests.endsAt
+    })
+    .from(ptoRequests)
+    .where(and(eq(ptoRequests.organizationId, organizationId), eq(ptoRequests.status, "approved"), gte(ptoRequests.startsAt, tomorrowStart), lt(ptoRequests.startsAt, nextThirtyDays), isNull(ptoRequests.deletedAt)))
+    .limit(100);
+
+  const members = await db
+    .select({
+      id: memberships.id,
+      employee_name: profiles.fullName,
+      employee_email: profiles.email,
+      role: memberships.role,
+      department: memberships.department,
+      status: memberships.status,
+      hire_date: memberships.hireDate,
+      probation_ends_at: memberships.probationEndsAt
+    })
+    .from(memberships)
+    .innerJoin(profiles, eq(profiles.id, memberships.userId))
+    .where(and(eq(memberships.organizationId, organizationId), isNull(memberships.deletedAt)));
+
+  const recentActivity = await db
+    .select({
+      id: auditLog.id,
+      action: auditLog.action,
+      target_type: auditLog.targetType,
+      reason: auditLog.reason,
+      created_at: auditLog.createdAt
+    })
+    .from(auditLog)
+    .where(eq(auditLog.organizationId, organizationId))
+    .orderBy(desc(auditLog.createdAt))
+    .limit(5);
+
+  const laborToday = todayEntries.reduce((sum, entry) => {
+    return sum + (getTimeEntrySeconds(entry) / 3600) * ((entry.pay_rate_cents ?? 0) / 100);
+  }, 0);
+
+  const activeEmployees = members.filter((member) => member.status === "active");
+  const probationEndingSoon = members
+    .filter((member) => member.probation_ends_at && member.probation_ends_at >= todayStart && member.probation_ends_at < nextThirtyDays)
+    .sort((a, b) => (a.probation_ends_at?.getTime() ?? 0) - (b.probation_ends_at?.getTime() ?? 0))
+    .slice(0, 3);
+  const anniversaries = members
+    .filter((member) => member.hire_date)
+    .map((member) => {
+      const anniversary = new Date(todayStart);
+      anniversary.setMonth(member.hire_date!.getMonth(), member.hire_date!.getDate());
+      if (anniversary < todayStart) anniversary.setFullYear(anniversary.getFullYear() + 1);
+      return { ...member, anniversary };
+    })
+    .filter((member) => member.anniversary < nextThirtyDays)
+    .sort((a, b) => a.anniversary.getTime() - b.anniversary.getTime())
+    .slice(0, 3);
+
+  return {
+    activeShifts,
+    today: {
+      outCount: todayPto.length,
+      onClockCount: activeShifts.length,
+      comingInSoonCount: 0,
+      laborCost: laborToday
+    },
+    upcomingPtoCount: upcomingPto.length,
+    recentActivity,
+    roster: {
+      activeCount: activeEmployees.length,
+      probationCount: members.filter((member) => member.status === "probation" || Boolean(member.probation_ends_at && member.probation_ends_at >= todayStart)).length,
+      loaCount: members.filter((member) => member.status === "loa").length,
+      probationEndingSoon,
+      anniversaries,
+      departments: Object.entries(members.reduce<Record<string, number>>((counts, member) => {
+        const key = member.department || "Unassigned";
+        counts[key] = (counts[key] ?? 0) + 1;
+        return counts;
+      }, {})).slice(0, 4),
+      roles: Object.entries(members.reduce<Record<string, number>>((counts, member) => {
+        const key = member.role || "member";
+        counts[key] = (counts[key] ?? 0) + 1;
+        return counts;
+      }, {})).slice(0, 4)
+    }
+  };
 }
 
 export async function getAdminTimekeepingConfig(organizationId: string) {

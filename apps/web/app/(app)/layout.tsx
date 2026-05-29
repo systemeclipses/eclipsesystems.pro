@@ -250,7 +250,8 @@ function sidebarSections(context: Awaited<ReturnType<typeof getProductUiContext>
     ? singleProductSections(context.entitledProducts[0], context.role)
     : multiProductSections(context.entitledProducts, context.role);
 
-  return [{ items: [dashboardNavItem] }, ...sections];
+  const [primary, ...rest] = sections;
+  return [{ ...primary, items: [dashboardNavItem, ...primary.items] }, ...rest];
 }
 
 function lockedProductsFor(context: Awaited<ReturnType<typeof getProductUiContext>>) {
@@ -295,13 +296,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const productCount = context.entitledProducts.filter((product) => product === "timekeeping" || product === "eclipse" || product === "mission_command").length;
   const lockedHeading = productCount === 2 && lockedCoreProducts.length === 1 ? "One more" : "Other products";
   const homeHref = startHref(context);
+  const showSidebarAccount = !(pathname === "/dashboard" && isAdminRole(context.role));
 
   return (
     <div className="min-h-screen bg-background">
       <ThemePreferenceSync />
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-border bg-[#2f4135] p-4 text-white md:flex md:flex-col">
         <Link href={homeHref} className="font-title text-3xl leading-none text-cream">{appTitle(context)}</Link>
-        <div className="mt-7 grid gap-5 overflow-y-auto pr-1">
+        <div className="mt-7 grid gap-5 pr-1">
           {sections.map((section, index) => (
             <div key={`${section.title ?? "primary"}-${index}`} className={index > 0 ? "border-t border-white/10 pt-5" : undefined}>
               {section.title ? <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/42">{section.title}</p> : null}
@@ -332,23 +334,25 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         ) : null}
         <div className="mt-auto pt-5">
-          <details className="group mb-3 rounded-md border border-white/10 bg-white/8 text-sm text-white/82 transition open:bg-white/13">
-            <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-3">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm bg-secondary text-primary">
-                <UserRound className="h-4 w-4" />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate font-semibold">{userName}</span>
-                <span className="block text-xs text-white/52">Account menu</span>
-              </span>
-            </summary>
-            <div className="grid gap-1 border-t border-white/10 p-2">
-              <Link href="/settings/account#profile" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">My Profile</Link>
-              <Link href="/settings/account#notifications" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">Notification Settings</Link>
-              <Link href="/help-center" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">Help & Support</Link>
-              <Link href="/api/auth/signout" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">Sign out</Link>
-            </div>
-          </details>
+          {showSidebarAccount ? (
+            <details className="group mb-3 rounded-md border border-white/10 bg-white/8 text-sm text-white/82 transition open:bg-white/13">
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm bg-secondary text-primary">
+                  <UserRound className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold">{userName}</span>
+                  <span className="block text-xs text-white/52">Account menu</span>
+                </span>
+              </summary>
+              <div className="grid gap-1 border-t border-white/10 p-2">
+                <Link href="/settings/account#profile" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">My Profile</Link>
+                <Link href="/settings/account#notifications" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">Notification Settings</Link>
+                <Link href="/help-center" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">Help & Support</Link>
+                <Link href="/api/auth/signout" className="rounded-sm px-2 py-2 text-white/72 hover:bg-white/10 hover:text-white">Sign out</Link>
+              </div>
+            </details>
+          ) : null}
           <ThemeToggle />
         </div>
       </aside>
