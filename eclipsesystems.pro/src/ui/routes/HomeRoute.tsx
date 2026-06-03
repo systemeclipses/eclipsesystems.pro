@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ProductCarousel } from "@ui/components/ProductCarousel";
 import { SoftwarePreview } from "@ui/components/SoftwarePreview";
 
@@ -40,12 +41,12 @@ export function HomeRoute() {
             workflows.
           </p>
           <div className="hero-actions">
-            <a className="primary-link" href="/pricing">
+            <Link className="primary-link" to="/contact">
+              Schedule a demo
+            </Link>
+            <Link className="secondary-link" to="/pricing">
               View pricing
-            </a>
-            <a className="secondary-link" href="#products">
-              See products
-            </a>
+            </Link>
           </div>
         </div>
         <div className="hero-preview-stack" aria-hidden="true">

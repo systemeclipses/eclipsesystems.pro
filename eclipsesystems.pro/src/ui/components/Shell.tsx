@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
-import { faLinkedin, faX } from "@fortawesome/free-brands-svg-icons";
+import { faLinkedin, faXTwitter } from "@fortawesome/free-brands-svg-icons";
 import { useSettingsStore } from "@state/settingsStore";
 import { useEffect } from "react";
 
@@ -39,14 +39,14 @@ export function Shell() {
           <a className="header-link" href="tel:+12055550197">
             (205) 555-0197
           </a>
-          <a className="header-link" href="mailto:hello@eclipsesystems.pro">
-            hello@eclipsesystems.pro
-          </a>
+          <Link className="header-link header-cta" to="/contact">
+            Schedule a demo
+          </Link>
           <a className="header-icon" href="https://www.linkedin.com/company/eclipse-systems" aria-label="LinkedIn">
             <FontAwesomeIcon icon={faLinkedin} />
           </a>
           <a className="header-icon" href="https://twitter.com/eclipsesystems" aria-label="X">
-            <FontAwesomeIcon icon={faX} />
+            <FontAwesomeIcon icon={faXTwitter} />
           </a>
           <Link className="header-icon home-icon" to="/" aria-label="Home">
             <FontAwesomeIcon icon={faHouse} />
@@ -65,8 +65,8 @@ export function Shell() {
       </main>
       <footer className="app-footer">
         <span>Eclipse Systems</span>
-        <span>Timekeeping, operations, billing, and legal add-ons.</span>
-        <a href="mailto:hello@eclipsesystems.pro">hello@eclipsesystems.pro</a>
+        <span>Custom software, packaged systems, and proven business modules.</span>
+        <Link to="/contact">Schedule a demo</Link>
       </footer>
     </>
   );

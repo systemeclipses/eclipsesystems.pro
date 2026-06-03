@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronUp, Mail, Sparkles } from "lucide-react";
+import { CalendarDays, ChevronUp, Sparkles } from "lucide-react";
 
 const resourceLinks = [
   ["Blog", "/blog"],
@@ -17,13 +17,13 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[104rem] items-center justify-between gap-4 px-5 py-2">
           <div className="flex min-w-0 items-center gap-2">
             <Sparkles className="h-4 w-4 shrink-0 text-secondary" />
-            <span className="truncate">Everything your team tracks, bills, schedules, and resolves - in one orbit.</span>
+            <span className="truncate">Custom software for teams that need their tools to fit the way they work.</span>
           </div>
           <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-            <a href="mailto:help@eclipsesystems.pro" className="hidden items-center gap-2 hover:text-cream sm:inline-flex">
-              <Mail className="h-4 w-4" />
-              help@eclipsesystems.pro
-            </a>
+            <Link href="/schedule-demo" className="hidden items-center gap-2 hover:text-cream sm:inline-flex">
+              <CalendarDays className="h-4 w-4" />
+              Schedule a demo
+            </Link>
             <a href="#" aria-label="Eclipse Systems on LinkedIn" className="hover:text-cream">
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
                 <path d="M20.45 20.45h-3.56v-5.58c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.68H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12Zm1.78 13.02H3.56V9h3.56v11.45ZM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.21 0 22.23 0Z" />
@@ -41,10 +41,10 @@ export function SiteHeader() {
             </a>
             <Link href="/login" className="font-semibold text-cream hover:text-white">Login</Link>
             <Link
-              href="/signup"
+              href="/schedule-demo"
               className="inline-flex h-8 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-primary transition hover:bg-cream"
             >
-              Start Trial
+              Schedule a Demo
             </Link>
           </div>
         </div>

@@ -18,7 +18,7 @@ const resourceLinks = [
 
 const companyLinks = [
   ["Login", "/login"],
-  ["Start Trial", "/signup"],
+  ["Schedule a Demo", "/schedule-demo"],
   ["Locations", "/locations"],
   ["Alternatives", "/alternatives"]
 ] as const;
@@ -30,7 +30,7 @@ export function SiteFooter() {
         <div>
           <Link href="/" className="font-title text-4xl leading-none text-cream">Eclipse Systems</Link>
           <p className="mt-5 max-w-md text-sm leading-6 text-white/72">
-            Timekeeping, project billing, shift operations, chat, and legal billing tools for teams that need one clear operating workspace.
+            Custom business software, packaged systems, and proven modules for teams that need tools built around how they work.
           </p>
           <a href="mailto:help@eclipsesystems.pro" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-white">
             <Mail className="h-4 w-4" />

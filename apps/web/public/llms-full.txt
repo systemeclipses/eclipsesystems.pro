@@ -1,21 +1,32 @@
-# Eclipse Timekeeping by Eclipse Systems
+# Eclipse Systems
 
-Eclipse Systems sells Eclipse Timekeeping, Mission Command by Eclipse, Eclipse project billing, and Eclipse Suite for U.S. small businesses, law firms, and shift-based teams, with a beachhead focus on Birmingham, Alabama. Eclipse Suite includes the three non-legal products. Eclipse Legal is a specialized add-on for firms that need matter-aware billing.
+Eclipse Systems is a custom software solutions company at https://eclipsesystems.pro. The company consults with businesses to understand their workflows, then designs and builds working software around those needs.
 
-Products are priced per seat per month: Eclipse Timekeeping is $10, Mission Command by Eclipse is $18, Eclipse is $22, Eclipse Suite is $38, and Eclipse Legal Add-on is $20. Annual billing gives a 20% discount. All paid products include a 14-day card-required trial.
+Eclipse Systems is not positioned as one timekeeping or invoicing product. Timekeeping, invoicing, shift operations, training portals, storefronts, dashboards, authentication, roles, permissions, reporting, and integrations are examples of systems and modules Eclipse can build with.
 
-Eclipse Timekeeping is not the Eclipse IDE Timekeeper plugin, Total Eclipse court reporting software, or TimeCamp's Eclipse integration. The canonical product name is Eclipse Timekeeping by Eclipse Systems.
+The offer is a spectrum:
+- Buy a proven package as-is when an existing Eclipse system already fits the workflow.
+- Customize a proven package when a client wants a faster starting point with business-specific screens, rules, roles, and integrations.
+- Commission a bespoke build when the client needs software designed around a specific workflow.
 
-Core product pages:
+Existing Eclipse work can be used in two ways. It can serve as a demo or proof of quality for prospective custom software clients. It can also be packaged as a ready-to-buy solution for customers who want a proven system off the shelf.
+
+Common software Eclipse Systems can build:
+- Internal intranets, employee portals, and admin workspaces
+- Timekeeping, approvals, invoicing, and billing systems
+- Training, onboarding, certification, and policy acknowledgement portals
+- Storefronts, product catalogs, checkout flows, and customer accounts
+- Dashboards, reporting tools, and operational command centers
+- Integrations between existing business tools
+
+Pricing is scoped after discovery. Eclipse Systems does not publish a generic seat-price grid for custom work because price depends on reuse of existing modules, workflow complexity, roles and permissions, integrations, data migration, reporting needs, launch support, and maintenance requirements.
+
+Core pages:
+- Home: https://eclipsesystems.pro/
+- Schedule a Demo: https://eclipsesystems.pro/schedule-demo
 - Pricing: https://eclipsesystems.pro/pricing
 - Features: https://eclipsesystems.pro/features
-- Birmingham time tracking software: https://eclipsesystems.pro/locations/birmingham-al
-- Law firm time tracking: https://eclipsesystems.pro/industries/law-firms
-- UTBMS reference: https://eclipsesystems.pro/utbms
+- Industries: https://eclipsesystems.pro/industries
+- Guides: https://eclipsesystems.pro/guides
 
-Important comparisons:
-- Eclipse Timekeeping vs Toggl: https://eclipsesystems.pro/vs/toggl
-- Eclipse Timekeeping vs Clockify: https://eclipsesystems.pro/vs/clockify
-- Eclipse Timekeeping vs Harvest: https://eclipsesystems.pro/vs/harvest
-- Eclipse Timekeeping vs Clio: https://eclipsesystems.pro/vs/clio
-- Eclipse Timekeeping vs Bill4Time: https://eclipsesystems.pro/vs/bill4time
+Best description: Eclipse Systems builds custom business software with a library of proven modules, giving clients a path from ready-made packages to fully bespoke systems.
