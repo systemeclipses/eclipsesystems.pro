@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { packageTemplates } from "../../content/packages";
+import { PackageIcon } from "@ui/components/PackageIcon";
 import { ProductCarousel } from "@ui/components/ProductCarousel";
 import { SoftwarePreview } from "@ui/components/SoftwarePreview";
 
@@ -59,6 +61,27 @@ export function HomeRoute() {
       </section>
 
       <ProductCarousel />
+
+      <section className="product-flow package-promo" aria-labelledby="package-promo-title">
+        <div className="section-heading package-promo-heading">
+          <div>
+            <p className="eyebrow">Packages</p>
+            <h2 id="package-promo-title">Four proven starting points for custom business software.</h2>
+          </div>
+          <Link className="secondary-link" to="/packages">
+            See all packages
+          </Link>
+        </div>
+        <div className="package-promo-grid">
+          {packageTemplates.map((template) => (
+            <article key={template.id} className="package-promo-card">
+              <PackageIcon icon={template.icon} />
+              <h3>{template.name}</h3>
+              <p>{template.oneLiner}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section id="products" className="product-flow" aria-labelledby="products-title">
         <div className="section-heading">

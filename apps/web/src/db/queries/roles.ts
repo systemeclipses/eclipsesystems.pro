@@ -1,9 +1,9 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/src/db";
-import { memberships, permissionCustomGroups, permissionRoles, profiles } from "@/src/db/schema";
+import { membershipProductRoles, memberships, permissionCustomGroups, permissionRoles, profiles } from "@/src/db/schema";
 
 export async function getRolesOverview(organizationId: string) {
-  const [memberRows, customRoleRows, customGroupRows] = await Promise.all([
+  const [memberRows, customRoleRows, customGroupRows, productAccessRows] = await Promise.all([
     db
       .select({
         id: memberships.id,
@@ -35,7 +35,15 @@ export async function getRolesOverview(organizationId: string) {
         description: permissionCustomGroups.description
       })
       .from(permissionCustomGroups)
-      .where(and(eq(permissionCustomGroups.organizationId, organizationId), isNull(permissionCustomGroups.deletedAt)))
+      .where(and(eq(permissionCustomGroups.organizationId, organizationId), isNull(permissionCustomGroups.deletedAt))),
+    db
+      .select({
+        membershipId: membershipProductRoles.membershipId,
+        product: membershipProductRoles.product,
+        accessRole: membershipProductRoles.accessRole
+      })
+      .from(membershipProductRoles)
+      .where(and(eq(membershipProductRoles.organizationId, organizationId), isNull(membershipProductRoles.revokedAt)))
   ]);
 
   const counts = memberRows.reduce<Record<string, number>>((acc, member) => {
@@ -46,6 +54,7 @@ export async function getRolesOverview(organizationId: string) {
   return {
     members: memberRows,
     roleCounts: counts,
+    productAccess: productAccessRows,
     customRoles: customRoleRows.filter((role) => role.kind === "custom"),
     customGroups: customGroupRows
   };

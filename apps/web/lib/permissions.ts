@@ -1,7 +1,7 @@
 import { hasPlanFeature, type PlanCode, type PlanFeature } from "@eclipsesystems/shared/plans";
 
 export type PlanTier = PlanCode;
-export type RoleKey = "owner" | "admin" | "manager" | "team_lead" | "employee" | "member";
+export type RoleKey = "superuser" | "owner" | "admin" | "manager" | "team_lead" | "employee" | "member";
 
 const roleRanks: Record<RoleKey, number> = {
   member: 0,
@@ -9,7 +9,8 @@ const roleRanks: Record<RoleKey, number> = {
   team_lead: 1,
   manager: 2,
   admin: 3,
-  owner: 4
+  owner: 4,
+  superuser: 5
 };
 
 const categoryFeatures: Record<string, PlanFeature | null> = {

@@ -3,13 +3,15 @@ import { Shell } from "@ui/components/Shell";
 import { HomeRoute } from "@ui/routes/HomeRoute";
 import { NotFoundRoute, StaticRoute } from "@ui/routes/StaticRoute";
 import { ContactRoute } from "@ui/routes/ContactRoute";
+import { PackagesRoute } from "@ui/routes/PackagesRoute";
 
 const router = createBrowserRouter([
   {
     element: <Shell />,
     children: [
       { path: "/", element: <HomeRoute /> },
-      { path: "/pricing", element: <StaticRoute title="Pricing" /> },
+      { path: "/packages", element: <PackagesRoute /> },
+      { path: "/pricing", element: <PackagesRoute /> },
       { path: "/features", element: <StaticRoute title="Features" /> },
       { path: "/features/:slug", element: <StaticRoute title="Feature" /> },
       { path: "/contact", element: <ContactRoute /> },

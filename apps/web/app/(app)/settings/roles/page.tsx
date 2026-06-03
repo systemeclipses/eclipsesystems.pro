@@ -8,16 +8,17 @@ export default async function RolesSettingsPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
   const context = await getProductUiContext(userId, orgId);
-  if (!["owner", "admin"].includes(context.role)) notFound();
+  if (!["superuser", "owner", "admin"].includes(context.role)) notFound();
   const overview = await getRolesOverview(orgId);
 
   return (
     <RolesPermissionsClient
       members={overview.members}
       roleCounts={overview.roleCounts}
+      productAccess={overview.productAccess}
       customRoles={overview.customRoles}
       customGroups={overview.customGroups}
-      canManage={context.role === "owner" || context.role === "admin"}
+      canManage={context.role === "superuser" || context.role === "owner" || context.role === "admin"}
       canTransferOwnership={context.role === "owner"}
       currentPlan={context.plan ?? "timekeeping"}
     />

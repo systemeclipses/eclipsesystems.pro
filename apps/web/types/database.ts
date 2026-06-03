@@ -5,7 +5,8 @@ export type Database = {
     Tables: {
       profiles: { Row: { id: string; email: string; full_name: string | null; default_organization_id: string | null } };
       organizations: { Row: { id: string; name: string; kind: "personal" | "team" } };
-      memberships: { Row: { id: string; organization_id: string; user_id: string; role: "owner" | "admin" | "manager" | "member" } };
+      memberships: { Row: { id: string; organization_id: string; user_id: string; role: "superuser" | "owner" | "admin" | "manager" | "member" } };
+      membership_product_roles: { Row: { id: string; organization_id: string; membership_id: string; product: "timekeeping" | "eclipse" | "mission_command" | "suite" | "legal_addon"; access_role: "employee" | "admin"; revoked_at: string | null } };
       time_entries: { Row: { id: string; organization_id: string; membership_id: string; description: string | null; started_at: string; ended_at: string | null; duration_seconds: number | null; status: string } };
       projects: { Row: { id: string; organization_id: string; name: string } };
       tasks: { Row: { id: string; organization_id: string; project_id: string; name: string } };

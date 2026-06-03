@@ -8,7 +8,7 @@ export default async function SecuritySettingsPage() {
   const userId = await getAuthenticatedUserId();
   const orgId = await getActiveOrgId();
   const context = await getProductUiContext(userId, orgId);
-  if (!["owner", "admin"].includes(context.role)) notFound();
+  if (!["superuser", "owner", "admin"].includes(context.role)) notFound();
   const overview = await getSecurityObservabilityOverview(orgId);
 
   return (
@@ -19,7 +19,7 @@ export default async function SecuritySettingsPage() {
       services={overview.services}
       monitors={overview.monitors}
       incidents={overview.incidents}
-      canManage={context.role === "owner" || context.role === "admin"}
+      canManage={context.role === "superuser" || context.role === "owner" || context.role === "admin"}
     />
   );
 }

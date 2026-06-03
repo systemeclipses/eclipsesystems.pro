@@ -1039,6 +1039,33 @@ export const productEntitlements = pgTable("product_entitlements", {
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
 });
 
+export const membershipProductRoles = pgTable(
+  "membership_product_roles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    membershipId: uuid("membership_id")
+      .notNull()
+      .references(() => memberships.id, { onDelete: "cascade" }),
+    product: text("product").$type<"timekeeping" | "eclipse" | "mission_command" | "suite" | "legal_addon">().notNull(),
+    accessRole: text("access_role").$type<"employee" | "admin">().notNull(),
+    grantedByMembershipId: uuid("granted_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { mode: "date" }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { mode: "date" }),
+    revokedByMembershipId: uuid("revoked_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    revokeReason: text("revoke_reason"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (role) => ({
+    membershipProductIdx: uniqueIndex("membership_product_roles_membership_product_idx").on(role.membershipId, role.product),
+    orgIdx: index("membership_product_roles_org_idx").on(role.organizationId, role.product, role.accessRole),
+    membershipIdx: index("membership_product_roles_membership_idx").on(role.membershipId)
+  })
+);
+
 export const billingPermissionGrants = pgTable(
   "billing_permission_grants",
   {

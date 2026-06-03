@@ -127,6 +127,20 @@
       "when": 1780848000000,
       "tag": "0017_observability_security",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1780934400000,
+      "tag": "0018_superuser_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1781020800000,
+      "tag": "0019_membership_product_roles",
+      "breakpoints": true
     }
   ]
 }

@@ -90,7 +90,7 @@ export default async function DashboardPage() {
   const currentShift = timekeepingOverview ? await getCurrentShiftState(orgId, timekeepingOverview.membership.id) : null;
   const latestPunch = timekeepingOverview ? getLatestPunchToday(timekeepingOverview.entries) : null;
   const isTimekeepingOnly = productContext.entitledProducts.length === 1 && productContext.entitledProducts[0] === "timekeeping";
-  const isTimekeepingAdmin = Boolean(timekeepingOverview && ["owner", "admin", "manager"].includes(timekeepingOverview.membership.role));
+  const isTimekeepingAdmin = Boolean(timekeepingOverview && ["superuser", "owner", "admin", "manager"].includes(timekeepingOverview.membership.role));
   const currentPlan = isPlanCode(subscription?.plan) ? subscription.plan : null;
   const currentPlanName = currentPlan ? PLAN_NAMES[currentPlan] : "your current plan";
   const firstName = session?.user?.name?.split(" ")[0] ?? "there";
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/timer"
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-cream px-4 text-sm font-semibold text-primary transition hover:bg-white"
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-cream px-4 text-sm font-semibold text-primary transition hover:bg-white dark:bg-[#4f6a57] dark:text-white dark:hover:bg-[#5d7a65]"
               >
                 Start timer <ArrowRight className="h-4 w-4" />
               </Link>

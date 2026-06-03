@@ -19,8 +19,9 @@ export default async function TimekeepingPage() {
   const settings = await getTimekeepingSettings(orgId);
   const currentShift = await getCurrentShiftState(orgId, overview.membership.id);
   const timesheet = await calculateTimesheetForMembership({ organizationId: orgId, membershipId: overview.membership.id, settings });
-  const teamTimesheets = ["owner", "admin", "manager"].includes(overview.membership.role) ? await getTeamTimesheets({ organizationId: orgId, settings }) : null;
-  const managerV2 = ["owner", "admin", "manager"].includes(overview.membership.role) ? await getPtoManagerV2Dashboard(orgId, overview.membership.id) : null;
+  const isManagerOrHigher = ["superuser", "owner", "admin", "manager"].includes(overview.membership.role);
+  const teamTimesheets = isManagerOrHigher ? await getTeamTimesheets({ organizationId: orgId, settings }) : null;
+  const managerV2 = isManagerOrHigher ? await getPtoManagerV2Dashboard(orgId, overview.membership.id) : null;
 
   return (
     <TimekeepingModule

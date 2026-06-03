@@ -30,7 +30,7 @@ const TRANSITIONS: Record<PtoRequestState, Partial<Record<PtoRequestEvent, PtoRe
 };
 
 function isAdmin(role?: string | null) {
-  return role === "owner" || role === "admin";
+  return role === "superuser" || role === "owner" || role === "admin";
 }
 
 function isManager(role?: string | null) {
