@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   BarChart3,
+  BriefcaseBusiness,
   Building2,
   CalendarClock,
   CalendarDays,
@@ -47,7 +48,8 @@ type NavSection = {
   items: NavItem[];
 };
 
-const dashboardNavItem = { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard } satisfies NavItem;
+const dashboardNavItem = { label: "Templates", href: "/templates", icon: LayoutDashboard } satisfies NavItem;
+const crmNavItem = { label: "CRM", href: "/crm", icon: BriefcaseBusiness } satisfies NavItem;
 
 const timekeepingEmployeeNav = [
   { label: "Clock", href: "/timekeeping?tab=clock", icon: Clock3 },
@@ -150,7 +152,7 @@ function productHomeHref(product: ProductCode) {
   if (product === "eclipse") return "/timer";
   if (product === "mission_command") return "/shifts";
   if (product === "legal_addon") return "/matters";
-  return "/dashboard";
+  return "/templates";
 }
 
 function isProductCode(value: string | undefined): value is ProductCode {
@@ -276,13 +278,13 @@ function multiProductSections(context: Awaited<ReturnType<typeof getProductUiCon
 }
 
 function sidebarSections(context: ProductContext, activeProduct: ProductCode | null) {
-  if (!context.entitledProducts.length) return [{ items: [dashboardNavItem, { label: "Settings", href: "/settings", icon: Settings }] }];
+  if (!context.entitledProducts.length) return [{ items: [dashboardNavItem, crmNavItem, { label: "Settings", href: "/settings", icon: Settings }] }];
 
   const product = activeProduct ?? context.entitledProducts[0];
   const sections = singleProductSections(product, navRoleForProduct(context, product));
 
   const [primary, ...rest] = sections;
-  return [{ ...primary, items: [dashboardNavItem, ...primary.items] }, ...rest];
+  return [{ ...primary, items: [dashboardNavItem, crmNavItem, ...primary.items] }, ...rest];
 }
 
 function lockedProductsFor(context: ProductContext) {
@@ -299,7 +301,7 @@ function lockedProductLabel(product: ProductCode) {
 }
 
 function startHref(activeProduct: ProductCode | null) {
-  return activeProduct ? productHomeHref(activeProduct) : "/dashboard";
+  return activeProduct ? productHomeHref(activeProduct) : "/templates";
 }
 
 function ProductSwitcher({ context, activeProduct, tone = "light" }: { context: ProductContext; activeProduct: ProductCode | null; tone?: "light" | "dark" }) {
@@ -399,11 +401,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session?.user) redirect("/login");
   const userName = session.user.name || session.user.email || "Account";
   const pathname = headers().get("x-pathname") ?? "";
+  const standalonePackageRoutes = ["/templates", "/dashboard", "/operations", "/client-portal", "/crm", "/storefront"];
+  const useStandalonePackageShell = standalonePackageRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   const subscriptionSetupRoutes = ["/settings/billing", "/settings/account", "/account"];
   const canBypassSubscription = subscriptionSetupRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   const organizationId = session.user.id ? await getDefaultOrganizationForUser(session.user.id) : null;
 
   if (!organizationId) redirect("/onboarding");
+  if (useStandalonePackageShell) {
+    return (
+      <div className="min-h-screen bg-background">
+        <ThemePreferenceSync />
+        {children}
+      </div>
+    );
+  }
   const context = await getProductUiContext(session.user.id, organizationId);
   if (!canBypassSubscription && context.role !== "superuser" && !(await hasUsableSubscription(organizationId))) redirect("/settings/billing");
   const activeProduct = resolveActiveProduct(context, cookies().get("eclipse_active_product")?.value);
@@ -414,7 +426,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const productCount = context.entitledProducts.filter((product) => product === "timekeeping" || product === "eclipse" || product === "mission_command").length;
   const lockedHeading = productCount === 2 && lockedCoreProducts.length === 1 ? "One more" : "Other products";
   const homeHref = startHref(activeProduct);
-  const showSidebarAccount = !(pathname === "/dashboard" && isAdminRole(context.role));
+  const showSidebarAccount = !(pathname === "/templates" && isAdminRole(context.role));
 
   return (
     <div className="min-h-screen bg-background">

@@ -10,11 +10,11 @@ function productHomeHref(product: ProductCode) {
   if (product === "eclipse") return "/timer";
   if (product === "mission_command") return "/shifts";
   if (product === "legal_addon") return "/matters";
-  return "/dashboard";
+  return "/templates";
 }
 
 function switchProduct(request: NextRequest, product: string | null) {
-  const redirectTo = isProductCode(product) ? productHomeHref(product) : "/dashboard";
+  const redirectTo = isProductCode(product) ? productHomeHref(product) : "/templates";
   const response = NextResponse.redirect(new URL(redirectTo, request.url));
   response.headers.set("Cache-Control", "no-store");
 

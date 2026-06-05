@@ -1,0 +1,44 @@
+{
+  "clientName": "Acme Workforce",
+  "platformName": "AcmeForce",
+  "productSlug": "acmeforce",
+  "industry": "PEO / HR / payroll",
+  "voice": "direct, operational, confident",
+  "visuals": {
+    "primaryColor": "#0f4c81",
+    "primaryDark": "#0a3356",
+    "accentColor": "#f59e0b",
+    "surfaceColor": "#111827",
+    "surfaceAltColor": "#1f2937",
+    "textColor": "#e5e7eb",
+    "mutedTextColor": "#94a3b8",
+    "borderRadius": "18px",
+    "headingFont": "Poppins",
+    "bodyFont": "Poppins"
+  },
+  "logos": {
+    "sidebarWordmark": "assets/logo-wordmark-light.svg",
+    "sidebarMark": "assets/logo-mark.svg",
+    "proposalDeckLogo": "assets/proposal-logo.png",
+    "emailLogo": "assets/logo-email.png"
+  },
+  "proposalDeck": {
+    "cityImage": "assets/proposal-city.png",
+    "sealLogo": "assets/partner-badge.png"
+  },
+  "labels": {
+    "organization": "Organization",
+    "salesRep": "Sales Rep",
+    "implementationOwner": "Implementation Owner"
+  },
+  "features": {
+    "support": true,
+    "renewals": true,
+    "inventory": true,
+    "retirementQuestionnaire": true
+  },
+  "routes": {
+    "preserveGf1Slug": true
+  },
+  "notes": "Create a client-specific copy of this file before handing the package to another model."
+}

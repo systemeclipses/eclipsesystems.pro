@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 28% 96%;
+  --foreground: 215 26% 16%;
+  --muted: 212 24% 91%;
+  --muted-foreground: 215 14% 42%;
+  --border: 214 22% 84%;
+  --panel: 0 0% 100%;
+  --primary: 220 76% 48%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 174 63% 38%;
+  --success: 148 63% 34%;
+  --danger: 355 70% 48%;
+  --warning: 35 90% 50%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, hsl(var(--primary)) 35%, white);
+  outline-offset: 2px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #quote-document,
+  #quote-document * {
+    visibility: visible;
+  }
+
+  #quote-document {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+}

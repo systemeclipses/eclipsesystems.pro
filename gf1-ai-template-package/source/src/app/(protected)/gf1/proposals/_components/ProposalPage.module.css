@@ -1,0 +1,182 @@
+/* ProposalPage.module.css - Dark Theme */
+
+.tabNav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #313D4E;
+  background: #273142;
+  border-radius: 4px 4px 0 0;
+  padding: 0 6px;
+  border: 1px solid #313D4E;
+}
+
+.tabButton {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #738297;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tabButton:hover {
+  color: #a8b5c7;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.activeTab {
+  color: #1C93ED;
+  border-bottom-color: #1C93ED;
+  background: rgba(28, 147, 237, 0.1);
+}
+
+/* Proposals card carousel */
+.cardsRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(190px, 1fr));
+  column-gap: 16px;
+  row-gap: 28px;
+  padding: 16px 22px 8px 22px;
+}
+
+.headerRow {
+  padding: 0 72px;
+}
+
+.headerActions {
+  padding-right: 0;
+}
+
+.card {
+  width: 100%;
+  max-width: 280px;
+  height: 360px;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #313D4E;
+  border: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  background: #3a4557;
+}
+
+.cardActive {
+  width: 100%;
+  box-shadow: 0 18px 36px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 1200px) {
+  .cardsRow {
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    padding: 12px 16px 8px 16px;
+  }
+
+  .headerRow {
+    padding: 0 32px 0 60px;
+    margin-bottom: -6px;
+  }
+
+  .card {
+    max-width: none;
+  }
+}
+
+.cardOverlay {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0,0,0,0.0), rgba(0,0,0,0.65));
+}
+
+.cardImage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.cardImage img {
+  max-width: 80%;
+  max-height: 60%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+.cardDesc {
+  position: relative;
+  z-index: 1;
+  padding: 0 16px 12px 16px;
+  color: white;
+  transform: translateY(calc(100% - 56px));
+  transition: transform 0.25s ease;
+}
+
+.cardTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.2;
+  min-height: 2.4em;
+}
+
+.cardActive .cardDesc {
+  transform: translateY(0);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #273142;
+  color: #a8b5c7;
+}
+
+@media (max-width: 991px) {
+  .cardsRow { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
+  .card { height: 300px; }
+  .cardActive { width: 100%; }
+  .cardDesc { transform: translateY(calc(100% - 48px)); }
+}
+
+@media (max-width: 767px) {
+  .cardsRow { grid-template-columns: repeat(2, minmax(155px, 1fr)); column-gap: 12px; row-gap: 22px; padding: 12px 16px; }
+  .card { height: 260px; }
+  .cardActive { width: 100%; }
+  .cardDesc { transform: translateY(calc(100% - 44px)); }
+}
+
+@media (max-width: 560px) {
+  .cardsRow { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .tabNav {
+    padding: 0;
+  }
+
+  .tabButton {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 0;
+  }
+}
+

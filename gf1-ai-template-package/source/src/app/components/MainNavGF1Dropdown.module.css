@@ -1,0 +1,40 @@
+.gf1-nav-dropdown {
+  display: inline-block;
+}
+.gf1-nav-trigger {
+  background: #fff;
+  color: #102745;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.gf1-nav-trigger:hover,
+.gf1-nav-trigger:focus {
+  background: #f3f4f6;
+}
+.gf1-nav-menu {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  min-width: 180px;
+  padding: 0.5rem 0;
+}
+.gf1-nav-menu li {
+  list-style: none;
+}
+.gf1-nav-menu a {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: #102745;
+  text-decoration: none;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.gf1-nav-menu a:hover {
+  background: #e0e7ff;
+  color: #4338ca;
+}

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import YAML from "yaml";
+import { packageDefinitions } from "@/lib/packages";
 
 const contentRoot = path.join(process.cwd(), "content");
 const siteUrl = "https://eclipsesystems.pro";
@@ -8,11 +9,14 @@ const siteUrl = "https://eclipsesystems.pro";
 export type PlanContent = {
   slug: string;
   name: string;
-  priceMonthly: number;
-  annualEffectiveMonthly: number;
   summary: string;
   bestFor: string;
   features: string[];
+  moduleNote?: string;
+  worksWith?: {
+    packageName: string;
+    copy: string;
+  };
 };
 
 export type FeatureContent = {
@@ -95,7 +99,15 @@ async function readYamlDir<T>(directory: string): Promise<T[]> {
 }
 
 export async function loadPlans() {
-  return readJson<PlanContent[]>("data/plans.json");
+  return packageDefinitions.map((pkg) => ({
+    slug: pkg.slug,
+    name: pkg.name,
+    summary: pkg.description,
+    bestFor: pkg.audience,
+    features: pkg.features,
+    moduleNote: pkg.moduleNote,
+    worksWith: pkg.worksWith
+  })) satisfies PlanContent[];
 }
 
 export async function loadFeatures() {

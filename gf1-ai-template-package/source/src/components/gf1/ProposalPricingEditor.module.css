@@ -1,0 +1,141 @@
+.gf1Form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gf1Card {
+  background: rgba(12, 26, 45, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.gf1CardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.gf1Eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.gf1SectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f7fafc;
+  margin: 0;
+}
+
+.gf1Subtext {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 6px 0 0;
+}
+
+.gf1Metric {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(139, 92, 246, 0.3));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2f6ff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gf1Grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+@media (min-width: 768px) {
+  .gf1Grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
+.gf1Label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 6px;
+}
+
+.gf1Input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(8, 18, 33, 0.7);
+  color: #f5f7fb;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gf1Input:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.8);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.gf1Helper {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 6px;
+}
+
+.gf1Services {
+  margin-top: 18px;
+}
+
+.gf1ButtonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.gf1PrimaryButton,
+.gf1SecondaryButton {
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.gf1PrimaryButton {
+  background: linear-gradient(135deg, #38c976, #1abc9c);
+  color: #04101f;
+}
+
+.gf1SecondaryButton {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f6f7fb;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.gf1PrimaryButton:disabled,
+.gf1SecondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gf1Footnote {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}

@@ -2,10 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, Check, ClipboardList, PackageCheck, Rocket, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { packageDefinitions } from "@/lib/packages";
 
 export const metadata: Metadata = {
   title: "Pricing | Eclipse Systems",
-  description: "Engagement options for Eclipse Systems custom software, packaged systems, and package customization projects.",
+  description: "Engagement options for Eclipse Systems custom software, four packaged templates, and package customization projects.",
+  keywords: packageDefinitions.flatMap((pkg) => pkg.seoKeywords),
   alternates: { canonical: "/pricing" }
 };
 
@@ -46,14 +48,6 @@ const pricingFactors = [
   "Compliance, security, and audit needs",
   "Timeline, launch support, and ongoing maintenance"
 ];
-
-const examples = [
-  ["Internal portal", "Employee hub, policy library, announcements, documents, and admin tools."],
-  ["Time and invoicing system", "Timesheets, approvals, client billing, invoice drafts, and exports."],
-  ["Training platform", "Onboarding paths, lessons, completion tracking, and manager visibility."],
-  ["Storefront", "Catalog, checkout, customer accounts, fulfillment handoff, and reporting."],
-  ["Operations dashboard", "A live view of the work, numbers, exceptions, and tasks leaders need."]
-] as const;
 
 const demoHref = "/schedule-demo";
 
@@ -160,10 +154,10 @@ export default function PricingPage() {
 
         <section className="grid gap-8 lg:grid-cols-[0.65fr_1fr]">
           <div>
-            <p className="text-sm font-semibold text-primary">Example Starting Points</p>
-            <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Bring the business problem. We will shape the software path.</h2>
+            <p className="text-sm font-semibold text-primary">Packages</p>
+            <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Start from one of four templates.</h2>
             <p className="mt-5 leading-7 text-muted-foreground">
-              Existing Eclipse work can serve as a live demo, a ready-to-buy package, or the foundation for a custom system. That gives you something concrete to evaluate before the build begins.
+              Existing Eclipse work can serve as a live demo, a ready-to-buy package, or the foundation for a custom system. Operations Hub, Client Portal, CRM & Sales Pipeline, and Storefront are the four package starting points.
             </p>
             <Button asChild className="mt-8 bg-primary text-primary-foreground hover:bg-[#314839]">
               <Link href={demoHref}>Schedule a demo <ArrowRight className="h-4 w-4" /></Link>
@@ -171,13 +165,24 @@ export default function PricingPage() {
           </div>
 
           <div className="grid gap-3">
-            {examples.map(([title, text]) => (
-              <article key={title} className="rounded-md border border-border bg-white/70 p-5">
+            {packageDefinitions.map((pkg) => (
+              <article key={pkg.slug} className="rounded-md border border-border bg-white/70 p-5">
                 <div className="flex items-start gap-4">
                   <ClipboardList className="mt-1 h-5 w-5 shrink-0 text-primary" />
                   <div>
-                    <h3 className="text-xl font-semibold">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p>
+                    <h3 className="text-xl font-semibold">{pkg.name}</h3>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-primary">{pkg.tagline}</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{pkg.description}</p>
+                    {pkg.moduleNote ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{pkg.moduleNote}</p> : null}
+                    {pkg.worksWith ? <p className="mt-3 rounded-sm bg-secondary/25 px-3 py-2 text-xs font-semibold leading-5 text-primary">Works with {pkg.worksWith.packageName}: {pkg.worksWith.copy}</p> : null}
+                    <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+                      {pkg.features.slice(0, 6).map((feature) => (
+                        <li key={feature} className="flex gap-2">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </article>

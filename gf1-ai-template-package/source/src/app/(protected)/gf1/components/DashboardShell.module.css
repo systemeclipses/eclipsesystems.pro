@@ -1,0 +1,454 @@
+/* Container Layout */
+.container {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+  background: var(--brand-navy);
+  color: white;
+  width: 100%;
+  max-width: 1900px;
+  min-width: 1700px;
+  margin: 0;
+  margin-top: 50px;
+  margin-left: -300px;
+  padding: 0;
+  padding-top: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+@media (max-width: 1600px) {
+  .container {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1400px) {
+  .container {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Sidebar Styles */
+.sidebar {
+  padding: 16px 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  align-self: stretch;
+}
+
+.sidebarLogo {
+  padding: 0 20px 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navList li {
+  margin: 0;
+}
+
+.navList li a {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 22px 16px 30px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.navList li a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.95);
+  border-left-color: var(--brand-blue-light);
+}
+
+.navList li.active a {
+  background: rgba(99, 173, 242, 0.15);
+  color: var(--brand-blue-light);
+  border-left-color: var(--brand-blue-light);
+}
+
+.navList li a i {
+  width: 24px;
+  text-align: right;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.navList li a span {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+/* Main Content Area */
+.mainContent {
+  padding: 16px 16px 32px 32px;
+  overflow-y: auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 100%;
+  width: 100%;
+  min-width: auto;
+  
+}
+
+/* Responsive padding adjustments */
+@media (min-width: 1440px) {
+  .mainContent {
+    padding: 16px 24px 32px 48px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .container {
+    transform: scale(0.67);
+    transform-origin: top left;
+    width: calc(100% / 0.67);
+    min-height: calc(100vh / 0.67);
+    margin-left: 0;
+    min-width: 1645px;
+  }
+
+  .container {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .navList li a {
+    padding: 12px 18px 12px 14px;
+    font-size: 18px;
+  }
+
+  .navList li a i {
+    font-size: 16px;
+  }
+
+  .mainContent {
+    padding: 16px 12px 24px 20px;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .mainContent {
+    padding: 16px 16px 32px 24px;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: 16px 16px 28px 20px;
+    gap: 28px;
+  }
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 1280px) {
+  .statsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  font-size: 24px;
+}
+
+.statInfo {
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+/* Widgets Grid */
+.widgetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 28px;
+}
+
+@media (max-width: 1200px) {
+  .widgetGrid {
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .widgetGrid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .widgetGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 28px;
+  transition: all 0.3s ease;
+}
+
+.widget:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.widgetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.widgetHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+.widgetHeader i {
+  font-size: 18px;
+  color: var(--brand-blue-light);
+}
+
+.widgetContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Activity Item Styles */
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.activityItem:hover {
+  background: rgba(0, 0, 0, 0.3);
+  transform: translateX(4px);
+}
+
+.activityIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.activityDetails {
+  flex: 1;
+}
+
+.activityTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+}
+
+.activityTime {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Action Button Styles */
+.actionButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.actionButton:hover {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue-light);
+  transform: translateY(-2px);
+}
+
+.actionButton i {
+  font-size: 24px;
+  color: var(--brand-blue-light);
+}
+
+.actionButton span {
+  margin-top: -10px;
+}
+
+/* Pipeline Item Styles */
+.pipelineItem {
+  margin-bottom: 20px;
+}
+
+.pipelineItem:last-child {
+  margin-bottom: 0;
+}
+
+.progressBar {
+  width: 100%;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+/* Performance Grid Styles */
+.performanceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.performanceItem {
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.performanceItem:hover {
+  background: rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+}
+
+.performanceValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.performanceLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+

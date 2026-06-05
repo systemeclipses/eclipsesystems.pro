@@ -2,14 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   ArrowRight,
+  BriefcaseBusiness,
   Building2,
   Check,
   ClipboardList,
-  FileCheck2,
-  GraduationCap,
   LayoutDashboard,
   PackageCheck,
-  PanelsTopLeft,
   Rocket,
   Settings2,
   ShieldCheck,
@@ -17,6 +15,7 @@ import {
   UsersRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { packageDefinitions, type PackageSlug } from "@/lib/packages";
 
 export const metadata: Metadata = {
   title: "Eclipse Systems | Custom Software Solutions",
@@ -24,14 +23,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" }
 };
 
-const modules = [
-  { title: "Internal portals", text: "Intranets, knowledge bases, employee hubs, and admin workspaces.", icon: PanelsTopLeft },
-  { title: "Time and billing", text: "Timekeeping, approvals, invoicing, rates, exports, and reporting.", icon: FileCheck2 },
-  { title: "Training systems", text: "Onboarding, certification, policy acknowledgement, and learning paths.", icon: GraduationCap },
-  { title: "Storefronts", text: "Product catalogs, checkout flows, fulfillment handoffs, and customer accounts.", icon: ShoppingBag },
-  { title: "Dashboards", text: "Operational views that turn scattered work into decisions.", icon: LayoutDashboard },
-  { title: "Integrations", text: "Connections between the tools your business already depends on.", icon: Settings2 }
-];
+const packageIcons: Record<PackageSlug, typeof Building2> = {
+  "operations-hub": Building2,
+  "client-portal": UsersRound,
+  "crm-sales-pipeline": BriefcaseBusiness,
+  storefront: ShoppingBag
+};
 
 const paths = [
   {
@@ -157,7 +154,7 @@ function ProductMockup() {
         <aside className="border-t border-[#e4d7c6] bg-white p-4 md:border-l md:border-t-0">
           <p className="text-sm font-semibold">Common builds</p>
           <div className="mt-4 space-y-3">
-            {["Client portal", "Team intranet", "Training hub", "Operations dashboard"].map((item, index) => (
+            {["Client Portal", "Operations Hub", "CRM pipeline", "Storefront"].map((item, index) => (
               <div key={item} className="rounded-md border border-[#e1d5c5] p-3">
                 <p className="text-xs text-muted-foreground">0{index + 1}</p>
                 <p className="mt-1 text-sm font-semibold">{item}</p>
@@ -205,20 +202,23 @@ export default function LandingPage() {
 
       <section className="mx-auto grid max-w-[92rem] gap-8 px-5 py-16 lg:grid-cols-[0.55fr_1fr]">
         <div>
-          <p className="text-sm font-semibold text-primary">What We Build</p>
-          <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Business software that fits the way the work actually happens.</h2>
+          <p className="text-sm font-semibold text-primary">Packages</p>
+          <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Four starting points, shaped around the way the work actually happens.</h2>
           <p className="mt-5 max-w-md leading-7 text-muted-foreground">
-            We consult first, then build. The result is real software your team can use, not a strategy deck that leaves the hard part for later.
+            We consult first, then build from a proven template when it fits. Each package can be bought as-is, customized, or used as the foundation for a bespoke system.
           </p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
-          {modules.map((item) => {
-            const Icon = item.icon;
+          {packageDefinitions.map((pkg) => {
+            const Icon = packageIcons[pkg.slug];
             return (
-              <article key={item.title} className="rounded-md border border-border bg-white/55 p-6">
+              <article key={pkg.slug} className="rounded-md border border-border bg-white/55 p-6">
                 <Icon className="h-6 w-6 text-primary" />
-                <h3 className="mt-8 text-2xl font-semibold leading-tight">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.text}</p>
+                <h3 className="mt-8 text-2xl font-semibold leading-tight">{pkg.name}</h3>
+                <p className="mt-3 text-sm font-semibold leading-6 text-primary">{pkg.tagline}</p>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{pkg.description}</p>
+                {pkg.moduleNote ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{pkg.moduleNote}</p> : null}
+                {pkg.worksWith ? <p className="mt-4 rounded-sm bg-secondary/25 px-3 py-2 text-xs font-semibold leading-5 text-primary">Works with {pkg.worksWith.packageName}</p> : null}
               </article>
             );
           })}
