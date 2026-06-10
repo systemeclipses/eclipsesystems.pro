@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   uuid
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 export const users = pgTable("users", {
@@ -102,6 +103,7 @@ export const organizations = pgTable("organizations", {
   stripeCustomerId: text("stripe_customer_id"),
   defaultCurrency: text("default_currency").notNull().default("USD"),
   timezone: text("timezone").notNull().default("UTC"),
+  isDemo: boolean("is_demo").notNull().default(false),
   settings: jsonb("settings").notNull().default({}),
   createdAt: timestamp("created_at", { mode: "date" }),
   updatedAt: timestamp("updated_at", { mode: "date" }),
@@ -532,6 +534,23 @@ export const missionShifts = pgTable("mission_shifts", {
   publishedAt: timestamp("published_at", { mode: "date" }),
   parentTemplateId: uuid("parent_template_id"),
   recurrenceRule: jsonb("recurrence_rule"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" })
+});
+
+export const operationsPortalShifts = pgTable("operations_portal_shifts", {
+  id: text("id").primaryKey().default(sql`'ops-shift-' || gen_random_uuid()::text`),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  employeeId: text("employee_id"),
+  swapWithEmployeeId: text("swap_with_employee_id"),
+  day: text("day").notNull(),
+  time: text("time").notNull(),
+  site: text("site").notNull(),
+  status: text("status").$type<"published" | "swap_requested" | "open">().notNull().default("published"),
+  resolvedBy: text("resolved_by"),
+  resolvedAt: text("resolved_at"),
+  resolutionNote: text("resolution_note"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { mode: "date" })
@@ -1039,6 +1058,33 @@ export const productEntitlements = pgTable("product_entitlements", {
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
 });
 
+export const membershipProductRoles = pgTable(
+  "membership_product_roles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    membershipId: uuid("membership_id")
+      .notNull()
+      .references(() => memberships.id, { onDelete: "cascade" }),
+    product: text("product").$type<"timekeeping" | "eclipse" | "mission_command" | "suite" | "legal_addon">().notNull(),
+    accessRole: text("access_role").$type<"employee" | "admin">().notNull(),
+    grantedByMembershipId: uuid("granted_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { mode: "date" }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { mode: "date" }),
+    revokedByMembershipId: uuid("revoked_by_membership_id").references(() => memberships.id, { onDelete: "set null" }),
+    revokeReason: text("revoke_reason"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (role) => ({
+    membershipProductIdx: uniqueIndex("membership_product_roles_membership_product_idx").on(role.membershipId, role.product),
+    orgIdx: index("membership_product_roles_org_idx").on(role.organizationId, role.product, role.accessRole),
+    membershipIdx: index("membership_product_roles_membership_idx").on(role.membershipId)
+  })
+);
+
 export const billingPermissionGrants = pgTable(
   "billing_permission_grants",
   {
@@ -1337,3 +1383,124 @@ export const featureFlags = pgTable("feature_flags", {
   key: text("key").primaryKey(),
   enabled: boolean("enabled").notNull().default(false)
 });
+
+export const operationsLmsCourses = pgTable(
+  "operations_lms_courses",
+  {
+    id: text("id").notNull(),
+    organizationId: uuid("organization_id").notNull(),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    category: text("category").$type<"safety" | "compliance" | "onboarding" | "software" | "soft skills" | "leadership">().notNull(),
+    duration: text("duration").notNull(),
+    recurrenceMonths: integer("recurrence_months"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { mode: "date" })
+  },
+  (course) => ({
+    compoundKey: primaryKey({ columns: [course.organizationId, course.id] }),
+    orgIdx: index("operations_lms_courses_org_idx").on(course.organizationId)
+  })
+);
+
+export const operationsLmsLessons = pgTable(
+  "operations_lms_lessons",
+  {
+    id: text("id").notNull(),
+    organizationId: uuid("organization_id").notNull(),
+    courseId: text("course_id").notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    position: integer("position").notNull().default(0)
+  },
+  (lesson) => ({
+    compoundKey: primaryKey({ columns: [lesson.organizationId, lesson.id] }),
+    courseIdx: index("operations_lms_lessons_course_idx").on(lesson.courseId, lesson.position)
+  })
+);
+
+export const operationsLmsQuizzes = pgTable(
+  "operations_lms_quizzes",
+  {
+    id: text("id").notNull(),
+    organizationId: uuid("organization_id").notNull(),
+    courseId: text("course_id").notNull(),
+    prompt: text("prompt").notNull(),
+    correctAnswer: text("correct_answer").notNull().default("Acknowledge safe procedure"),
+    questions: jsonb("questions").$type<Array<{ prompt: string; options: string[]; correctIndex: number; explanation: string }>>().notNull().default([]),
+    passingScore: integer("passing_score").notNull().default(80)
+  },
+  (quiz) => ({
+    compoundKey: primaryKey({ columns: [quiz.organizationId, quiz.id] })
+  })
+);
+
+export const operationsLmsLearningPaths = pgTable(
+  "operations_lms_learning_paths",
+  {
+    id: text("id").notNull(),
+    organizationId: uuid("organization_id").notNull(),
+    name: text("name").notNull(),
+    kind: text("kind").$type<"new_hire" | "role_based" | "promotion" | "compliance" | "manual">().notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (path) => ({
+    compoundKey: primaryKey({ columns: [path.organizationId, path.id] })
+  })
+);
+
+export const operationsLmsLearningPathCourses = pgTable(
+  "operations_lms_learning_path_courses",
+  {
+    pathId: text("path_id").notNull(),
+    courseId: text("course_id").notNull(),
+    organizationId: uuid("organization_id").notNull(),
+    position: integer("position").notNull().default(0),
+    required: boolean("required").notNull().default(true)
+  },
+  (pathCourse) => ({
+    compoundKey: primaryKey({ columns: [pathCourse.organizationId, pathCourse.pathId, pathCourse.courseId] })
+  })
+);
+
+export const operationsLmsAssignmentRules = pgTable(
+  "operations_lms_assignment_rules",
+  {
+    id: text("id").primaryKey(),
+    organizationId: uuid("organization_id").notNull(),
+    trigger: text("trigger").notNull(),
+    pathId: text("path_id").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (rule) => ({
+    triggerIdx: uniqueIndex("operations_lms_assignment_rules_trigger_idx").on(rule.organizationId, rule.trigger, rule.pathId)
+  })
+);
+
+export const operationsLmsEnrollments = pgTable(
+  "operations_lms_enrollments",
+  {
+    id: text("id").primaryKey(),
+    organizationId: uuid("organization_id").notNull(),
+    employeeId: text("employee_id").notNull(),
+    courseId: text("course_id").notNull(),
+    status: text("status").$type<"assigned" | "in_progress" | "complete" | "overdue" | "removed">().notNull().default("assigned"),
+    reason: text("reason").$type<"new_hire" | "role_change" | "promotion" | "compliance" | "corrective" | "manual">().notNull().default("manual"),
+    dueDate: date("due_date", { mode: "date" }),
+    progress: integer("progress").notNull().default(0),
+    currentLesson: integer("current_lesson").notNull().default(0),
+    assignedBy: text("assigned_by"),
+    completedAt: timestamp("completed_at", { mode: "date" }),
+    certificateIssuedAt: timestamp("certificate_issued_at", { mode: "date" }),
+    removedBy: text("removed_by"),
+    removedAt: timestamp("removed_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (enrollment) => ({
+    employeeIdx: index("operations_lms_enrollments_employee_idx").on(enrollment.organizationId, enrollment.employeeId, enrollment.status),
+    uniqueCourseReason: uniqueIndex("operations_lms_enrollments_unique_reason_idx").on(enrollment.organizationId, enrollment.employeeId, enrollment.courseId, enrollment.reason)
+  })
+);
