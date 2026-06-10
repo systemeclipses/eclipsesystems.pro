@@ -51,6 +51,8 @@ type LearningPath = {
   courseIds: string[];
 };
 
+type SidebarNavItem = { page: PortalPage; label: string; icon: typeof LayoutDashboard };
+
 const clientNav: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }> = [
   { page: "dashboard", label: "Home", icon: LayoutDashboard },
   { page: "projects", label: "Projects", icon: FolderKanban },
@@ -125,6 +127,25 @@ function highlightClass(active: boolean) {
   return active ? "ring-2 ring-secondary ring-offset-2 ring-offset-background motion-safe:animate-pulse" : "";
 }
 
+function uniqueNavItems(items: SidebarNavItem[]) {
+  const byPage = new Map<PortalPage, SidebarNavItem>();
+  items.forEach((item) => byPage.set(item.page, item));
+  return Array.from(byPage.values());
+}
+
+function groupedOperationsNav(items: SidebarNavItem[]) {
+  const available = uniqueNavItems(items);
+  const byPage = new Map(available.map((item) => [item.page, item]));
+  const pick = (pages: PortalPage[]) => pages.map((page) => byPage.get(page)).filter(Boolean) as SidebarNavItem[];
+  return [
+    { id: "workforce", label: "Workforce", icon: Clock3, items: pick(["my-timekeeping", "timekeeping", "my-schedule", "scheduling", "hr", "time-off", "profile"]) },
+    { id: "client-ops", label: "Client Ops", icon: Building2, items: pick(["ticketing", "billing", "client-back-office", "documents"]) },
+    { id: "comms", label: "Comms + Docs", icon: MessageSquareText, items: pick(["chat", "company-home", "knowledge"]) },
+    { id: "learning", label: "Learning", icon: BookOpenCheck, items: pick(["lms"]) },
+    { id: "admin", label: "Admin", icon: Settings, items: pick(["settings"]) }
+  ].filter((group) => group.items.length > 0);
+}
+
 function actorForPane(role: "staff" | "client", clientId: string): PortalViewer {
   return role === "client" ? { role: "client", clientId } : { role: "admin" };
 }
@@ -133,7 +154,8 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
   const store = useOperationsPortalStore();
 
   const isClient = store.viewer.role === "client";
-  const navItems = isClient ? clientNav : visibleOperationsNav(store.viewer).map((item) => ({ ...item, icon: operationsNavIcons[item.page] }));
+  const navItems = isClient ? clientNav : uniqueNavItems(visibleOperationsNav(store.viewer).map((item) => ({ ...item, icon: operationsNavIcons[item.page] })));
+  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({ workforce: true, "client-ops": true });
   const clientId = isClient ? store.viewer.clientId ?? store.selectedClientId : store.selectedClientId;
   const selectedClient = store.clients.find((client) => client.id === clientId) ?? store.clients[0];
   const visibleProjects = visibleForViewer(store.projects, store.viewer);
@@ -210,15 +232,7 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
         <Link href="/templates" className={`${portalBrand.fonts.title} text-3xl leading-none text-cream`}>{portalBrand.logoText}</Link>
         {!isClient ? <div className="mt-5"><NotificationBell surface="sidebar" /></div> : null}
         <nav className="mt-7 grid gap-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button key={item.page} onClick={() => store.setActivePage(item.page)} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${store.activePage === item.page ? "bg-white/12 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
-                <Icon className="h-[18px] w-[18px] text-secondary" />
-                <span className="min-w-0 flex-1">{item.label}</span>
-              </button>
-            );
-          })}
+          {isClient ? <FlatSidebarNav items={navItems} activePage={store.activePage} onSelect={store.setActivePage} /> : <GroupedSidebarNav items={navItems} activePage={store.activePage} openGroups={openNavGroups} onToggle={(groupId) => setOpenNavGroups((current) => ({ ...current, [groupId]: !current[groupId] }))} onSelect={store.setActivePage} />}
         </nav>
       </aside>
 
@@ -356,6 +370,64 @@ function ViewerSwitcher({ selectedClientId }: { selectedClientId: string }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function FlatSidebarNav({ items, activePage, onSelect }: { items: SidebarNavItem[]; activePage: PortalPage; onSelect: (page: PortalPage) => void }) {
+  return (
+    <>
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button key={item.page} onClick={() => onSelect(item.page)} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${activePage === item.page ? "bg-white/12 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
+            <Icon className="h-[18px] w-[18px] text-secondary" />
+            <span className="min-w-0 flex-1">{item.label}</span>
+          </button>
+        );
+      })}
+    </>
+  );
+}
+
+function GroupedSidebarNav({ items, activePage, openGroups, onToggle, onSelect }: { items: SidebarNavItem[]; activePage: PortalPage; openGroups: Record<string, boolean>; onToggle: (groupId: string) => void; onSelect: (page: PortalPage) => void }) {
+  const groups = groupedOperationsNav(items);
+  const home = items.find((item) => item.page === "dashboard");
+
+  return (
+    <>
+      {home ? (
+        <button onClick={() => onSelect(home.page)} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${activePage === home.page ? "bg-white/12 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
+          {(() => {
+            const HomeIcon = home.icon;
+            return <HomeIcon className="h-[18px] w-[18px] text-secondary" />;
+          })()}
+          <span className="min-w-0 flex-1">{home.label}</span>
+        </button>
+      ) : null}
+      {groups.map((group) => {
+        const Icon = group.icon;
+        const active = group.items.some((item) => item.page === activePage);
+        const open = openGroups[group.id] ?? active;
+        return (
+          <div key={group.id} className="grid gap-1">
+            <button onClick={() => onToggle(group.id)} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${active ? "bg-white/12 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"}`} aria-expanded={open}>
+              <Icon className="h-[18px] w-[18px] text-secondary" />
+              <span className="min-w-0 flex-1">{group.label}</span>
+              <ChevronDown className={`h-4 w-4 text-white/60 transition ${open ? "rotate-180" : ""}`} />
+            </button>
+            {open ? (
+              <div className="ml-5 grid gap-1 border-l border-white/12 pl-2">
+                {group.items.map((item) => (
+                  <button key={item.page} onClick={() => onSelect(item.page)} className={`rounded-md px-3 py-2 text-left text-sm transition ${activePage === item.page ? "bg-secondary/20 text-white" : "text-white/62 hover:bg-white/8 hover:text-white"}`}>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </>
   );
 }
 
