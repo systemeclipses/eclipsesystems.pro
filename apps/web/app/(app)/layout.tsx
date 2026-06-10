@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   BarChart3,
+  BriefcaseBusiness,
   Building2,
   CalendarClock,
   CalendarDays,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   ClipboardList,
   CreditCard,
@@ -27,7 +31,7 @@ import {
 } from "lucide-react";
 import { ThemePreferenceSync } from "@/components/app/theme-preference-sync";
 import { ThemeToggle } from "@/components/app/theme-toggle";
-import { PRODUCT_DETAILS, getProductUiContext, type ProductCode, type RoleLevel } from "@/src/billing/entitlements";
+import { PRODUCT_DETAILS, getProductUiContext, productRoleFor, type ProductCode, type RoleLevel } from "@/src/billing/entitlements";
 import { auth } from "@/src/auth";
 import { hasUsableSubscription } from "@/src/db/queries/billing";
 import { getDefaultOrganizationForUser, getMembershipIdForUser } from "@/src/db/queries/organizations";
@@ -44,7 +48,8 @@ type NavSection = {
   items: NavItem[];
 };
 
-const dashboardNavItem = { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard } satisfies NavItem;
+const dashboardNavItem = { label: "Templates", href: "/templates", icon: LayoutDashboard } satisfies NavItem;
+const crmNavItem = { label: "CRM", href: "/crm", icon: BriefcaseBusiness } satisfies NavItem;
 
 const timekeepingEmployeeNav = [
   { label: "Clock", href: "/timekeeping?tab=clock", icon: Clock3 },
@@ -140,8 +145,27 @@ const suiteSections: NavSection[] = [
   }
 ];
 
-function appTitle(context: Awaited<ReturnType<typeof getProductUiContext>>) {
-  if (context.isSuite) return context.organizationName;
+type ProductContext = Awaited<ReturnType<typeof getProductUiContext>>;
+
+function productHomeHref(product: ProductCode) {
+  if (product === "timekeeping") return "/timekeeping";
+  if (product === "eclipse") return "/timer";
+  if (product === "mission_command") return "/shifts";
+  if (product === "legal_addon") return "/matters";
+  return "/templates";
+}
+
+function isProductCode(value: string | undefined): value is ProductCode {
+  return value === "timekeeping" || value === "eclipse" || value === "mission_command" || value === "legal_addon";
+}
+
+function resolveActiveProduct(context: ProductContext, preferredProduct?: string): ProductCode | null {
+  if (isProductCode(preferredProduct) && context.entitledProducts.includes(preferredProduct)) return preferredProduct;
+  return context.entitledProducts[0] ?? null;
+}
+
+function appTitle(context: ProductContext, activeProduct: ProductCode | null) {
+  if (activeProduct) return PRODUCT_DETAILS[activeProduct].shortName;
   if (context.entitledProducts.length === 1) return PRODUCT_DETAILS[context.entitledProducts[0]].shortName;
   return context.organizationName;
 }
@@ -169,7 +193,7 @@ function ClockStatusIndicator({ state }: { state: ShiftState | null }) {
 }
 
 function isAdminRole(role: RoleLevel) {
-  return role === "admin" || role === "owner";
+  return role === "admin" || role === "owner" || role === "superuser";
 }
 
 function isManagerRole(role: RoleLevel) {
@@ -202,7 +226,13 @@ function singleProductSections(product: ProductCode, role: RoleLevel): NavSectio
     : [{ items: legalEmployeeNav }];
 }
 
-function multiProductSections(products: ProductCode[], role: RoleLevel): NavSection[] {
+function navRoleForProduct(context: ProductContext, product: ProductCode): RoleLevel {
+  if (context.role === "superuser" || context.role === "owner") return context.role;
+  return productRoleFor(context, product) === "admin" ? "admin" : "employee";
+}
+
+function multiProductSections(context: Awaited<ReturnType<typeof getProductUiContext>>): NavSection[] {
+  const products = context.entitledProducts;
   const coreProducts = products.filter((product): product is Exclude<ProductCode, "legal_addon"> => product === "timekeeping" || product === "eclipse" || product === "mission_command");
   const hasCoreSuite = coreProducts.length === 3;
   const sections: NavSection[] = hasCoreSuite
@@ -213,27 +243,29 @@ function multiProductSections(products: ProductCode[], role: RoleLevel): NavSect
     sections.push({ title: "Legal", items: legalEmployeeNav.slice(0, 5) });
   }
 
-  if (isAdminRole(role)) {
+  const adminProducts = products.filter((product) => productRoleFor(context, product) === "admin");
+
+  if (adminProducts.length) {
     const adminItems: NavItem[] = [];
-    if (products.some((product) => product === "timekeeping" || product === "mission_command")) {
+    if (adminProducts.some((product) => product === "timekeeping" || product === "mission_command")) {
       adminItems.push(
         { label: "People", href: "/settings/members", icon: UsersRound },
         { label: "Sites", href: "/settings/timekeeping?section=sites", icon: MapPinned }
       );
     }
-    if (products.includes("timekeeping")) {
+    if (adminProducts.includes("timekeeping")) {
       adminItems.push(
         { label: "Pay Rules", href: "/settings/timekeeping", icon: DollarSign },
         { label: "Holidays", href: "/settings/timekeeping?section=holidays", icon: CalendarDays }
       );
     }
-    if (products.includes("mission_command")) {
+    if (adminProducts.includes("mission_command")) {
       adminItems.push({ label: "Coverage Rules", href: "/settings/timekeeping?section=coverage", icon: ShieldCheck });
     }
-    if (products.includes("eclipse")) {
+    if (adminProducts.includes("eclipse")) {
       adminItems.push({ label: "Tax & Compliance", href: "/settings/rates?section=tax", icon: Tags });
     }
-    if (products.includes("legal_addon")) {
+    if (adminProducts.includes("legal_addon")) {
       adminItems.push({ label: "Trust Accounting", href: "/settings/billing?section=trust", icon: ShieldCheck });
     }
     adminItems.push({ label: "Reports", href: "/reports", icon: BarChart3 }, { label: "Settings", href: "/settings", icon: Settings });
@@ -245,16 +277,17 @@ function multiProductSections(products: ProductCode[], role: RoleLevel): NavSect
   return sections;
 }
 
-function sidebarSections(context: Awaited<ReturnType<typeof getProductUiContext>>) {
-  const sections = context.entitledProducts.length === 1
-    ? singleProductSections(context.entitledProducts[0], context.role)
-    : multiProductSections(context.entitledProducts, context.role);
+function sidebarSections(context: ProductContext, activeProduct: ProductCode | null) {
+  if (!context.entitledProducts.length) return [{ items: [dashboardNavItem, crmNavItem, { label: "Settings", href: "/settings", icon: Settings }] }];
+
+  const product = activeProduct ?? context.entitledProducts[0];
+  const sections = singleProductSections(product, navRoleForProduct(context, product));
 
   const [primary, ...rest] = sections;
-  return [{ ...primary, items: [dashboardNavItem, ...primary.items] }, ...rest];
+  return [{ ...primary, items: [dashboardNavItem, crmNavItem, ...primary.items] }, ...rest];
 }
 
-function lockedProductsFor(context: Awaited<ReturnType<typeof getProductUiContext>>) {
+function lockedProductsFor(context: ProductContext) {
   if (!isAdminRole(context.role)) return [];
   if (context.entitledProducts.length === 1 && context.entitledProducts[0] === "legal_addon") {
     return (["timekeeping", "mission_command"] as ProductCode[]).filter((product) => !context.entitledProducts.includes(product));
@@ -267,14 +300,100 @@ function lockedProductLabel(product: ProductCode) {
   return PRODUCT_DETAILS[product].shortName;
 }
 
-function startHref(context: Awaited<ReturnType<typeof getProductUiContext>>) {
-  const first = context.entitledProducts[0];
-  if (context.entitledProducts.length !== 1) return "/dashboard";
-  if (first === "timekeeping") return "/timekeeping";
-  if (first === "eclipse") return "/timer";
-  if (first === "mission_command") return "/shifts";
-  if (first === "legal_addon") return "/matters";
-  return "/dashboard";
+function startHref(activeProduct: ProductCode | null) {
+  return activeProduct ? productHomeHref(activeProduct) : "/templates";
+}
+
+function ProductSwitcher({ context, activeProduct, tone = "light" }: { context: ProductContext; activeProduct: ProductCode | null; tone?: "light" | "dark" }) {
+  if (context.entitledProducts.length <= 1 || !activeProduct) return null;
+
+  const dark = tone === "dark";
+  const activeIndex = Math.max(0, context.entitledProducts.indexOf(activeProduct));
+  const previousProduct = context.entitledProducts[(activeIndex - 1 + context.entitledProducts.length) % context.entitledProducts.length];
+  const nextProduct = context.entitledProducts[(activeIndex + 1) % context.entitledProducts.length];
+  const activeDetail = PRODUCT_DETAILS[activeProduct];
+  const previousDetail = PRODUCT_DETAILS[previousProduct];
+  const nextDetail = PRODUCT_DETAILS[nextProduct];
+
+  return (
+    <details className="relative text-sm">
+      <summary className={`grid h-14 min-w-52 cursor-pointer list-none grid-cols-[1fr_auto] items-center gap-3 rounded-md border px-4 ${
+        dark
+          ? "border-white/15 bg-[#2f4135] text-white"
+          : "border-border bg-white/80 text-ink shadow-sm shadow-primary/5 dark:border-white/15 dark:bg-[#2f4135] dark:text-white"
+      }`}>
+        <span className="min-w-0 truncate text-left text-base font-bold leading-normal">Switch apps</span>
+        <ChevronDown className={`h-4 w-4 self-center ${dark ? "text-white/58" : "text-muted-foreground dark:text-white/58"}`} />
+      </summary>
+      <div className="fixed inset-0 z-50 grid place-items-center bg-black/35 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-4xl rounded-md border border-border bg-background p-5 shadow-2xl shadow-black/25">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-primary dark:text-secondary">Switch app</p>
+              <p className="mt-1 text-sm text-muted-foreground">One app at a time, with the next options peeking in.</p>
+            </div>
+            <span className="rounded-sm border border-border px-2 py-1 text-xs font-semibold text-muted-foreground">{context.entitledProducts.length} apps</span>
+          </div>
+
+          <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
+            <form action="/api/app/switch-product" method="post">
+              <input type="hidden" name="product" value={previousProduct} />
+              <button type="submit" className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white/70 text-ink shadow-sm transition hover:-translate-x-0.5 hover:border-primary hover:text-primary dark:bg-white/5 dark:text-white">
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            </form>
+
+            <div className="relative mx-auto grid min-h-72 w-full max-w-2xl place-items-center overflow-hidden">
+              <form action="/api/app/switch-product" method="post" className="absolute left-0 top-1/2 hidden w-48 -translate-y-1/2 -rotate-3 opacity-55 blur-[0.2px] md:block">
+                <input type="hidden" name="product" value={previousProduct} />
+                <button type="submit" className="min-h-44 w-full rounded-md border border-border bg-white/60 p-4 text-left text-ink shadow-sm transition hover:opacity-90 dark:bg-white/5 dark:text-white">
+                  <p className="text-xl font-bold leading-tight">{previousDetail.shortName}</p>
+                  <p className="mt-3 line-clamp-3 text-sm leading-5 text-muted-foreground dark:text-white/58">{previousDetail.description}</p>
+                </button>
+              </form>
+
+              <form action="/api/app/switch-product" method="post" className="absolute right-0 top-1/2 hidden w-48 -translate-y-1/2 rotate-3 opacity-55 blur-[0.2px] md:block">
+                <input type="hidden" name="product" value={nextProduct} />
+                <button type="submit" className="min-h-44 w-full rounded-md border border-border bg-white/60 p-4 text-left text-ink shadow-sm transition hover:opacity-90 dark:bg-white/5 dark:text-white">
+                  <p className="text-xl font-bold leading-tight">{nextDetail.shortName}</p>
+                  <p className="mt-3 line-clamp-3 text-sm leading-5 text-muted-foreground dark:text-white/58">{nextDetail.description}</p>
+                </button>
+              </form>
+
+                <form
+                  action="/api/app/switch-product"
+                  method="post"
+                  className="relative z-10 w-full max-w-md"
+                >
+                  <input type="hidden" name="product" value={activeProduct} />
+                  <button
+                    type="submit"
+                    className="group min-h-64 w-full rounded-md border border-primary bg-[#dfead7] p-6 text-left text-primary shadow-2xl shadow-primary/15 transition duration-200 hover:-translate-y-1 dark:border-[#6f8e76] dark:bg-[#3f5948] dark:text-white"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-4xl font-bold leading-none">{activeDetail.shortName}</p>
+                      <span className="shrink-0 rounded-sm bg-primary px-2 py-1 text-xs font-semibold text-white dark:bg-white/15">Active</span>
+                    </div>
+                    <p className="mt-5 max-w-sm text-sm leading-6 text-muted-foreground dark:text-white/72">{activeDetail.description}</p>
+                    <span className="mt-8 inline-flex items-center gap-1 text-sm font-semibold">
+                      Stay here
+                      <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
+                    </span>
+                  </button>
+                </form>
+            </div>
+
+            <form action="/api/app/switch-product" method="post">
+              <input type="hidden" name="product" value={nextProduct} />
+              <button type="submit" className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white/70 text-ink shadow-sm transition hover:translate-x-0.5 hover:border-primary hover:text-primary dark:bg-white/5 dark:text-white">
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </details>
+  );
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -282,27 +401,38 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session?.user) redirect("/login");
   const userName = session.user.name || session.user.email || "Account";
   const pathname = headers().get("x-pathname") ?? "";
+  const standalonePackageRoutes = ["/templates", "/dashboard", "/operations", "/client-portal", "/crm", "/storefront"];
+  const useStandalonePackageShell = standalonePackageRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   const subscriptionSetupRoutes = ["/settings/billing", "/settings/account", "/account"];
   const canBypassSubscription = subscriptionSetupRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   const organizationId = session.user.id ? await getDefaultOrganizationForUser(session.user.id) : null;
 
   if (!organizationId) redirect("/onboarding");
-  if (!canBypassSubscription && !(await hasUsableSubscription(organizationId))) redirect("/settings/billing");
+  if (useStandalonePackageShell) {
+    return (
+      <div className="min-h-screen bg-background">
+        <ThemePreferenceSync />
+        {children}
+      </div>
+    );
+  }
   const context = await getProductUiContext(session.user.id, organizationId);
+  if (!canBypassSubscription && context.role !== "superuser" && !(await hasUsableSubscription(organizationId))) redirect("/settings/billing");
+  const activeProduct = resolveActiveProduct(context, cookies().get("eclipse_active_product")?.value);
   const membershipId = context.entitledProducts.includes("timekeeping") ? await getMembershipIdForUser(session.user.id, organizationId) : null;
   const currentClockState = membershipId ? (await getCurrentShiftState(organizationId, membershipId)).state : null;
-  const sections = sidebarSections(context);
+  const sections = sidebarSections(context, activeProduct);
   const lockedCoreProducts = lockedProductsFor(context);
   const productCount = context.entitledProducts.filter((product) => product === "timekeeping" || product === "eclipse" || product === "mission_command").length;
   const lockedHeading = productCount === 2 && lockedCoreProducts.length === 1 ? "One more" : "Other products";
-  const homeHref = startHref(context);
-  const showSidebarAccount = !(pathname === "/dashboard" && isAdminRole(context.role));
+  const homeHref = startHref(activeProduct);
+  const showSidebarAccount = !(pathname === "/templates" && isAdminRole(context.role));
 
   return (
     <div className="min-h-screen bg-background">
       <ThemePreferenceSync />
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-border bg-[#2f4135] p-4 text-white md:flex md:flex-col">
-        <Link href={homeHref} className="font-title text-3xl leading-none text-cream">{appTitle(context)}</Link>
+        <Link href={homeHref} className="font-title text-3xl leading-none text-cream">{appTitle(context, activeProduct)}</Link>
         <div className="mt-7 grid gap-5 pr-1">
           {sections.map((section, index) => (
             <div key={`${section.title ?? "primary"}-${index}`} className={index > 0 ? "border-t border-white/10 pt-5" : undefined}>
@@ -334,8 +464,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         ) : null}
         <div className="mt-auto pt-5">
+          <ProductSwitcher context={context} activeProduct={activeProduct} tone="dark" />
           {showSidebarAccount ? (
-            <details className="group mb-3 rounded-md border border-white/10 bg-white/8 text-sm text-white/82 transition open:bg-white/13">
+            <details className="group mb-3 mt-3 rounded-md border border-white/10 bg-white/8 text-sm text-white/82 transition open:bg-white/13">
               <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-3">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm bg-secondary text-primary">
                   <UserRound className="h-4 w-4" />
@@ -358,7 +489,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
       <header className="sticky top-0 z-40 border-b border-border bg-[#2f4135] p-3 text-white md:hidden">
         <div className="flex items-center justify-between gap-3">
-          <Link href={homeHref} className="font-title text-2xl leading-none text-cream">{appTitle(context)}</Link>
+          <div className="min-w-0">
+            <Link href={homeHref} className="block truncate font-title text-2xl leading-none text-cream">{appTitle(context, activeProduct)}</Link>
+          </div>
           <div className="flex items-center gap-2">
             <details className="relative">
               <summary aria-label="Account menu" className="grid h-12 w-12 cursor-pointer list-none place-items-center rounded-md border border-white/15 bg-white/10 text-white">

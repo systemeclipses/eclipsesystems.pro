@@ -1,10 +1,12 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { PLAN_NAMES, PLAN_PRICES, type PlanCode } from "@eclipsesystems/shared/plans";
 import { db } from "@/src/db";
-import { billingPermissionGrants, memberships, organizations, productEntitlements, subscriptions } from "@/src/db/schema";
+import { billingPermissionGrants, membershipProductRoles, memberships, organizations, productEntitlements, subscriptions } from "@/src/db/schema";
 
 export type ProductCode = "timekeeping" | "eclipse" | "mission_command" | "legal_addon";
-export type RoleLevel = "employee" | "team_lead" | "manager" | "admin" | "owner";
+export type ProductAccessCode = ProductCode | "suite";
+export type ProductAccessRole = "employee" | "admin";
+export type RoleLevel = "employee" | "team_lead" | "manager" | "admin" | "owner" | "superuser";
 
 export type ProductUiContext = {
   organizationId: string;
@@ -13,6 +15,8 @@ export type ProductUiContext = {
   plan: PlanCode | null;
   planName: string | null;
   entitledProducts: ProductCode[];
+  productRoles: Partial<Record<ProductCode, ProductAccessRole>>;
+  productAccess: Array<{ product: ProductAccessCode; accessRole: ProductAccessRole }>;
   lockedProducts: ProductCode[];
   isSuite: boolean;
   hasLegal: boolean;
@@ -68,9 +72,10 @@ export const PRODUCT_DETAILS: Record<ProductCode, {
 
 const coreProducts: ProductCode[] = ["timekeeping", "eclipse", "mission_command"];
 const allProducts: ProductCode[] = [...coreProducts, "legal_addon"];
+const roleRank: Record<ProductAccessRole, number> = { employee: 0, admin: 1 };
 
 function normalizeRole(role: string | null | undefined): RoleLevel {
-  if (role === "owner" || role === "admin" || role === "manager" || role === "team_lead" || role === "employee") return role;
+  if (role === "superuser" || role === "owner" || role === "admin" || role === "manager" || role === "team_lead" || role === "employee") return role;
   if (role === "member") return "employee";
   return "employee";
 }
@@ -96,8 +101,21 @@ export function productForFeature(feature: string | null | undefined): ProductCo
   return null;
 }
 
+function productsForAccessProduct(product: ProductAccessCode): ProductCode[] {
+  if (product === "suite") return coreProducts;
+  return [product];
+}
+
+function highestProductRole(current: ProductAccessRole | undefined, next: ProductAccessRole) {
+  return !current || roleRank[next] > roleRank[current] ? next : current;
+}
+
 export function hasProduct(context: ProductUiContext, product: ProductCode) {
   return context.entitledProducts.includes(product);
+}
+
+export function productRoleFor(context: ProductUiContext, product: ProductCode): ProductAccessRole {
+  return context.productRoles[product] ?? (context.role === "superuser" || context.role === "owner" || context.role === "admin" ? "admin" : "employee");
 }
 
 export async function getProductUiContext(userId: string, organizationId: string): Promise<ProductUiContext> {
@@ -126,31 +144,57 @@ export async function getProductUiContext(userId: string, organizationId: string
       .where(eq(productEntitlements.organizationId, organizationId))
   ]);
 
-  const billingPermissionRows = row?.membershipId
-    ? await db
-        .select({ permission: billingPermissionGrants.permission })
-        .from(billingPermissionGrants)
-        .where(
-          and(
-            eq(billingPermissionGrants.organizationId, organizationId),
-            eq(billingPermissionGrants.membershipId, row.membershipId),
-            isNull(billingPermissionGrants.revokedAt)
+  const [billingPermissionRows, productAccessRows] = row?.membershipId
+    ? await Promise.all([
+        db
+          .select({ permission: billingPermissionGrants.permission })
+          .from(billingPermissionGrants)
+          .where(
+            and(
+              eq(billingPermissionGrants.organizationId, organizationId),
+              eq(billingPermissionGrants.membershipId, row.membershipId),
+              isNull(billingPermissionGrants.revokedAt)
+            )
+          ),
+        db
+          .select({ product: membershipProductRoles.product, accessRole: membershipProductRoles.accessRole })
+          .from(membershipProductRoles)
+          .where(
+            and(
+              eq(membershipProductRoles.organizationId, organizationId),
+              eq(membershipProductRoles.membershipId, row.membershipId),
+              isNull(membershipProductRoles.revokedAt)
+            )
           )
-        )
-    : [];
+      ])
+    : [[], []];
 
-  const role = row?.ownerId === userId ? "owner" : normalizeRole(row?.role);
   const plan = isPlanCode(row?.plan) ? row.plan : null;
   const activeEntitlementProducts = entitlementRows
     .filter((entitlement) => entitlement.status === "active" || entitlement.status === "trial")
     .map((entitlement) => entitlement.product);
-  const entitledProducts = Array.from(new Set(activeEntitlementProducts.length ? activeEntitlementProducts : productsForPlan(plan)));
-  const isSuite = plan === "suite" || coreProducts.every((product) => entitlementRows.some((entitlement) => entitlement.product === product && entitlement.acquiredVia === "suite" && (entitlement.status === "active" || entitlement.status === "trial")));
+  const baseRole = row?.role === "superuser" ? "superuser" : row?.ownerId === userId ? "owner" : normalizeRole(row?.role);
+  const availableProducts = Array.from(new Set(activeEntitlementProducts.length ? activeEntitlementProducts : productsForPlan(plan)));
+  const assignedProductRoles = productAccessRows.reduce<Partial<Record<ProductCode, ProductAccessRole>>>((acc, assignment) => {
+    for (const product of productsForAccessProduct(assignment.product)) {
+      if (availableProducts.includes(product)) acc[product] = highestProductRole(acc[product], assignment.accessRole);
+    }
+    return acc;
+  }, {});
+  const productRoles = baseRole === "superuser"
+    ? Object.fromEntries(allProducts.map((product) => [product, "admin" as ProductAccessRole])) as Record<ProductCode, ProductAccessRole>
+    : productAccessRows.length
+      ? assignedProductRoles
+      : Object.fromEntries(availableProducts.map((product) => [product, baseRole === "owner" || baseRole === "admin" ? "admin" as ProductAccessRole : "employee" as ProductAccessRole])) as Partial<Record<ProductCode, ProductAccessRole>>;
+  const isProductAdmin = Object.values(productRoles).includes("admin");
+  const role: RoleLevel = baseRole === "superuser" || baseRole === "owner" || baseRole === "admin" ? baseRole : isProductAdmin ? "admin" : baseRole;
+  const entitledProducts = baseRole === "superuser" ? allProducts : productAccessRows.length ? allProducts.filter((product) => productRoles[product]) : availableProducts;
+  const isSuite = baseRole === "superuser" || plan === "suite" || coreProducts.every((product) => entitlementRows.some((entitlement) => entitlement.product === product && entitlement.acquiredVia === "suite" && (entitlement.status === "active" || entitlement.status === "trial")));
   const hasLegal = entitledProducts.includes("legal_addon");
-  const isPurchasingRole = role === "admin" || role === "owner";
+  const isPurchasingRole = role === "admin" || role === "owner" || role === "superuser" || isProductAdmin;
   const canDiscover = isPurchasingRole || role === "manager" || role === "team_lead";
   const billingPermissions =
-    role === "owner"
+    role === "owner" || role === "superuser"
       ? ["billing.view", "billing.usage.view", "billing.payment.update", "billing.plan.modify", "billing.cancel", "billing.owner"]
       : Array.from(new Set(billingPermissionRows.map((grant) => grant.permission)));
   const hasBillingAccess = billingPermissions.includes("billing.view") || billingPermissions.includes("billing.owner");
@@ -164,6 +208,8 @@ export async function getProductUiContext(userId: string, organizationId: string
     plan,
     planName: plan ? PLAN_NAMES[plan] : null,
     entitledProducts,
+    productRoles,
+    productAccess: productAccessRows,
     lockedProducts,
     isSuite,
     hasLegal,

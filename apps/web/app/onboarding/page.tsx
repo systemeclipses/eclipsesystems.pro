@@ -70,7 +70,7 @@ export default async function OnboardingPage() {
     .where(and(eq(organizations.id, organizationId), isNull(organizations.deletedAt)))
     .limit(1);
 
-  if (!membership || !organization || !profile) redirect("/dashboard");
+  if (!membership || !organization || !profile) redirect("/templates");
 
   let manager = { name: "your manager", email: null as string | null };
   if (membership.managerMembershipId) {

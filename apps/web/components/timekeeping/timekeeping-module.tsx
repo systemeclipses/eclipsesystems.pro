@@ -275,7 +275,7 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
   const runningDuration = active ? secondsFor(active) : 0;
   void tick;
   const filteredRequests = requestFilter === "all" ? requests : requests.filter((request) => request.status === requestFilter);
-  const isManager = ["owner", "admin", "manager"].includes(role);
+  const isManager = ["superuser", "owner", "admin", "manager"].includes(role);
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
@@ -815,7 +815,7 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
                 <>
                   <Button className="h-11 w-full bg-[#2f6f4f]">Approve Timesheet</Button>
                   <Button variant="outline" className="h-11 w-full">Send Back</Button>
-                  {role === "owner" || role === "admin" ? <Button variant="outline" className="h-11 w-full">Lock for Payroll</Button> : null}
+                  {role === "superuser" || role === "owner" || role === "admin" ? <Button variant="outline" className="h-11 w-full">Lock for Payroll</Button> : null}
                 </>
               ) : null}
               <div className="rounded-md border border-dashed border-border bg-cream/50 p-4 text-sm text-muted-foreground">Audit panel will show edits, approvals, locks, and notes as events accumulate.</div>

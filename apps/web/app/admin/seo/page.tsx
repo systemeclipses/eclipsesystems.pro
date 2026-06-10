@@ -7,7 +7,7 @@ export default async function SeoAdminPage() {
   const supabase = createServerClient();
   const { data: memberships } = await supabase.from("memberships").select("role").limit(1);
   const role = memberships?.[0]?.role;
-  if (role !== "owner") redirect("/dashboard");
+  if (role !== "owner") redirect("/templates");
 
   const cards = [
     ["Indexation health", "Connect Google Search Console and Bing Webmaster APIs."],

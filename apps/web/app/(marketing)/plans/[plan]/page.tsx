@@ -22,17 +22,19 @@ export default async function PlanPage({ params }: { params: { plan: string } })
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Pricing", href: "/pricing" }, { name: plan.name, href: `/plans/${plan.slug}` }]} />
       <h1 className="text-3xl font-semibold">{plan.name}</h1>
       <p className="mt-4 text-lg text-muted-foreground">{plan.summary}</p>
-      <p className="mt-6 text-3xl font-semibold">${plan.priceMonthly}<span className="text-base text-muted-foreground"> / seat / month</span></p>
-      <p className="mt-2 text-muted-foreground">${plan.annualEffectiveMonthly} effective monthly per seat with annual billing.</p>
+      <p className="mt-6 text-3xl font-semibold">Scoped quote</p>
+      <p className="mt-2 text-muted-foreground">Pricing depends on whether this package is bought as-is, customized, or used as the foundation for a bespoke build.</p>
+      {plan.moduleNote ? <p className="mt-2 text-muted-foreground">{plan.moduleNote}</p> : null}
+      {plan.worksWith ? <p className="mt-4 rounded-md border border-border bg-cream/70 p-4 text-sm font-semibold text-primary">Works with {plan.worksWith.packageName}: {plan.worksWith.copy}</p> : null}
       <h2 className="mt-10 text-xl font-semibold">Who should choose {plan.name}?</h2>
       <p className="mt-2 leading-7 text-muted-foreground">{plan.bestFor}</p>
       <ul className="mt-6 grid gap-2">
         {plan.features.map((feature) => <li key={feature} className="rounded-md border border-border p-3">{feature}</li>)}
       </ul>
       <FAQ items={[
-        { question: `How much does ${plan.name} cost?`, answer: `${plan.name} costs $${plan.priceMonthly} per seat per month, or $${plan.annualEffectiveMonthly} effective monthly per seat when billed annually.` },
-        { question: `Is ${plan.name} available as a trial?`, answer: "Yes. Every paid Eclipse product includes a 14-day card-required trial." },
-        { question: `Can teams change from ${plan.name} later?`, answer: "Yes. Teams can change subscriptions through Stripe billing workflows as their needs expand." }
+        { question: `How much does ${plan.name} cost?`, answer: "Eclipse Systems prices after discovery so the quote matches the actual package, customization, integrations, and launch path." },
+        { question: `Can ${plan.name} be customized?`, answer: "Yes. Each package can be bought as-is, customized around your workflow, or used as the foundation for a bespoke build." },
+        { question: `Can teams change from ${plan.name} later?`, answer: "Yes. Packages can expand through customization, additional modules, integrations, and custom workflows as needs change." }
       ]} />
     </main>
   );

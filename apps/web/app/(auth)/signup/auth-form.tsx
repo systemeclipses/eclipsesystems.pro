@@ -238,7 +238,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const supporting = isLogin
     ? "Sign in to get back to time, billing, shifts, matters, and the operating work already in motion."
     : "Create your workspace with a free trial, then grow into billing, shifts, and legal workflows when the work calls for it.";
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") || "/templates";
 
   async function signInWithProvider(providerId: string) {
     setLoadingProvider(providerId);

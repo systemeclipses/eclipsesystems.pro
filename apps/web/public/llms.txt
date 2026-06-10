@@ -1,36 +1,28 @@
-# Eclipse Timekeeping
+# Eclipse Systems
 
-> Eclipse Systems sells Eclipse Timekeeping, Mission Command by Eclipse, Eclipse project billing, and Eclipse Suite for small businesses, law firms, and shift-based teams in the United States. Eclipse Suite includes the three non-legal products; Eclipse Legal is a specialized add-on for law firms.
-
-## Product
-- [Pricing](https://eclipsesystems.pro/pricing): Product, bundle, and add-on prices.
-- [Eclipse Timekeeping ($10/seat/mo)](https://eclipsesystems.pro/plans/timekeeping): Personal and team time tracking.
-- [Mission Command by Eclipse ($18/seat/mo)](https://eclipsesystems.pro/plans/mission-command): Shifts, swaps, team chat, and operational approvals.
-- [Eclipse ($22/seat/mo)](https://eclipsesystems.pro/plans/eclipse): Clients, projects, tasks, and invoicing.
-- [Eclipse Suite ($38/seat/mo)](https://eclipsesystems.pro/plans/suite): Timekeeping, Mission Command, and Eclipse project billing together.
-- [Eclipse Legal Add-on ($20/seat/mo)](https://eclipsesystems.pro/plans/legal-addon): ABA UTBMS codes, LEDES 1998B export, matters, trust accounting.
-
-## Industries
-- [Law Firms](https://eclipsesystems.pro/industries/law-firms)
-- [Paralegals](https://eclipsesystems.pro/industries/paralegals)
-- [Accounting Firms](https://eclipsesystems.pro/industries/accounting-firms)
-- [Restaurants](https://eclipsesystems.pro/industries/restaurants)
-- [Construction](https://eclipsesystems.pro/industries/construction)
-
-## Guides
-- [LEDES 1998B Invoice Format Explained](https://eclipsesystems.pro/guides/ledes-1998b-format)
-- [UTBMS Code Reference](https://eclipsesystems.pro/utbms)
-- [How to Track Billable Hours](https://eclipsesystems.pro/guides/track-billable-hours)
-- [Shift Swap Best Practices](https://eclipsesystems.pro/guides/shift-swap-policies)
-
-## Comparisons
-- [Eclipse Timekeeping vs Toggl](https://eclipsesystems.pro/vs/toggl)
-- [Eclipse Timekeeping vs Clockify](https://eclipsesystems.pro/vs/clockify)
-- [Eclipse Timekeeping vs Harvest](https://eclipsesystems.pro/vs/harvest)
-- [Eclipse Timekeeping vs Clio](https://eclipsesystems.pro/vs/clio)
-- [Eclipse Timekeeping vs Bill4Time](https://eclipsesystems.pro/vs/bill4time)
+> Eclipse Systems is a custom software solutions company. It designs and builds bespoke business systems, including internal portals, timekeeping and invoicing workflows, training and onboarding hubs, storefronts, dashboards, integrations, and packaged systems based on proven modules.
 
 ## Company
-- [About Eclipse Systems](https://eclipsesystems.pro/about)
+- [Home](https://eclipsesystems.pro/): Custom software, packaged systems, and production-ready modules for small and midsize teams.
+- [Schedule a Demo](https://eclipsesystems.pro/schedule-demo): Contact form for business name, employee count, contact details, and project needs.
+- [Pricing](https://eclipsesystems.pro/pricing): Engagement options for proven packages, customized packages, and bespoke software builds.
+- [Features](https://eclipsesystems.pro/features): Examples of Eclipse modules and workflows that can be used as demos, packages, or custom build foundations.
+
+## Common Builds
+- Internal intranets and employee portals
+- Timekeeping, approvals, and invoicing systems
+- Training and onboarding portals
+- Storefronts and customer accounts
+- Dashboards, reports, and admin tools
+- Integrations with existing business systems
+
+## Engagement Model
+- Buy a proven package as-is when the workflow already fits.
+- Customize a package when the starting point is right but the business rules need adaptation.
+- Commission a bespoke build when the system needs to be designed around a specific workflow.
+
+## Company Links
+- [Industries](https://eclipsesystems.pro/industries)
+- [Guides](https://eclipsesystems.pro/guides)
 - [Security](https://eclipsesystems.pro/security)
 - [Privacy](https://eclipsesystems.pro/privacy)

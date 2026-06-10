@@ -15,7 +15,7 @@ export async function GET(_request: Request, { params }: { params: { employeeId:
 
   const [actor] = await db.select({ role: memberships.role }).from(memberships).where(eq(memberships.id, ownMembershipId)).limit(1);
   const requestedMembershipId = params.employeeId === "me" ? ownMembershipId : params.employeeId;
-  const canView = requestedMembershipId === ownMembershipId || ["owner", "admin", "manager"].includes(actor?.role ?? "");
+  const canView = requestedMembershipId === ownMembershipId || ["superuser", "owner", "admin", "manager"].includes(actor?.role ?? "");
   if (!canView) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const settings = await getTimekeepingSettings(organizationId);

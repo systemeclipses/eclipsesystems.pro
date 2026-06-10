@@ -23,13 +23,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type PlanTier, isFeatureLocked, isRoleLocked } from "@/lib/permissions";
 
-type BuiltInRoleKey = "owner" | "admin" | "manager" | "team_lead" | "employee";
+type BuiltInRoleKey = "superuser" | "owner" | "admin" | "manager" | "team_lead" | "employee";
 type ModalKind = "role" | "customize" | "builder" | "assign" | "bulk" | "groups" | "audit" | "transfer" | null;
 type Member = { id: string; role: string; department: string | null; managerMembershipId: string | null; email: string | null; fullName: string | null };
+type ProductAccess = { membershipId: string; product: "timekeeping" | "eclipse" | "mission_command" | "suite" | "legal_addon"; accessRole: "employee" | "admin" };
 type CustomRole = { id: string; roleKey: string; name: string; description: string | null; kind: string; baseRole: string | null; defaultScopeType: string };
 type CustomGroup = { id: string; name: string; description: string | null };
 
 const builtInRoles: Array<{ key: BuiltInRoleKey; name: string; description: string; scope: string; mutable: boolean }> = [
+  { key: "superuser", name: "Superuser", description: "Full access to the entire Eclipse suite, including Legal, without ownership transfer powers.", scope: "Entire suite", mutable: false },
   { key: "owner", name: "Owner", description: "Full control of the organization. Exactly one person owns the account.", scope: "Whole organization", mutable: false },
   { key: "admin", name: "Admin", description: "Operational control of the organization, excluding owner-only powers and billing by default.", scope: "Configurable", mutable: true },
   { key: "manager", name: "Manager", description: "Oversee assigned employees: PTO, time review, scheduling, reports, and tasks.", scope: "Assigned employees", mutable: true },
@@ -95,6 +97,11 @@ const categories = [
 ];
 
 const rolePermissions: Record<BuiltInRoleKey, Record<string, string[]>> = {
+  superuser: {
+    "Suite access": ["Timekeeping", "Eclipse Invoicing", "Mission Command", "Eclipse Legal"],
+    "Administrative access": ["All admin permissions", "All manager permissions for all employees", "Billing access", "Legal matter access"],
+    "Excluded by default": ["Transfer ownership", "Delete organization"]
+  },
   owner: {
     "Owner powers": ["Transfer ownership", "Delete organization", "Manage billing", "Grant or revoke any permission", "View all audit logs"],
     "Everything else": ["All admin permissions", "All manager permissions for all employees", "All employee self-service permissions"]
@@ -121,9 +128,23 @@ const rolePermissions: Record<BuiltInRoleKey, Record<string, string[]>> = {
   }
 };
 
-export function RolesPermissionsClient({ members, roleCounts, customRoles, customGroups, canManage, canTransferOwnership, currentPlan = "timekeeping" }: {
+const productUserTypes: Array<{ product: ProductAccess["product"]; accessRole: ProductAccess["accessRole"]; name: string; description: string }> = [
+  { product: "timekeeping", accessRole: "employee", name: "Timekeeping Employee", description: "Clock, review own hours, request PTO, and use employee self-service." },
+  { product: "timekeeping", accessRole: "admin", name: "Timekeeping Admin", description: "Manage people, pay rules, timesheets, PTO, holidays, sites, and workforce reports." },
+  { product: "eclipse", accessRole: "employee", name: "Invoicing Employee", description: "Track billable work and work with assigned clients, projects, and invoices." },
+  { product: "eclipse", accessRole: "admin", name: "Invoicing Admin", description: "Manage billing workflows, projects, clients, invoices, payments, rates, tax, and compliance settings." },
+  { product: "mission_command", accessRole: "employee", name: "Mission Command Employee", description: "Use schedules, chat, tasks, announcements, and operational workflows." },
+  { product: "mission_command", accessRole: "admin", name: "Mission Command Admin", description: "Manage coverage rules, sites, schedules, skills, tasks, announcements, and operations reports." },
+  { product: "suite", accessRole: "employee", name: "Suite Employee", description: "Employee access across Timekeeping, Invoicing, and Mission Command." },
+  { product: "suite", accessRole: "admin", name: "Suite Admin", description: "Admin access across Timekeeping, Invoicing, and Mission Command." },
+  { product: "legal_addon", accessRole: "employee", name: "Legal Employee", description: "Work with matters, legal time entries, UTBMS coding, documents, and legal billing workflows." },
+  { product: "legal_addon", accessRole: "admin", name: "Legal Admin", description: "Manage legal matters, LEDES export, trust accounting, conflicts, and legal billing controls." }
+];
+
+export function RolesPermissionsClient({ members, roleCounts, productAccess, customRoles, customGroups, canManage, canTransferOwnership, currentPlan = "timekeeping" }: {
   members: Member[];
   roleCounts: Record<string, number>;
+  productAccess: ProductAccess[];
   customRoles: CustomRole[];
   customGroups: CustomGroup[];
   canManage: boolean;
@@ -154,7 +175,7 @@ export function RolesPermissionsClient({ members, roleCounts, customRoles, custo
   }
 
   const departments = useMemo(() => Array.from(new Set(members.map((member) => member.department).filter(Boolean))) as string[], [members]);
-  const privilegedInactive = members.filter((member) => ["owner", "admin", "manager"].includes(member.role)).slice(0, 2);
+  const privilegedInactive = members.filter((member) => ["superuser", "owner", "admin", "manager"].includes(member.role)).slice(0, 2);
   const customRoleRows = customRoles.length
     ? customRoles
     : [
@@ -188,7 +209,7 @@ export function RolesPermissionsClient({ members, roleCounts, customRoles, custo
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          <SectionTitle title="Built-In Roles" subtitle="Five roles cover most organizations. Owner remains singular and protected." />
+          <SectionTitle title="Built-In Roles" subtitle="Six roles cover most organizations. Owner remains singular and protected; Superuser spans the full suite." />
           {builtInRoles.map((role) => (
             <RoleRow
               key={role.key}
@@ -200,6 +221,21 @@ export function RolesPermissionsClient({ members, roleCounts, customRoles, custo
               planLocked={isRoleLocked(currentPlan, role.key)}
               onView={() => openRole(role.key)}
               onCustomize={role.mutable && canManage ? () => { setSelectedRole(role.key); setModal("customize"); } : undefined}
+            />
+          ))}
+
+          <SectionTitle title="Product User Types" subtitle="Assign one person more than one product type, such as Timekeeping Employee plus Mission Command Admin." />
+          {productUserTypes.map((type) => (
+            <RoleRow
+              key={`${type.product}-${type.accessRole}`}
+              title={type.name}
+              description={type.description}
+              count={productAccess.filter((row) => row.product === type.product && row.accessRole === type.accessRole).length}
+              badge={type.accessRole === "admin" ? "Product admin" : "Product employee"}
+              locked={isFeatureLocked(currentPlan, productCategoryLabel(type.product))}
+              planLocked={isFeatureLocked(currentPlan, productCategoryLabel(type.product))}
+              onView={() => setModal("assign")}
+              onCustomize={canManage ? () => setModal("assign") : undefined}
             />
           ))}
 
@@ -342,10 +378,10 @@ function RoleRow({ title, description, count, badge, locked, planLocked, custom,
 
 function GovernanceCard({ members, privilegedInactive }: { members: Member[]; privilegedInactive: Member[] }) {
   const sensitive = [
-    ["View compensation", Math.max(1, members.filter((member) => ["owner", "admin"].includes(member.role)).length)],
-    ["Edit compensation", Math.max(1, members.filter((member) => member.role === "owner").length)],
-    ["Override approvals", Math.max(1, members.filter((member) => ["owner", "admin"].includes(member.role)).length)],
-    ["Manage roles", Math.max(1, members.filter((member) => ["owner", "admin"].includes(member.role)).length)]
+    ["View compensation", Math.max(1, members.filter((member) => ["superuser", "owner", "admin"].includes(member.role)).length)],
+    ["Edit compensation", Math.max(1, members.filter((member) => ["superuser", "owner"].includes(member.role)).length)],
+    ["Override approvals", Math.max(1, members.filter((member) => ["superuser", "owner", "admin"].includes(member.role)).length)],
+    ["Manage roles", Math.max(1, members.filter((member) => ["superuser", "owner", "admin"].includes(member.role)).length)]
   ];
   return (
     <div className="rounded-md border border-border bg-white/70 p-4">
@@ -550,7 +586,7 @@ function AssignRole({ members, departments }: { members: Member[]; departments: 
     <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-medium text-muted-foreground">Employee<select className="h-11 rounded-md border border-border bg-white px-3 text-ink">{members.map((member) => <option key={member.id}>{member.fullName || member.email}</option>)}</select></label>
-        <label className="grid gap-2 text-sm font-medium text-muted-foreground">New role<select className="h-11 rounded-md border border-border bg-white px-3 text-ink"><option>Manager</option><option>Team Lead</option><option>Admin</option></select></label>
+        <label className="grid gap-2 text-sm font-medium text-muted-foreground">New access<select className="h-11 rounded-md border border-border bg-white px-3 text-ink">{productUserTypes.map((type) => <option key={`${type.product}-${type.accessRole}`}>{type.name}</option>)}<option>Manager</option><option>Team Lead</option><option>Admin</option><option>Superuser</option></select></label>
       </div>
       <div className="rounded-md border border-border p-4">
         <p className="font-semibold">Scope</p>
@@ -682,4 +718,12 @@ function OwnershipTransfer({ members }: { members: Member[] }) {
 
 function scopeLabel(scope: string) {
   return scope.replace(/_/g, " ");
+}
+
+function productCategoryLabel(product: ProductAccess["product"]) {
+  if (product === "timekeeping") return "Time & Attendance";
+  if (product === "eclipse") return "Billing";
+  if (product === "mission_command") return "Mission Command";
+  if (product === "legal_addon") return "Legal Matters";
+  return "Org Settings";
 }

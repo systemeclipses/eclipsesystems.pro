@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { portalBrand } from "@/lib/portal-brand";
 import { type CourseCatalogItem, type PortalRole, type PortalViewer, type StaffShift, type TrainingAssignment } from "@/lib/operations-portal-data";
-import { getClientName, invoiceTotal, useOperationsPortalStore, visibleForViewer, type ClientDocument, type ClientInvoice, type ClientProject, type DemoHighlight, type MessageThread, type PortalState, type SupportTicket } from "@/lib/operations-portal-store";
+import { getClientName, invoiceTotal, useOperationsPortalStore, visibleForViewer, type ClientDocument, type ClientInvoice, type ClientProject, type DemoHighlight, type MessageThread, type SupportTicket } from "@/lib/operations-portal-store";
 import type { PortalPage } from "@/lib/operations-portal-store";
 import { can, isOperationsAdmin, isOperationsManager, resourceScope, scopedEmployeeIds, visibleOperationsNav, type PermissionScope } from "@/lib/operations-permissions";
 
@@ -47,10 +47,6 @@ type LearningPath = {
   kind: "new_hire" | "role_based" | "promotion" | "compliance" | "manual";
   courseIds: string[];
 };
-
-function usePortalStore(): PortalState {
-  return useOperationsPortalStore();
-}
 
 const clientNav: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }> = [
   { page: "dashboard", label: "Home", icon: LayoutDashboard },
@@ -131,7 +127,7 @@ function actorForPane(role: "staff" | "client", clientId: string): PortalViewer 
 }
 
 export function OperationsPortalDemo({ surface }: DemoProps) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
 
   const isClient = store.viewer.role === "client";
   const navItems = isClient ? clientNav : visibleOperationsNav(store.viewer).map((item) => ({ ...item, icon: operationsNavIcons[item.page] }));
@@ -184,7 +180,7 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
     if (!store.demoMode || !store.demoAutoplay) return;
 
     const timer = window.setInterval(() => {
-      const current: PortalState = useOperationsPortalStore.getState();
+      const current = useOperationsPortalStore.getState();
       if (!current.demoAutoplay || !current.demoMode) return;
       if (current.demoStepIndex >= demoSteps.length) {
         current.resetDemo();
@@ -313,7 +309,7 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
 }
 
 function ViewerSwitcher({ selectedClientId }: { selectedClientId: string }) {
-  const { clients, viewer, demoMode, setViewer, setDemoMode, resetDemo } = usePortalStore();
+  const { clients, viewer, demoMode, setViewer, setDemoMode, resetDemo } = useOperationsPortalStore();
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0];
 
@@ -361,7 +357,7 @@ function ViewerSwitcher({ selectedClientId }: { selectedClientId: string }) {
 }
 
 function ModuleTopBar({ selectedClientId, navItems, isClient }: { selectedClientId: string; navItems: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }>; isClient: boolean }) {
-  const { clients, viewer, activePage, demoMode, setViewer, setDemoMode, resetDemo } = usePortalStore();
+  const { clients, viewer, activePage, demoMode, setViewer, setDemoMode, resetDemo } = useOperationsPortalStore();
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
   const activeLabel = navItems.find((item) => item.page === activePage)?.label ?? (isClient ? "Client Portal" : "Operations Hub");
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0];
@@ -405,7 +401,7 @@ function ModuleTopBar({ selectedClientId, navItems, isClient }: { selectedClient
 }
 
 function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar" }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [open, setOpen] = useState(false);
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const admin = isOperationsAdmin(store.viewer);
@@ -508,7 +504,7 @@ function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar
 }
 
 function DemoControlBar({ onRunStep }: { onRunStep: (stepIndex?: number) => void }) {
-  const { demoStepIndex, demoAutoplay, setDemoStep, setDemoAutoplay, resetDemo, setDemoMode } = usePortalStore();
+  const { demoStepIndex, demoAutoplay, setDemoStep, setDemoAutoplay, resetDemo, setDemoMode } = useOperationsPortalStore();
   const currentStep = demoSteps[demoStepIndex];
 
   return (
@@ -572,7 +568,7 @@ function DemoPane({
   ticket?: SupportTicket;
   highlight: DemoHighlight;
 }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const isClient = viewer.role === "client";
   const visibleMessages = thread.messages.slice(-3);
 
@@ -687,7 +683,7 @@ function ClientPortalWorkspace({
   threads: MessageThread[];
   tickets: SupportTicket[];
 }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   if (store.activePage === "dashboard") return <ClientDashboardPanel clientId={clientId} project={project} invoice={invoice} document={document} thread={thread} ticket={ticket} />;
   if (store.activePage === "projects") return <ClientProjectsPortal projects={projects} selectedProject={project} />;
   if (store.activePage === "invoices") return <ClientInvoicesPortal invoices={invoices} selectedInvoice={invoice} />;
@@ -698,7 +694,7 @@ function ClientPortalWorkspace({
 }
 
 function OperationsWorkspace() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = isOperationsAdmin(store.viewer);
 
   if (store.activePage === "dashboard") return <ExecutiveDashboardPanel scope={resourceScope(store.viewer, "dashboard")} />;
@@ -728,7 +724,7 @@ function currentEmployeeId(viewer: PortalViewer) {
 }
 
 function employeeName(employeeId: string) {
-  const store: PortalState = useOperationsPortalStore.getState();
+  const store = useOperationsPortalStore.getState();
   return store.employees.find((employee) => employee.id === employeeId)?.name ?? "Employee";
 }
 
@@ -740,7 +736,7 @@ function scopeLabel(scope: PermissionScope) {
 }
 
 function ActionCenterPanel() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const admin = isOperationsAdmin(store.viewer);
   const pendingPto = store.ptoRequests.filter((request) => request.status === "pending" && scopedIds.includes(request.employeeId));
@@ -799,7 +795,7 @@ function ActionCenterPanel() {
 }
 
 function OperationsDashboardPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const manager = scope === "team";
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
@@ -854,7 +850,7 @@ function OperationsDashboardPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function TimekeepingPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const manager = scope === "team";
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
@@ -879,7 +875,7 @@ function TimekeepingPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function SchedulingPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const manager = scope === "team";
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
@@ -904,7 +900,7 @@ function SchedulingPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function BillingPanel() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const overdue = store.invoices.filter((invoice) => invoice.status === "overdue");
   const paid = store.invoices.filter((invoice) => invoice.status === "paid").reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
   return (
@@ -929,7 +925,7 @@ function BillingPanel() {
 }
 
 function HrPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const manager = scope === "team";
   const myId = currentEmployeeId(store.viewer);
@@ -961,7 +957,7 @@ function HrPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function ProfilePanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const employee = store.employees.find((item) => item.id === currentEmployeeId(store.viewer)) ?? store.employees[0];
   const manager = employee.managerId ? store.employees.find((item) => item.id === employee.managerId) : undefined;
   const reports = store.employees.filter((item) => item.managerId === employee.id);
@@ -988,7 +984,7 @@ function ProfilePanel({ scope }: { scope: PermissionScope }) {
 }
 
 function TimeOffPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const employee = store.employees.find((item) => item.id === currentEmployeeId(store.viewer)) ?? store.employees[0];
   const requests = store.ptoRequests.filter((request) => request.employeeId === employee.id);
   return (
@@ -1013,7 +1009,7 @@ function TimeOffPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function OperationsDocumentsPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const docs = admin ? store.documents : store.documents.filter((document) => document.status !== "draft");
   return (
@@ -1028,7 +1024,7 @@ function OperationsDocumentsPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function OperationsTicketingPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const manager = scope === "team";
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
@@ -1056,7 +1052,7 @@ function OperationsTicketingPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function InternalChatPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const myId = currentEmployeeId(store.viewer);
   const threads = scope === "all" ? store.chatThreads : store.chatThreads.filter((thread) => thread.type === "channel" || thread.memberIds.includes(myId));
   const [selectedId, setSelectedId] = useState(threads[0]?.id);
@@ -1081,7 +1077,7 @@ function InternalChatPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function LmsPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const admin = scope === "all";
   const manager = scope === "team";
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
@@ -1108,7 +1104,7 @@ function LmsPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function KnowledgePanel({ admin }: { admin: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [query, setQuery] = useState("");
   const articles = store.knowledgeArticles.filter((article) => `${article.title} ${article.category}`.toLowerCase().includes(query.toLowerCase()));
   return (
@@ -1123,7 +1119,7 @@ function KnowledgePanel({ admin }: { admin: boolean }) {
 }
 
 function CompanyHomePanel({ admin }: { admin: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const approvedPto = store.ptoRequests.filter((request) => request.status === "approved").slice(0, 5);
   return (
     <RolePanel eyebrow="Company Home" title={admin ? "Post announcements, quick links, and directory updates" : "Announcements, quick links, and directory"} icon={Home}>
@@ -1148,7 +1144,7 @@ function CompanyHomePanel({ admin }: { admin: boolean }) {
 }
 
 function ClientBackOfficePanel() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
       <ClientsPanel selectedClientId={store.selectedClientId} />
@@ -1177,7 +1173,7 @@ function StaffNoAccess({ label }: { label: string }) {
 }
 
 function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const admin = scope === "all";
   const manager = scope === "team";
@@ -1234,7 +1230,7 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function TriageInboxPanel() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [filter, setFilter] = useState("all");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const admin = isOperationsAdmin(store.viewer);
@@ -1281,7 +1277,7 @@ function TriageInboxPanel() {
 }
 
 function TimeClockPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const self = scope === "self";
   const currentId = currentEmployeeId(store.viewer);
@@ -1330,7 +1326,7 @@ function TimeClockPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function ScheduleCalendarPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [view, setView] = useState<"week" | "month">("week");
   const [syncState, setSyncState] = useState<"loading" | "ready" | "error">("loading");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
@@ -1436,7 +1432,7 @@ function ScheduleCalendarPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function BillingDashboardPanel() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [selectedId, setSelectedId] = useState(store.selectedInvoiceId);
   const selected = store.invoices.find((invoice) => invoice.id === selectedId) ?? store.invoices[0];
   const outstanding = store.invoices.filter((invoice) => invoice.status !== "paid").reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
@@ -1464,7 +1460,7 @@ function BillingDashboardPanel() {
 }
 
 function PeopleHubPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [tab, setTab] = useState<"people" | "timeoff" | "onboarding">("people");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const canApprove = scope === "all" || scope === "team";
@@ -1617,7 +1613,7 @@ function TextField({ label, value = "", onChange }: { label: string; value?: str
 }
 
 function MyTimeOffPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const employee = store.employees.find((item) => item.id === currentEmployeeId(store.viewer)) ?? store.employees[0];
   const [dates, setDates] = useState("");
   const [hours, setHours] = useState("8");
@@ -1648,7 +1644,7 @@ function MyTimeOffPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function FileLibraryPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [selectedId, setSelectedId] = useState(store.documents[0]?.id);
   const admin = scope === "all";
   const docs = admin ? store.documents : store.documents.filter((document) => document.status !== "draft");
@@ -1667,7 +1663,7 @@ function FileLibraryPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [mode, setMode] = useState<"board" | "queue">("board");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const tickets = scope === "all" ? store.tickets : store.tickets.filter((ticket) => scopedIds.includes(ticket.assigneeId));
@@ -1740,7 +1736,7 @@ function TicketMetric({ label, value }: { label: string; value: string }) {
 }
 
 function MessagingAppPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const myId = currentEmployeeId(store.viewer);
   const threads = scope === "all" ? store.chatThreads : store.chatThreads.filter((thread) => thread.type === "channel" || thread.memberIds.includes(myId));
   const [selectedId, setSelectedId] = useState(threads[0]?.id);
@@ -1756,7 +1752,7 @@ function MessagingAppPanel({ scope }: { scope: PermissionScope }) {
 }
 
 function LearningPortalPanel({ scope }: { scope: PermissionScope }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [tab, setTab] = useState<"mine" | "catalog" | "manage">("mine");
   const [selectedCourseId, setSelectedCourseId] = useState(store.courseCatalog[0]?.id ?? "");
   const [selectedEnrollmentId, setSelectedEnrollmentId] = useState(store.training.find((item) => item.status !== "complete" && item.status !== "removed")?.id ?? "");
@@ -1921,7 +1917,7 @@ function CoursePlayer({ course, assignment, onComplete }: { course?: CourseCatal
 }
 
 function HelpCenterPanel({ admin }: { admin: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(store.knowledgeArticles[0]?.id);
   const articles = store.knowledgeArticles.filter((article) => `${article.title} ${article.category}`.toLowerCase().includes(query.toLowerCase()));
@@ -1931,13 +1927,13 @@ function HelpCenterPanel({ admin }: { admin: boolean }) {
 }
 
 function IntranetFeedPanel({ admin }: { admin: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const approvedPto = store.ptoRequests.filter((request) => request.status === "approved").slice(0, 5);
   return <section className="grid gap-5 xl:grid-cols-[1fr_360px]"><main className="grid gap-4">{store.announcements.map((announcement, index) => <article key={announcement.id} className={`${index === 0 ? "bg-primary text-white" : "border border-border bg-white/70 dark:border-white/10 dark:bg-[#15231a]"} rounded-md p-5`}><p className={`text-sm font-semibold ${index === 0 ? "text-secondary" : "text-primary dark:text-secondary"}`}>{employeeName(announcement.authorId)} · {announcement.at}</p><h2 className={`mt-2 ${index === 0 ? "text-4xl text-cream" : "text-2xl text-ink dark:text-cream"} font-semibold`}>{announcement.title}</h2><p className={`mt-3 text-sm leading-6 ${index === 0 ? "text-white/72" : "text-muted-foreground dark:text-white/68"}`}>{announcement.body}</p>{admin ? <div className="mt-4 flex gap-2"><SmallAction variant="quiet" onClick={() => { const body = window.prompt("Edit announcement body", announcement.body); if (body) store.editAnnouncement(announcement.id, body); }}>Edit</SmallAction><SmallAction variant="danger" onClick={() => store.removeAnnouncement(announcement.id)}>Remove</SmallAction></div> : null}</article>)}</main><aside className="grid content-start gap-4"><section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><p className="font-semibold text-ink dark:text-cream">Quick links</p>{store.quickLinks.map((link) => <button key={link.label} onClick={() => store.setActivePage(link.label.includes("Time") ? "my-timekeeping" : "knowledge")} className="mt-2 block w-full rounded-sm bg-cream/70 p-2 text-left text-sm dark:bg-white/8">{link.label}</button>)}</section><section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><p className="font-semibold text-ink dark:text-cream">Who's out today</p>{approvedPto.map((request) => <InfoRow key={request.id} label={employeeName(request.employeeId)} value={request.dates} />)}</section><section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><p className="font-semibold text-ink dark:text-cream">Events</p>{store.events.map((event) => <InfoRow key={event.id} label={event.title} value={event.at} />)}</section>{admin ? <SmallAction onClick={() => { const title = window.prompt("Announcement title"); const body = title ? window.prompt("Announcement body") : ""; if (title && body) store.postAnnouncement(title, body); }}>Post announcement</SmallAction> : null}</aside></section>;
 }
 
 function ClientManagementPanel() {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [tab, setTab] = useState("Overview");
   const clientId = store.selectedClientId;
   return <section className="grid gap-5 xl:grid-cols-[320px_1fr]"><ClientsPanel selectedClientId={clientId} /><main className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]"><div className="flex flex-wrap gap-2">{["Overview", "Invoices", "Documents", "Messages", "Projects/Jobs"].map((item) => <button key={item} onClick={() => setTab(item)} className={`h-10 rounded-md px-3 text-sm font-semibold ${tab === item ? "bg-primary text-white dark:bg-[#4f6a57]" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>{item}</button>)}</div><div className="mt-5"><ClientRecord clientId={clientId} />{tab === "Invoices" ? <InvoicesPanel invoices={store.invoices.filter((item) => item.clientId === clientId)} selectedInvoice={store.invoices.find((item) => item.clientId === clientId)} isClient={false} /> : null}{tab === "Documents" ? <DocumentsPanel documents={store.documents.filter((item) => item.clientId === clientId)} selectedDocument={store.documents.find((item) => item.clientId === clientId)} isClient={false} /> : null}{tab === "Messages" ? <MessagesPanel threads={store.threads.filter((item) => item.clientId === clientId)} selectedThread={store.threads.find((item) => item.clientId === clientId)} isClient={false} /> : null}{tab === "Projects/Jobs" ? <ProjectsPanel projects={store.projects.filter((item) => item.clientId === clientId)} selectedProject={store.projects.find((item) => item.clientId === clientId)} isClient={false} /> : null}</div></main></section>;
@@ -2022,7 +2018,7 @@ function SmallAction({ children, onClick, variant = "primary" }: { children: Rea
 }
 
 function DashboardPanel(props: { isClient: boolean; clientId: string; project?: ClientProject; invoice?: ClientInvoice; document?: ClientDocument; thread?: MessageThread; ticket?: SupportTicket }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const title = props.isClient ? `${getClientName(store, props.clientId)} portal` : "Back-office command center";
   return (
     <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
@@ -2050,7 +2046,7 @@ function DashboardPanel(props: { isClient: boolean; clientId: string; project?: 
 }
 
 function ClientsPanel({ selectedClientId }: { selectedClientId: string }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <TwoColumn
       list={store.clients.map((client) => (
@@ -2066,7 +2062,7 @@ function ClientsPanel({ selectedClientId }: { selectedClientId: string }) {
 }
 
 function ProjectsPanel({ projects, selectedProject, isClient }: { projects: ClientProject[]; selectedProject?: ClientProject; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <TwoColumn
       list={projects.map((project) => <RowButton key={project.id} active={project.id === selectedProject?.id} title={project.name} meta={`${getClientName(store, project.clientId)} · ${project.status}`} onClick={() => store.setSelectedProject(project.id)} />)}
@@ -2076,7 +2072,7 @@ function ProjectsPanel({ projects, selectedProject, isClient }: { projects: Clie
 }
 
 function InvoicesPanel({ invoices, selectedInvoice, isClient }: { invoices: ClientInvoice[]; selectedInvoice?: ClientInvoice; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <TwoColumn
       list={invoices.map((invoice) => <RowButton key={invoice.id} active={invoice.id === selectedInvoice?.id} title={invoice.number} meta={`${getClientName(store, invoice.clientId)} · ${money(invoiceTotal(invoice))}`} badge={invoice.status} onClick={() => store.setSelectedInvoice(invoice.id)} />)}
@@ -2086,7 +2082,7 @@ function InvoicesPanel({ invoices, selectedInvoice, isClient }: { invoices: Clie
 }
 
 function DocumentsPanel({ documents, selectedDocument, isClient }: { documents: ClientDocument[]; selectedDocument?: ClientDocument; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <TwoColumn
       list={documents.map((document) => <RowButton key={document.id} active={document.id === selectedDocument?.id} title={document.title} meta={`${getClientName(store, document.clientId)} · ${document.updatedAt}`} badge={document.status} onClick={() => store.setSelectedDocument(document.id)} />)}
@@ -2096,7 +2092,7 @@ function DocumentsPanel({ documents, selectedDocument, isClient }: { documents: 
 }
 
 function MessagesPanel({ threads, selectedThread, isClient }: { threads: MessageThread[]; selectedThread?: MessageThread; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <TwoColumn
       list={threads.map((thread) => <RowButton key={thread.id} active={thread.id === selectedThread?.id} title={thread.subject} meta={`${getClientName(store, thread.clientId)} · ${thread.messages.length} messages`} onClick={() => store.setSelectedThread(thread.id)} />)}
@@ -2106,7 +2102,7 @@ function MessagesPanel({ threads, selectedThread, isClient }: { threads: Message
 }
 
 function TicketsPanel({ tickets, selectedTicket, isClient }: { tickets: SupportTicket[]; selectedTicket?: SupportTicket; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [subject, setSubject] = useState("");
   return (
     <TwoColumn
@@ -2129,7 +2125,7 @@ function TicketsPanel({ tickets, selectedTicket, isClient }: { tickets: SupportT
 }
 
 function ClientRecord({ clientId }: { clientId: string }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const contact = store.contacts.find((item) => item.clientId === clientId);
   const invoice = store.invoices.find((item) => item.clientId === clientId && item.status !== "paid") ?? store.invoices.find((item) => item.clientId === clientId);
   const document = store.documents.find((item) => item.clientId === clientId && item.status !== "signed") ?? store.documents.find((item) => item.clientId === clientId);
@@ -2149,7 +2145,7 @@ function ClientRecord({ clientId }: { clientId: string }) {
 }
 
 function ProjectDetail({ project, isClient }: { project: ClientProject; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <div className="grid gap-5">
       <InfoRow label="Client" value={getClientName(store, project.clientId)} />
@@ -2169,7 +2165,7 @@ function ProjectDetail({ project, isClient }: { project: ClientProject; isClient
 }
 
 function InvoiceDetail({ invoice, isClient }: { invoice: ClientInvoice; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const payable = invoice.status === "payable" || invoice.status === "sent" || invoice.status === "overdue";
   return (
     <div className="grid gap-5">
@@ -2207,7 +2203,7 @@ function InvoiceDetail({ invoice, isClient }: { invoice: ClientInvoice; isClient
 }
 
 function DocumentDetail({ document, isClient }: { document: ClientDocument; isClient: boolean }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   return (
     <div className="grid gap-5">
       <InfoRow label="Client" value={getClientName(store, document.clientId)} />
@@ -2227,7 +2223,7 @@ function DocumentDetail({ document, isClient }: { document: ClientDocument; isCl
 }
 
 function ThreadDetail({ thread }: { thread: MessageThread }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [body, setBody] = useState("");
   return (
     <div>
@@ -2238,7 +2234,7 @@ function ThreadDetail({ thread }: { thread: MessageThread }) {
 }
 
 function TicketDetail({ ticket }: { ticket: SupportTicket }) {
-  const store = usePortalStore();
+  const store = useOperationsPortalStore();
   const [body, setBody] = useState("");
   const canManage = store.viewer.role === "owner" || store.viewer.role === "admin" || store.viewer.role === "manager";
   return (

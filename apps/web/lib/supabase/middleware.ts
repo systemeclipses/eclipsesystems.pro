@@ -29,7 +29,7 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const isAppRoute = request.nextUrl.pathname.startsWith("/dashboard")
-    || ["/timer", "/timesheet", "/projects", "/clients", "/invoices", "/shifts", "/chat", "/matters", "/reports", "/settings", "/admin"].some((path) => request.nextUrl.pathname.startsWith(path));
+    || ["/templates", "/operations", "/client-portal", "/crm", "/storefront", "/timer", "/timesheet", "/projects", "/clients", "/invoices", "/shifts", "/chat", "/matters", "/reports", "/settings", "/admin"].some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (isAppRoute && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
