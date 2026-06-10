@@ -1667,7 +1667,7 @@ function FileLibraryPanel({ scope }: { scope: PermissionScope }) {
 
 function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
-  const [mode, setMode] = useState<"board" | "queue">("board");
+  const [mode, setMode] = useState<"queue" | "board">("queue");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | SupportTicket["status"]>("all");
   const [priorityFilter, setPriorityFilter] = useState<"all" | SupportTicket["priority"]>("all");
@@ -1727,33 +1727,35 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
 
   return (
     <section className="grid gap-5">
-      <div className="rounded-md bg-[#1f211f] p-5 text-white shadow-sm dark:bg-[#1b211d]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="rounded-md border border-border bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-secondary">Ticketing</p>
-            <h2 className="mt-2 text-3xl font-semibold text-cream">Move issues across columns rather than a flat inbox.</h2>
+            <p className="text-sm font-semibold text-primary dark:text-secondary">Help desk</p>
+            <h2 className="mt-1 text-3xl font-semibold text-ink dark:text-cream">Tickets</h2>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={async () => { const subject = window.prompt("New ticket subject"); if (subject?.trim()) { store.openTicket(subject.trim()); const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: subject.trim(), clientId: store.selectedClientId, category: "Other", source: "internal" }) }); const data = await response.json(); if (data.ticket) store.upsertTicket(data.ticket); } }} className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 px-3 text-sm font-semibold text-white hover:bg-white/10">
-              + New ticket
-            </button>
-            <button onClick={() => setMode(mode === "board" ? "queue" : "board")} className="h-10 rounded-md border border-white/20 px-3 text-sm font-semibold text-white/78 hover:bg-white/10">{mode === "board" ? "Queue table" : "Kanban board"}</button>
+          <button onClick={async () => { const subject = window.prompt("New ticket subject"); if (subject?.trim()) { store.openTicket(subject.trim()); const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: subject.trim(), clientId: store.selectedClientId, category: "Other", source: "internal" }) }); const data = await response.json(); if (data.ticket) store.upsertTicket(data.ticket); } }} className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 dark:bg-[#4f6a57]">
+            + New ticket
+          </button>
+        </div>
+        <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-b border-border dark:border-white/10">
+          <div className="flex gap-6">
+            <button onClick={() => setMode("queue")} className={`border-b-2 px-1 pb-3 text-sm font-semibold ${mode === "queue" ? "border-secondary text-ink dark:text-cream" : "border-transparent text-muted-foreground hover:text-ink dark:hover:text-cream"}`}>Tickets</button>
+            <button onClick={() => setMode("board")} className={`border-b-2 px-1 pb-3 text-sm font-semibold ${mode === "board" ? "border-secondary text-ink dark:text-cream" : "border-transparent text-muted-foreground hover:text-ink dark:hover:text-cream"}`}>Board</button>
+          </div>
+          <div className="flex flex-wrap gap-2 pb-3">
+            <TicketMetric label="Open" value={String(openCount)} />
+            <TicketMetric label="In progress" value={String(progressCount)} />
+            <TicketMetric label="Resolved" value={String(resolvedCount)} />
           </div>
         </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-4">
-          <TicketMetric label="Open" value={String(openCount)} />
-          <TicketMetric label="In progress" value={String(progressCount)} />
-          <TicketMetric label="Resolved (7d)" value={String(resolvedCount)} />
-          <TicketMetric label="Avg first response" value="2.4h" />
+        <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_170px_170px_190px]">
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tickets" className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+          <select value={savedView} onChange={(event) => setSavedView(event.target.value as typeof savedView)} className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="my">My tickets</option><option value="unassigned">Unassigned</option><option value="overdue">Overdue/SLA</option><option value="client">Client replies</option></select>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All statuses</option>{columns.map((column) => <option key={column.key} value={column.key}>{column.label}</option>)}</select>
+          <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as typeof priorityFilter)} className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
         </div>
       </div>
-      <div className="grid gap-3 rounded-md border border-border bg-white/70 p-3 dark:border-white/10 dark:bg-[#15231a] lg:grid-cols-[1fr_160px_160px_180px]">
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tickets, tags, clients" className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
-        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All statuses</option>{columns.map((column) => <option key={column.key} value={column.key}>{column.label}</option>)}</select>
-        <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as typeof priorityFilter)} className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
-        <select value={savedView} onChange={(event) => setSavedView(event.target.value as typeof savedView)} className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="my">My tickets</option><option value="unassigned">Unassigned</option><option value="overdue">Overdue/SLA</option><option value="client">Client replies</option></select>
-      </div>
-      {selectedIds.length ? <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-white/70 p-3 text-sm dark:border-white/10 dark:bg-[#15231a]"><span className="font-semibold">{selectedIds.length} selected</span><SmallAction onClick={() => bulkChange({ status: "resolved" })}>Resolve</SmallAction><SmallAction variant="quiet" onClick={() => bulkChange({ assigneeId: currentEmployee })}>Assign to me</SmallAction><SmallAction variant="danger" onClick={() => bulkChange({ status: "closed" })}>Close</SmallAction></div> : null}
+      {selectedIds.length ? <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-white/80 p-3 text-sm dark:border-white/10 dark:bg-[#15231a]"><span className="font-semibold">{selectedIds.length} selected</span><SmallAction onClick={() => bulkChange({ status: "resolved" })}>Resolve</SmallAction><SmallAction variant="quiet" onClick={() => bulkChange({ assigneeId: currentEmployee })}>Assign to me</SmallAction><SmallAction variant="danger" onClick={() => bulkChange({ status: "closed" })}>Close</SmallAction></div> : null}
       {mode === "board" ? <DndContext sensors={sensors} onDragEnd={onDragEnd}><div className="grid gap-3 xl:grid-cols-5">{columns.map((column) => {
         const columnTickets = tickets.filter((ticket) => ticket.status === column.key).slice(0, 12);
         return (
@@ -1769,8 +1771,46 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
             </div>
           </TicketDropColumn>
         );
-      })}</div></DndContext> : <div className="grid gap-3">{tickets.slice(0, 30).map((ticket) => <ActionRow key={ticket.id} label={`${ticket.subject} · ${ticket.category} · ${ticket.priority}`} value={`${getClientName(store, ticket.clientId)} · ${statusLabel(ticket.status)} · ${ticketSlaLabel(ticket)}`}><input type="checkbox" checked={selectedIds.includes(ticket.id)} onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, ticket.id] : current.filter((id) => id !== ticket.id))} /><SmallAction variant="quiet" onClick={() => store.setSelectedTicket(ticket.id)}>Open</SmallAction><SmallAction onClick={() => patchTicket(ticket.id, { status: ticket.status === "resolved" ? "closed" : "resolved" })}>{ticket.status === "resolved" ? "Close" : "Resolve"}</SmallAction></ActionRow>)}</div>}
-      {store.selectedTicketId ? <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]"><TicketDetail ticket={store.tickets.find((ticket) => ticket.id === store.selectedTicketId) ?? tickets[0]} /></section> : null}
+      })}</div></DndContext> : <TicketQueueTable tickets={tickets} selectedIds={selectedIds} onSelect={(ticketId, checked) => setSelectedIds((current) => checked ? [...current, ticketId] : current.filter((id) => id !== ticketId))} onOpen={(ticketId) => store.setSelectedTicket(ticketId)} onPatch={patchTicket} />}
+      {store.selectedTicketId ? <TicketDetail ticket={store.tickets.find((ticket) => ticket.id === store.selectedTicketId) ?? tickets[0]} /> : null}
+    </section>
+  );
+}
+
+function TicketQueueTable({ tickets, selectedIds, onSelect, onOpen, onPatch }: { tickets: SupportTicket[]; selectedIds: string[]; onSelect: (ticketId: string, checked: boolean) => void; onOpen: (ticketId: string) => void; onPatch: (ticketId: string, changes: Partial<SupportTicket>) => Promise<void> }) {
+  const store = useOperationsPortalStore();
+  return (
+    <section className="overflow-x-auto rounded-md border border-border bg-white/80 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+      <div className="min-w-[1080px]">
+      <div className="grid grid-cols-[42px_1.7fr_160px_190px_120px_190px_116px] gap-3 border-b border-border px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground dark:border-white/10 dark:text-white/52">
+        <span />
+        <span>Details</span>
+        <span>SLA</span>
+        <span>Assigned technician</span>
+        <span>Priority</span>
+        <span>Activity status</span>
+        <span>Status</span>
+      </div>
+      {tickets.slice(0, 36).map((ticket, index) => {
+        const clientName = getClientName(store, ticket.clientId);
+        const isUnread = ticket.source === "client" && ticket.status !== "closed";
+        return (
+          <div key={ticket.id} className="grid grid-cols-[42px_1.7fr_160px_190px_120px_190px_116px] items-center gap-3 border-b border-border px-4 py-4 last:border-b-0 hover:bg-cream/55 dark:border-white/10 dark:hover:bg-white/6">
+            <input type="checkbox" checked={selectedIds.includes(ticket.id)} onChange={(event) => onSelect(ticket.id, event.target.checked)} className="h-4 w-4" />
+            <button onClick={() => onOpen(ticket.id)} className="min-w-0 text-left">
+              <p className="truncate text-sm font-semibold text-ink dark:text-cream">#{index + 13} {ticket.subject}</p>
+              <p className="mt-1 truncate text-sm text-muted-foreground dark:text-white/62"><span className="font-semibold text-primary dark:text-secondary">{clientName}</span> · {ticket.category}</p>
+              <p className="mt-1 text-xs text-muted-foreground dark:text-white/50">Created {ticket.lastUpdate} · Modified just now</p>
+            </button>
+            <span className={`w-fit rounded-sm px-2.5 py-1 text-xs font-bold ${isTicketOverdue(ticket) ? "bg-red-100 text-red-800" : ticket.dueDate ? "bg-emerald-100 text-emerald-800" : "bg-cream text-muted-foreground dark:bg-white/8"}`}>{ticketSlaLabel(ticket).replace("Due in ", "")}</span>
+            <button onClick={() => onPatch(ticket.id, { assigneeId: ticket.assigneeId || "employee-jamal" })} className={`text-left text-sm font-semibold ${ticket.assigneeId ? "text-ink dark:text-cream" : "text-primary dark:text-secondary"}`}>{ticket.assigneeId ? employeeName(ticket.assigneeId) : "Assign"}</button>
+            <span className="text-sm text-ink dark:text-cream">{ticket.priority === "high" ? "Critical" : ticket.priority === "normal" ? "Normal" : "Low"}</span>
+            <span className="flex items-center gap-2 text-sm text-muted-foreground dark:text-white/62"><span className={`h-2 w-2 rounded-full ${isUnread ? "bg-secondary" : ticket.status === "waiting_on_client" ? "bg-emerald-400" : "bg-muted-foreground/50"}`} />{isUnread ? "Unread" : ticket.status === "waiting_on_client" ? "Awaiting customer response" : "Read"}</span>
+            <button onClick={() => onPatch(ticket.id, { status: ticket.status === "resolved" ? "closed" : "resolved" })} className={`h-8 rounded-sm px-3 text-xs font-bold uppercase ${ticket.status === "waiting_on_client" ? "bg-secondary text-primary" : ticket.status === "resolved" || ticket.status === "closed" ? "bg-cream text-ink dark:bg-white/10 dark:text-cream" : "bg-primary text-white dark:bg-[#4f6a57]"}`}>{ticket.status === "waiting_on_client" ? "Pending" : statusLabel(ticket.status)}</button>
+          </div>
+        );
+      })}
+      </div>
     </section>
   );
 }
@@ -1817,9 +1857,9 @@ function ticketSlaLabel(ticket: SupportTicket) {
 
 function TicketMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-white/6 p-4">
-      <p className="text-sm text-white/68">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
+    <div className="min-w-24 rounded-sm border border-border bg-cream/55 px-3 py-2 dark:border-white/10 dark:bg-white/8">
+      <p className="text-xs text-muted-foreground dark:text-white/58">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-ink dark:text-cream">{value}</p>
     </div>
   );
 }
@@ -2375,72 +2415,87 @@ function TicketDetail({ ticket }: { ticket: SupportTicket }) {
     const invoice = store.invoices.find((item) => item.clientId === ticket.clientId);
     if (invoice) void patchTicket({ invoiceId: invoice.id }, "Ticket linked to an invoice for billable follow-up.");
   };
+  const contact = store.contacts.find((item) => item.clientId === ticket.clientId);
   return (
-    <div className="grid gap-5">
-      <section className="grid gap-3 rounded-md bg-cream/70 p-4 dark:bg-white/8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-primary dark:text-secondary">{getClientName(store, ticket.clientId)}</p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground dark:text-white/68">{ticket.description ?? "No description was provided."}</p>
-          </div>
+    <div className="overflow-hidden rounded-md border border-border bg-white/80 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4 dark:border-white/10">
+        <div>
+          <p className="text-sm text-muted-foreground dark:text-white/58">#{ticket.id.replace(/\D/g, "").slice(-4) || "1"} · {ticket.lastUpdate}</p>
+          <h3 className="mt-1 text-2xl font-semibold text-ink dark:text-cream">{ticket.subject}</h3>
+        </div>
+        {canManage ? (
           <div className="flex flex-wrap gap-2">
-            <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.status)}`}>{statusLabel(ticket.status)}</span>
-            <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.priority)}`}>{ticket.priority}</span>
-            <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${isTicketOverdue(ticket) ? "bg-red-100 text-red-800" : "bg-white/75 text-primary dark:bg-white/10 dark:text-secondary"}`}>{ticketSlaLabel(ticket)}</span>
-          </div>
-        </div>
-        {canManage ? (
-          <div className="grid gap-3 lg:grid-cols-4">
-            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Status
-              <select value={ticket.status} onChange={(event) => patchTicket({ status: event.target.value as SupportTicket["status"] })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="open">Open</option><option value="waiting_on_staff">In progress</option><option value="waiting_on_client">Waiting on client</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
-            </label>
-            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Priority
-              <select value={ticket.priority} onChange={(event) => patchTicket({ priority: event.target.value as SupportTicket["priority"] })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
-            </label>
-            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Assignee
-              <select value={ticket.assigneeId} onChange={(event) => patchTicket({ assigneeId: event.target.value })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]">{store.employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select>
-            </label>
-            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Category
-              <select value={ticket.category} onChange={(event) => patchTicket({ category: event.target.value as TicketCategory })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option>HVAC</option><option>Electrical</option><option>Facilities</option><option>Billing</option><option>Access</option><option>Other</option></select>
-            </label>
-            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Due date
-              <input type="date" value={ticket.dueDate ?? ""} onChange={(event) => patchTicket({ dueDate: event.target.value || undefined })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
-            </label>
-            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62 lg:col-span-2">Tags
-              <input value={tagDraft} onChange={(event) => setTagDraft(event.target.value)} onBlur={() => patchTicket({ tags: tagDraft.split(",").map((tag) => tag.trim()).filter(Boolean) })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
-            </label>
-            <div className="flex flex-wrap items-end gap-2">
-              <SmallAction onClick={() => patchTicket({ status: "resolved" }, "Ticket resolved from workspace.")}>Resolve</SmallAction>
-              <SmallAction variant="quiet" onClick={() => patchTicket({ status: "open" }, "Ticket reopened from workspace.")}>Reopen</SmallAction>
-              <SmallAction variant="danger" onClick={() => patchTicket({ status: "closed" }, "Ticket closed from workspace.")}>Close</SmallAction>
-            </div>
+            <SmallAction onClick={() => patchTicket({ status: "resolved" }, "Ticket resolved from workspace.")}>Resolve</SmallAction>
+            <SmallAction variant="quiet" onClick={() => patchTicket({ status: "open" }, "Ticket reopened from workspace.")}>Reopen</SmallAction>
+            <SmallAction variant="danger" onClick={() => patchTicket({ status: "closed" }, "Ticket closed from workspace.")}>Close</SmallAction>
           </div>
         ) : null}
-        {canManage ? (
-          <div className="flex flex-wrap gap-2 border-t border-border pt-3 dark:border-white/10">
-            <SmallAction variant="quiet" onClick={convertToProject}>Link to job</SmallAction>
-            <SmallAction variant="quiet" onClick={convertToInvoice}>Link invoice</SmallAction>
-            {ticket.projectId ? <span className="rounded-sm bg-white/70 px-2 py-1 text-xs font-semibold text-primary dark:bg-white/10 dark:text-secondary">Job: {ticket.projectId}</span> : null}
-            {ticket.invoiceId ? <span className="rounded-sm bg-white/70 px-2 py-1 text-xs font-semibold text-primary dark:bg-white/10 dark:text-secondary">Invoice: {ticket.invoiceId}</span> : null}
-          </div>
-        ) : null}
-      </section>
-      <div className="flex flex-wrap gap-2">
-        <button onClick={() => setActiveTab("conversation")} className={`h-9 rounded-md px-3 text-sm font-semibold ${activeTab === "conversation" ? "bg-primary text-white" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>Conversation</button>
-        <button onClick={() => setActiveTab("timeline")} className={`h-9 rounded-md px-3 text-sm font-semibold ${activeTab === "timeline" ? "bg-primary text-white" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>Activity</button>
       </div>
-      {activeTab === "conversation" ? <MessageList messages={visibleMessages} /> : <TicketTimeline ticket={ticket} />}
-      <div className={`grid gap-3 rounded-md border p-4 ${!isClient && mode === "internal_note" ? "border-amber-300 bg-amber-50 dark:border-amber-300/30 dark:bg-amber-300/10" : "border-border bg-white/65 dark:border-white/10 dark:bg-[#15231a]"}`}>
-        {!isClient ? <div className="flex w-fit rounded-md border border-border p-1 dark:border-white/10"><button onClick={() => setMode("public_reply")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "public_reply" ? "bg-primary text-white" : "text-primary dark:text-secondary"}`}>Reply to client</button><button onClick={() => setMode("internal_note")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "internal_note" ? "bg-amber-500 text-white" : "text-primary dark:text-secondary"}`}>Internal note</button></div> : null}
-        <textarea value={body} onChange={(event) => setBody(event.target.value)} className="min-h-28 rounded-md border border-border bg-white px-3 py-2 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder={isClient ? "Reply to support" : mode === "internal_note" ? "Private staff note" : "Reply visible in the client portal"} />
-        <div className="grid gap-2 md:grid-cols-3">
-          {!isClient ? <select value={mentionId} onChange={(event) => setMentionId(event.target.value)} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="">Mention teammate</option>{store.employees.map((employee) => <option key={employee.id} value={employee.id}>@{employee.name}</option>)}</select> : null}
-          <input value={attachmentName} onChange={(event) => setAttachmentName(event.target.value)} placeholder="Attachment name" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
-          <input value={attachmentUrl} onChange={(event) => setAttachmentUrl(event.target.value)} placeholder="Attachment URL" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
-        </div>
-        <button onClick={sendComment} className="inline-flex h-11 w-fit items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white dark:bg-[#4f6a57]">
-          <Send className="h-4 w-4" /> {isClient ? "Send reply" : mode === "internal_note" ? "Save internal note" : "Send client reply"}
-        </button>
+      <div className="grid gap-5 p-5 xl:grid-cols-[1fr_360px]">
+        <main className="grid content-start gap-5">
+          {canManage ? (
+            <section className="grid gap-4 rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#0f1a14] lg:grid-cols-5">
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Status
+                <select value={ticket.status} onChange={(event) => patchTicket({ status: event.target.value as SupportTicket["status"] })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream"><option value="open">Open</option><option value="waiting_on_staff">In progress</option><option value="waiting_on_client">Waiting on client</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Technician
+                <select value={ticket.assigneeId} onChange={(event) => patchTicket({ assigneeId: event.target.value })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream">{store.employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select>
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Category
+                <select value={ticket.category} onChange={(event) => patchTicket({ category: event.target.value as TicketCategory })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream"><option>HVAC</option><option>Electrical</option><option>Facilities</option><option>Billing</option><option>Access</option><option>Other</option></select>
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Priority
+                <select value={ticket.priority} onChange={(event) => patchTicket({ priority: event.target.value as SupportTicket["priority"] })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream"><option value="high">Critical</option><option value="normal">Normal</option><option value="low">Low</option></select>
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Due
+                <input type="date" value={ticket.dueDate ?? ""} onChange={(event) => patchTicket({ dueDate: event.target.value || undefined })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream" />
+              </label>
+            </section>
+          ) : null}
+          <section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#0f1a14]">
+            <p className="text-sm leading-6 text-muted-foreground dark:text-white/68">{ticket.description ?? "No description was provided."}</p>
+            <div className="mt-3 flex flex-wrap gap-2">{ticket.tags.map((tag) => <span key={tag} className="rounded-sm bg-cream px-2 py-1 text-xs font-semibold text-primary dark:bg-white/8 dark:text-secondary">{tag}</span>)}</div>
+            {canManage ? <input value={tagDraft} onChange={(event) => setTagDraft(event.target.value)} onBlur={() => patchTicket({ tags: tagDraft.split(",").map((tag) => tag.trim()).filter(Boolean) })} className="mt-3 h-9 w-full rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]" placeholder="Edit tags, comma separated" /> : null}
+          </section>
+          <section className={`grid gap-3 rounded-md border p-4 ${!isClient && mode === "internal_note" ? "border-amber-300 bg-amber-50 dark:border-amber-300/30 dark:bg-amber-300/10" : "border-border bg-white/70 dark:border-white/10 dark:bg-[#0f1a14]"}`}>
+            {!isClient ? <div className="flex w-fit rounded-md bg-cream p-1 dark:bg-white/8"><button onClick={() => setMode("public_reply")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "public_reply" ? "bg-white text-ink shadow-sm dark:bg-[#15231a] dark:text-cream" : "text-muted-foreground"}`}>Public reply</button><button onClick={() => setMode("internal_note")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "internal_note" ? "bg-amber-500 text-white shadow-sm" : "text-muted-foreground"}`}>Internal note</button></div> : null}
+            <textarea value={body} onChange={(event) => setBody(event.target.value)} className="min-h-24 rounded-md border border-border bg-white px-3 py-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream" placeholder={isClient ? "Reply to support" : mode === "internal_note" ? "Private staff note" : "Type your message here"} />
+            <div className="grid gap-2 md:grid-cols-3">
+              {!isClient ? <select value={mentionId} onChange={(event) => setMentionId(event.target.value)} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]"><option value="">Mention teammate</option>{store.employees.map((employee) => <option key={employee.id} value={employee.id}>@{employee.name}</option>)}</select> : null}
+              <input value={attachmentName} onChange={(event) => setAttachmentName(event.target.value)} placeholder="Attachment name" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]" />
+              <input value={attachmentUrl} onChange={(event) => setAttachmentUrl(event.target.value)} placeholder="Attachment URL" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]" />
+            </div>
+            <button onClick={sendComment} className="inline-flex h-10 w-fit items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white dark:bg-[#4f6a57]">
+              <Send className="h-4 w-4" /> {isClient ? "Send reply" : mode === "internal_note" ? "Save internal note" : "Send client reply"}
+            </button>
+          </section>
+          <div className="flex flex-wrap gap-5 border-b border-border dark:border-white/10">
+            <button onClick={() => setActiveTab("conversation")} className={`border-b-2 pb-3 text-sm font-semibold ${activeTab === "conversation" ? "border-primary text-ink dark:text-cream" : "border-transparent text-muted-foreground"}`}>Conversation {visibleMessages.length}</button>
+            <button onClick={() => setActiveTab("timeline")} className={`border-b-2 pb-3 text-sm font-semibold ${activeTab === "timeline" ? "border-primary text-ink dark:text-cream" : "border-transparent text-muted-foreground"}`}>Ticket activity {ticket.events.length}</button>
+          </div>
+          {activeTab === "conversation" ? <MessageList messages={visibleMessages} /> : <TicketTimeline ticket={ticket} />}
+        </main>
+        <aside className="grid content-start gap-4">
+          <section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#0f1a14]">
+            <p className="font-semibold text-ink dark:text-cream">Requester info</p>
+            <div className="mt-4 grid gap-3">
+              <InfoRow label="Client" value={getClientName(store, ticket.clientId)} />
+              <InfoRow label="Contact" value={contact?.name ?? "Primary contact"} />
+              <InfoRow label="Email" value={contact?.email ?? "support@example.com"} />
+              <InfoRow label="Status" value={statusLabel(ticket.status)} />
+              <InfoRow label="SLA" value={ticketSlaLabel(ticket)} />
+            </div>
+          </section>
+          <section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#0f1a14]">
+            <p className="font-semibold text-ink dark:text-cream">Ticket tools</p>
+            <div className="mt-4 grid gap-2">
+              <SmallAction variant="quiet" onClick={convertToProject}>Link to job</SmallAction>
+              <SmallAction variant="quiet" onClick={convertToInvoice}>Link invoice</SmallAction>
+              {ticket.projectId ? <InfoRow label="Job" value={ticket.projectId} /> : null}
+              {ticket.invoiceId ? <InfoRow label="Invoice" value={ticket.invoiceId} /> : null}
+            </div>
+          </section>
+        </aside>
       </div>
     </div>
   );
