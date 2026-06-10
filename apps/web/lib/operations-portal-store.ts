@@ -41,7 +41,7 @@ export type ActionCounts = {
   clientBackOffice: number;
 };
 
-type PortalState = OperationsPortalSeed & {
+export type PortalState = OperationsPortalSeed & {
   viewer: PortalViewer;
   demoMode: boolean;
   demoClientId: string;
