@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { DndContext, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowRight,
   BarChart3,
@@ -30,7 +33,7 @@ import {
   UsersRound
 } from "lucide-react";
 import { portalBrand } from "@/lib/portal-brand";
-import { type CourseCatalogItem, type PortalRole, type PortalViewer, type StaffShift, type TrainingAssignment } from "@/lib/operations-portal-data";
+import { type CourseCatalogItem, type PortalMessage, type PortalRole, type PortalViewer, type StaffShift, type TicketCategory, type TrainingAssignment } from "@/lib/operations-portal-data";
 import { getClientName, invoiceTotal, useOperationsPortalStore, visibleForViewer, type ClientDocument, type ClientInvoice, type ClientProject, type DemoHighlight, type MessageThread, type SupportTicket } from "@/lib/operations-portal-store";
 import type { PortalPage } from "@/lib/operations-portal-store";
 import { can, isOperationsAdmin, isOperationsManager, resourceScope, scopedEmployeeIds, visibleOperationsNav, type PermissionScope } from "@/lib/operations-permissions";
@@ -1665,12 +1668,63 @@ function FileLibraryPanel({ scope }: { scope: PermissionScope }) {
 function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
   const [mode, setMode] = useState<"board" | "queue">("board");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | SupportTicket["status"]>("all");
+  const [priorityFilter, setPriorityFilter] = useState<"all" | SupportTicket["priority"]>("all");
+  const [savedView, setSavedView] = useState<"my" | "unassigned" | "overdue" | "client">("my");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
-  const tickets = scope === "all" ? store.tickets : store.tickets.filter((ticket) => scopedIds.includes(ticket.assigneeId));
-  const columns: Array<{ key: SupportTicket["status"]; label: string }> = [{ key: "open", label: "Open" }, { key: "waiting_on_staff", label: "In progress" }, { key: "waiting_on_client", label: "Waiting" }, { key: "resolved", label: "Resolved" }];
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const currentEmployee = currentEmployeeId(store.viewer);
+  const allScopedTickets = scope === "all" ? store.tickets : store.tickets.filter((ticket) => scopedIds.includes(ticket.assigneeId));
+  const tickets = allScopedTickets
+    .filter((ticket) => statusFilter === "all" || ticket.status === statusFilter)
+    .filter((ticket) => priorityFilter === "all" || ticket.priority === priorityFilter)
+    .filter((ticket) => {
+      if (savedView === "my") return ticket.assigneeId === currentEmployee || scope === "all";
+      if (savedView === "unassigned") return !ticket.assigneeId;
+      if (savedView === "overdue") return isTicketOverdue(ticket);
+      if (savedView === "client") return ticket.source === "client";
+      return true;
+    })
+    .filter((ticket) => `${ticket.subject} ${ticket.description ?? ""} ${ticket.category} ${ticket.tags.join(" ")} ${getClientName(store, ticket.clientId)}`.toLowerCase().includes(query.toLowerCase()));
+  const columns: Array<{ key: SupportTicket["status"]; label: string }> = [{ key: "open", label: "Open" }, { key: "waiting_on_staff", label: "In progress" }, { key: "waiting_on_client", label: "Waiting on client" }, { key: "resolved", label: "Resolved" }, { key: "closed", label: "Closed" }];
   const openCount = tickets.filter((ticket) => ticket.status === "open").length;
   const progressCount = tickets.filter((ticket) => ticket.status === "waiting_on_staff").length;
   const resolvedCount = tickets.filter((ticket) => ticket.status === "resolved" || ticket.status === "closed").length;
+  const patchTicket = async (ticketId: string, changes: Partial<SupportTicket>) => {
+    store.updateTicket(ticketId, changes);
+    const response = await fetch("/api/operations-portal/tickets", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticketId, ...changes }) });
+    const data = await response.json();
+    if (data.ticket) store.upsertTicket(data.ticket);
+  };
+  const onDragEnd = (event: DragEndEvent) => {
+    const ticketId = String(event.active.id);
+    const status = event.over?.id as SupportTicket["status"] | undefined;
+    if (!status || !columns.some((column) => column.key === status)) return;
+    const ticket = store.tickets.find((item) => item.id === ticketId);
+    if (!ticket || ticket.status === status) return;
+    void patchTicket(ticketId, { status });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/operations-portal/tickets")
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (!cancelled && data?.tickets) store.setTicketCache(data.tickets); })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
+
+  const bulkChange = async (changes: Partial<SupportTicket>) => {
+    if (selectedIds.length === 0) return;
+    selectedIds.forEach((ticketId) => store.updateTicket(ticketId, changes));
+    const response = await fetch("/api/operations-portal/tickets", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticketIds: selectedIds, ...changes }) });
+    const data = await response.json();
+    if (Array.isArray(data.tickets)) data.tickets.forEach((ticket: SupportTicket) => store.upsertTicket(ticket));
+    setSelectedIds([]);
+  };
+
   return (
     <section className="grid gap-5">
       <div className="rounded-md bg-[#1f211f] p-5 text-white shadow-sm dark:bg-[#1b211d]">
@@ -1680,7 +1734,7 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
             <h2 className="mt-2 text-3xl font-semibold text-cream">Move issues across columns rather than a flat inbox.</h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => { const subject = window.prompt("New ticket subject"); if (subject?.trim()) store.openTicket(subject.trim()); }} className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 px-3 text-sm font-semibold text-white hover:bg-white/10">
+            <button onClick={async () => { const subject = window.prompt("New ticket subject"); if (subject?.trim()) { store.openTicket(subject.trim()); const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: subject.trim(), clientId: store.selectedClientId, category: "Other", source: "internal" }) }); const data = await response.json(); if (data.ticket) store.upsertTicket(data.ticket); } }} className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 px-3 text-sm font-semibold text-white hover:bg-white/10">
               + New ticket
             </button>
             <button onClick={() => setMode(mode === "board" ? "queue" : "board")} className="h-10 rounded-md border border-white/20 px-3 text-sm font-semibold text-white/78 hover:bg-white/10">{mode === "board" ? "Queue table" : "Kanban board"}</button>
@@ -1693,37 +1747,72 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
           <TicketMetric label="Avg first response" value="2.4h" />
         </div>
       </div>
-      {mode === "board" ? <div className="grid gap-3 xl:grid-cols-4">{columns.map((column) => {
-        const columnTickets = tickets.filter((ticket) => ticket.status === column.key).slice(0, 6);
+      <div className="grid gap-3 rounded-md border border-border bg-white/70 p-3 dark:border-white/10 dark:bg-[#15231a] lg:grid-cols-[1fr_160px_160px_180px]">
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tickets, tags, clients" className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All statuses</option>{columns.map((column) => <option key={column.key} value={column.key}>{column.label}</option>)}</select>
+        <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as typeof priorityFilter)} className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
+        <select value={savedView} onChange={(event) => setSavedView(event.target.value as typeof savedView)} className="h-10 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="my">My tickets</option><option value="unassigned">Unassigned</option><option value="overdue">Overdue/SLA</option><option value="client">Client replies</option></select>
+      </div>
+      {selectedIds.length ? <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-white/70 p-3 text-sm dark:border-white/10 dark:bg-[#15231a]"><span className="font-semibold">{selectedIds.length} selected</span><SmallAction onClick={() => bulkChange({ status: "resolved" })}>Resolve</SmallAction><SmallAction variant="quiet" onClick={() => bulkChange({ assigneeId: currentEmployee })}>Assign to me</SmallAction><SmallAction variant="danger" onClick={() => bulkChange({ status: "closed" })}>Close</SmallAction></div> : null}
+      {mode === "board" ? <DndContext sensors={sensors} onDragEnd={onDragEnd}><div className="grid gap-3 xl:grid-cols-5">{columns.map((column) => {
+        const columnTickets = tickets.filter((ticket) => ticket.status === column.key).slice(0, 12);
         return (
-          <div key={column.key} className="rounded-md bg-[#222522] p-3 text-white dark:bg-[#1a211c]">
+          <TicketDropColumn key={column.key} id={column.key} label={column.label} count={columnTickets.length}>
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-white/82">{column.label}</p>
               <span className="rounded-full border border-white/18 px-2 py-0.5 text-xs text-white/70">{columnTickets.length}</span>
             </div>
             <div className="mt-3 grid gap-2">
               {columnTickets.map((ticket) => (
-                <article key={ticket.id} className="rounded-md border border-white/12 bg-white/6 p-3 transition hover:border-secondary/60 hover:bg-white/10">
-                  <p className="text-sm font-semibold leading-snug text-white">{ticket.subject}</p>
-                  <p className="mt-2 text-xs text-white/62">{getClientName(store, ticket.clientId)}</p>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.priority)}`}>{ticket.priority === "normal" ? "Med" : ticket.priority}</span>
-                    <span className="text-xs text-white/58">{ticket.lastUpdate}</span>
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-[10px] font-semibold text-white dark:bg-secondary dark:text-primary">{employeeName(ticket.assigneeId).split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <SmallAction variant="quiet" onClick={() => store.setSelectedTicket(ticket.id)}>Detail</SmallAction>
-                    <SmallAction onClick={() => store.updateTicket(ticket.id, { status: ticket.status === "open" ? "waiting_on_staff" : ticket.status === "waiting_on_staff" ? "waiting_on_client" : ticket.status === "waiting_on_client" ? "resolved" : "closed" }, "Ticket moved on board.")}>{ticket.status === "resolved" ? "Close" : "Move"}</SmallAction>
-                  </div>
-                </article>
+                <DraggableTicketCard key={ticket.id} ticket={ticket} clientName={getClientName(store, ticket.clientId)} selected={selectedIds.includes(ticket.id)} onSelect={(checked) => setSelectedIds((current) => checked ? [...current, ticket.id] : current.filter((id) => id !== ticket.id))} onOpen={() => store.setSelectedTicket(ticket.id)} />
               ))}
             </div>
-          </div>
+          </TicketDropColumn>
         );
-      })}</div> : <div className="grid gap-3">{tickets.slice(0, 16).map((ticket) => <ActionRow key={ticket.id} label={`${ticket.subject} · ${ticket.priority}`} value={`${getClientName(store, ticket.clientId)} · ${statusLabel(ticket.status)} · ${ticket.lastUpdate}`}><SmallAction onClick={() => store.updateTicket(ticket.id, { status: ticket.status === "resolved" ? "closed" : "resolved" }, "Updated from queue table.")}>{ticket.status === "resolved" ? "Close" : "Resolve"}</SmallAction></ActionRow>)}</div>}
+      })}</div></DndContext> : <div className="grid gap-3">{tickets.slice(0, 30).map((ticket) => <ActionRow key={ticket.id} label={`${ticket.subject} · ${ticket.category} · ${ticket.priority}`} value={`${getClientName(store, ticket.clientId)} · ${statusLabel(ticket.status)} · ${ticketSlaLabel(ticket)}`}><input type="checkbox" checked={selectedIds.includes(ticket.id)} onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, ticket.id] : current.filter((id) => id !== ticket.id))} /><SmallAction variant="quiet" onClick={() => store.setSelectedTicket(ticket.id)}>Open</SmallAction><SmallAction onClick={() => patchTicket(ticket.id, { status: ticket.status === "resolved" ? "closed" : "resolved" })}>{ticket.status === "resolved" ? "Close" : "Resolve"}</SmallAction></ActionRow>)}</div>}
       {store.selectedTicketId ? <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]"><TicketDetail ticket={store.tickets.find((ticket) => ticket.id === store.selectedTicketId) ?? tickets[0]} /></section> : null}
     </section>
   );
+}
+
+function TicketDropColumn({ id, children }: { id: SupportTicket["status"]; label: string; count: number; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return <div ref={setNodeRef} className={`rounded-md p-3 text-white transition ${isOver ? "bg-[#334235]" : "bg-[#222522] dark:bg-[#1a211c]"}`}>{children}</div>;
+}
+
+function DraggableTicketCard({ ticket, clientName, selected, onSelect, onOpen }: { ticket: SupportTicket; clientName: string; selected: boolean; onSelect: (checked: boolean) => void; onOpen: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: ticket.id });
+  const style = { transform: CSS.Translate.toString(transform) };
+  return (
+    <article ref={setNodeRef} style={style} className={`rounded-md border border-white/12 bg-white/6 p-3 transition hover:border-secondary/60 hover:bg-white/10 ${isDragging ? "opacity-70" : ""}`}>
+      <div className="flex items-start gap-2">
+        <input type="checkbox" checked={selected} onChange={(event) => onSelect(event.target.checked)} onClick={(event) => event.stopPropagation()} className="mt-1" />
+        <button {...attributes} {...listeners} onClick={onOpen} className="min-w-0 flex-1 cursor-grab text-left active:cursor-grabbing">
+          <p className="text-sm font-semibold leading-snug text-white">{ticket.subject}</p>
+          <p className="mt-2 text-xs text-white/62">{clientName} · {ticket.category}</p>
+        </button>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.priority)}`}>{ticket.priority === "normal" ? "Med" : ticket.priority}</span>
+        <span className={`text-xs ${isTicketOverdue(ticket) ? "text-red-200" : "text-white/58"}`}>{ticketSlaLabel(ticket)}</span>
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-[10px] font-semibold text-white dark:bg-secondary dark:text-primary">{employeeName(ticket.assigneeId).split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1">{ticket.tags.slice(0, 3).map((tag) => <span key={tag} className="rounded-sm bg-white/10 px-1.5 py-0.5 text-[11px] text-white/68">{tag}</span>)}</div>
+    </article>
+  );
+}
+
+function isTicketOverdue(ticket: SupportTicket) {
+  return Boolean(ticket.dueDate && !["resolved", "closed"].includes(ticket.status) && new Date(`${ticket.dueDate}T23:59:59`).getTime() < Date.now());
+}
+
+function ticketSlaLabel(ticket: SupportTicket) {
+  if (!ticket.dueDate) return "No SLA";
+  const days = Math.ceil((new Date(`${ticket.dueDate}T23:59:59`).getTime() - Date.now()) / 86400000);
+  if (days < 0) return `${Math.abs(days)}d overdue`;
+  if (days === 0) return "Due today";
+  if (days === 1) return "Due tomorrow";
+  return `Due in ${days}d`;
 }
 
 function TicketMetric({ label, value }: { label: string; value: string }) {
@@ -2104,19 +2193,31 @@ function MessagesPanel({ threads, selectedThread, isClient }: { threads: Message
 function TicketsPanel({ tickets, selectedTicket, isClient }: { tickets: SupportTicket[]; selectedTicket?: SupportTicket; isClient: boolean }) {
   const store = useOperationsPortalStore();
   const [subject, setSubject] = useState("");
+  const [description, setDescription] = useState("");
+  const clientTickets = isClient ? tickets.filter((ticket) => ticket.clientId === store.selectedClientId) : tickets;
+  const createClientTicket = async () => {
+    if (!subject.trim()) return;
+    store.openTicket(subject.trim());
+    const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: description.trim() || subject.trim(), clientId: store.selectedClientId, category: "Facilities", source: isClient ? "client" : "internal" }) });
+    const data = await response.json();
+    if (data.ticket) store.upsertTicket(data.ticket);
+    setSubject("");
+    setDescription("");
+  };
   return (
     <TwoColumn
       list={
         <>
           <div className="rounded-md border border-border bg-white/65 p-3 dark:border-white/10 dark:bg-[#15231a]">
-            <label className="grid gap-2 text-sm font-semibold text-muted-foreground dark:text-white/62">Open ticket
+            <label className="grid gap-2 text-sm font-semibold text-muted-foreground dark:text-white/62">{isClient ? "Create support request" : "Open ticket"}
               <input value={subject} onChange={(event) => setSubject(event.target.value)} className="h-10 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="New support request" />
             </label>
-            <button onClick={() => { if (subject.trim()) { store.openTicket(subject.trim()); setSubject(""); } }} className="mt-3 inline-flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white dark:bg-[#4f6a57]">
+            <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="mt-3 min-h-20 w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="Describe the issue, location, and urgency" />
+            <button onClick={createClientTicket} className="mt-3 inline-flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white dark:bg-[#4f6a57]">
               <Ticket className="h-4 w-4" /> Create
             </button>
           </div>
-          {tickets.map((ticket) => <RowButton key={ticket.id} active={ticket.id === selectedTicket?.id} title={ticket.subject} meta={`${getClientName(store, ticket.clientId)} · ${ticket.priority}`} badge={ticket.status} onClick={() => store.setSelectedTicket(ticket.id)} />)}
+          {clientTickets.map((ticket) => <RowButton key={ticket.id} active={ticket.id === selectedTicket?.id} title={ticket.subject} meta={`${isClient ? ticketSlaLabel(ticket) : getClientName(store, ticket.clientId)} · ${ticket.priority}`} badge={ticket.status} onClick={() => store.setSelectedTicket(ticket.id)} />)}
         </>
       }
       detail={selectedTicket ? <DetailShell eyebrow={isClient ? "Support request" : "Ticket queue"} title={selectedTicket.subject} icon={Ticket}><TicketDetail ticket={selectedTicket} /></DetailShell> : null}
@@ -2236,33 +2337,139 @@ function ThreadDetail({ thread }: { thread: MessageThread }) {
 function TicketDetail({ ticket }: { ticket: SupportTicket }) {
   const store = useOperationsPortalStore();
   const [body, setBody] = useState("");
+  const [mode, setMode] = useState<"internal_note" | "public_reply">("public_reply");
+  const [mentionId, setMentionId] = useState("");
+  const [attachmentName, setAttachmentName] = useState("");
+  const [attachmentUrl, setAttachmentUrl] = useState("");
+  const [activeTab, setActiveTab] = useState<"conversation" | "timeline">("conversation");
+  const [tagDraft, setTagDraft] = useState(ticket.tags.join(", "));
+  useEffect(() => setTagDraft(ticket.tags.join(", ")), [ticket.id, ticket.tags]);
   const canManage = store.viewer.role === "owner" || store.viewer.role === "admin" || store.viewer.role === "manager";
+  const isClient = store.viewer.role === "client";
+  const visibleMessages = isClient ? ticket.messages.filter((message) => message.kind !== "internal_note") : ticket.messages;
+  const patchTicket = async (changes: Partial<Pick<SupportTicket, "status" | "priority" | "assigneeId" | "category" | "dueDate" | "tags" | "projectId" | "invoiceId">>, comment?: string) => {
+    store.updateTicket(ticket.id, changes, comment);
+    const response = await fetch("/api/operations-portal/tickets", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticketId: ticket.id, ...changes }) });
+    const data = await response.json();
+    if (data.ticket) store.upsertTicket(data.ticket);
+  };
+  const sendComment = async () => {
+    if (!body.trim()) return;
+    const kind = isClient ? "public_reply" : mode;
+    const mentions = mentionId ? [mentionId] : [];
+    const attachments = attachmentName.trim() ? [{ fileName: attachmentName.trim(), fileUrl: attachmentUrl.trim() || "#" }] : [];
+    store.replyToTicket(ticket.id, body.trim(), undefined, kind, mentions);
+    const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "comment", ticketId: ticket.id, body: body.trim(), kind, mentions, attachments }) });
+    const data = await response.json();
+    if (data.ticket) store.upsertTicket(data.ticket);
+    setBody("");
+    setMentionId("");
+    setAttachmentName("");
+    setAttachmentUrl("");
+  };
+  const convertToProject = () => {
+    const project = store.projects.find((item) => item.clientId === ticket.clientId);
+    if (project) void patchTicket({ projectId: project.id, status: "waiting_on_staff" }, "Ticket linked to an active project/job.");
+  };
+  const convertToInvoice = () => {
+    const invoice = store.invoices.find((item) => item.clientId === ticket.clientId);
+    if (invoice) void patchTicket({ invoiceId: invoice.id }, "Ticket linked to an invoice for billable follow-up.");
+  };
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.status)}`}>{statusLabel(ticket.status)}</span>
-        <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.priority)}`}>{ticket.priority}</span>
-      </div>
-      {canManage ? (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {ticket.status === "resolved" ? <SmallAction variant="danger" onClick={() => { if (window.confirm("Close this ticket?")) store.updateTicket(ticket.id, { status: "closed" }, "Ticket closed from detail view."); }}>Close ticket</SmallAction> : <SmallAction onClick={() => store.updateTicket(ticket.id, { status: ticket.status === "open" ? "waiting_on_client" : "resolved" }, "Ticket status updated from detail view.")}>{ticket.status === "open" ? "Advance status" : "Resolve"}</SmallAction>}
-          <SmallAction variant="quiet" onClick={() => store.updateTicket(ticket.id, { priority: ticket.priority === "high" ? "normal" : "high" })}>{ticket.priority === "high" ? "Set normal" : "Set high"}</SmallAction>
-          <SmallAction variant="quiet" onClick={() => { const assigneeId = window.prompt("Assign to employee id", ticket.assigneeId); if (assigneeId) store.updateTicket(ticket.id, { assigneeId }); }}>Reassign</SmallAction>
+    <div className="grid gap-5">
+      <section className="grid gap-3 rounded-md bg-cream/70 p-4 dark:bg-white/8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-primary dark:text-secondary">{getClientName(store, ticket.clientId)}</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground dark:text-white/68">{ticket.description ?? "No description was provided."}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.status)}`}>{statusLabel(ticket.status)}</span>
+            <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.priority)}`}>{ticket.priority}</span>
+            <span className={`rounded-sm px-2 py-1 text-xs font-semibold ${isTicketOverdue(ticket) ? "bg-red-100 text-red-800" : "bg-white/75 text-primary dark:bg-white/10 dark:text-secondary"}`}>{ticketSlaLabel(ticket)}</span>
+          </div>
         </div>
-      ) : null}
-      <MessageList messages={ticket.messages} />
-      <ReplyBox value={body} onChange={setBody} onSend={() => { if (body.trim()) { store.replyToTicket(ticket.id, body.trim()); setBody(""); } }} />
+        {canManage ? (
+          <div className="grid gap-3 lg:grid-cols-4">
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Status
+              <select value={ticket.status} onChange={(event) => patchTicket({ status: event.target.value as SupportTicket["status"] })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="open">Open</option><option value="waiting_on_staff">In progress</option><option value="waiting_on_client">Waiting on client</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Priority
+              <select value={ticket.priority} onChange={(event) => patchTicket({ priority: event.target.value as SupportTicket["priority"] })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Assignee
+              <select value={ticket.assigneeId} onChange={(event) => patchTicket({ assigneeId: event.target.value })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]">{store.employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select>
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Category
+              <select value={ticket.category} onChange={(event) => patchTicket({ category: event.target.value as TicketCategory })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option>HVAC</option><option>Electrical</option><option>Facilities</option><option>Billing</option><option>Access</option><option>Other</option></select>
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Due date
+              <input type="date" value={ticket.dueDate ?? ""} onChange={(event) => patchTicket({ dueDate: event.target.value || undefined })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62 lg:col-span-2">Tags
+              <input value={tagDraft} onChange={(event) => setTagDraft(event.target.value)} onBlur={() => patchTicket({ tags: tagDraft.split(",").map((tag) => tag.trim()).filter(Boolean) })} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+            </label>
+            <div className="flex flex-wrap items-end gap-2">
+              <SmallAction onClick={() => patchTicket({ status: "resolved" }, "Ticket resolved from workspace.")}>Resolve</SmallAction>
+              <SmallAction variant="quiet" onClick={() => patchTicket({ status: "open" }, "Ticket reopened from workspace.")}>Reopen</SmallAction>
+              <SmallAction variant="danger" onClick={() => patchTicket({ status: "closed" }, "Ticket closed from workspace.")}>Close</SmallAction>
+            </div>
+          </div>
+        ) : null}
+        {canManage ? (
+          <div className="flex flex-wrap gap-2 border-t border-border pt-3 dark:border-white/10">
+            <SmallAction variant="quiet" onClick={convertToProject}>Link to job</SmallAction>
+            <SmallAction variant="quiet" onClick={convertToInvoice}>Link invoice</SmallAction>
+            {ticket.projectId ? <span className="rounded-sm bg-white/70 px-2 py-1 text-xs font-semibold text-primary dark:bg-white/10 dark:text-secondary">Job: {ticket.projectId}</span> : null}
+            {ticket.invoiceId ? <span className="rounded-sm bg-white/70 px-2 py-1 text-xs font-semibold text-primary dark:bg-white/10 dark:text-secondary">Invoice: {ticket.invoiceId}</span> : null}
+          </div>
+        ) : null}
+      </section>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setActiveTab("conversation")} className={`h-9 rounded-md px-3 text-sm font-semibold ${activeTab === "conversation" ? "bg-primary text-white" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>Conversation</button>
+        <button onClick={() => setActiveTab("timeline")} className={`h-9 rounded-md px-3 text-sm font-semibold ${activeTab === "timeline" ? "bg-primary text-white" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>Activity</button>
+      </div>
+      {activeTab === "conversation" ? <MessageList messages={visibleMessages} /> : <TicketTimeline ticket={ticket} />}
+      <div className={`grid gap-3 rounded-md border p-4 ${!isClient && mode === "internal_note" ? "border-amber-300 bg-amber-50 dark:border-amber-300/30 dark:bg-amber-300/10" : "border-border bg-white/65 dark:border-white/10 dark:bg-[#15231a]"}`}>
+        {!isClient ? <div className="flex w-fit rounded-md border border-border p-1 dark:border-white/10"><button onClick={() => setMode("public_reply")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "public_reply" ? "bg-primary text-white" : "text-primary dark:text-secondary"}`}>Reply to client</button><button onClick={() => setMode("internal_note")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "internal_note" ? "bg-amber-500 text-white" : "text-primary dark:text-secondary"}`}>Internal note</button></div> : null}
+        <textarea value={body} onChange={(event) => setBody(event.target.value)} className="min-h-28 rounded-md border border-border bg-white px-3 py-2 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder={isClient ? "Reply to support" : mode === "internal_note" ? "Private staff note" : "Reply visible in the client portal"} />
+        <div className="grid gap-2 md:grid-cols-3">
+          {!isClient ? <select value={mentionId} onChange={(event) => setMentionId(event.target.value)} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="">Mention teammate</option>{store.employees.map((employee) => <option key={employee.id} value={employee.id}>@{employee.name}</option>)}</select> : null}
+          <input value={attachmentName} onChange={(event) => setAttachmentName(event.target.value)} placeholder="Attachment name" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+          <input value={attachmentUrl} onChange={(event) => setAttachmentUrl(event.target.value)} placeholder="Attachment URL" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+        </div>
+        <button onClick={sendComment} className="inline-flex h-11 w-fit items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white dark:bg-[#4f6a57]">
+          <Send className="h-4 w-4" /> {isClient ? "Send reply" : mode === "internal_note" ? "Save internal note" : "Send client reply"}
+        </button>
+      </div>
     </div>
   );
 }
 
-function MessageList({ messages }: { messages: Array<{ id: string; authorRole: PortalRole; authorName: string; body: string; at: string }> }) {
+function MessageList({ messages }: { messages: PortalMessage[] }) {
   return (
     <div className="grid gap-3">
       {messages.map((message) => (
-        <div key={message.id} className={`rounded-md p-3 ${message.authorRole === "client" ? "bg-secondary/30 dark:bg-[#243820]" : "bg-cream/75 dark:bg-[#1b2d21]"}`}>
-          <p className="text-sm font-semibold text-ink dark:text-cream">{message.authorName} <span className="font-normal text-muted-foreground dark:text-white/50">{message.at}</span></p>
+        <div key={message.id} className={`rounded-md border p-3 ${message.kind === "internal_note" ? "border-amber-300 bg-amber-50 dark:border-amber-300/30 dark:bg-amber-300/10" : message.authorRole === "client" ? "border-secondary/30 bg-secondary/30 dark:bg-[#243820]" : "border-transparent bg-cream/75 dark:bg-[#1b2d21]"}`}>
+          <p className="text-sm font-semibold text-ink dark:text-cream">{message.authorName} <span className="font-normal text-muted-foreground dark:text-white/50">{message.at}</span>{message.kind === "internal_note" ? <span className="ml-2 rounded-sm bg-amber-200 px-1.5 py-0.5 text-[11px] text-amber-900">internal</span> : null}</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground dark:text-white/68">{message.body}</p>
+          {message.mentions?.length ? <p className="mt-2 text-xs font-semibold text-primary dark:text-secondary">Mentions: {message.mentions.map(employeeName).join(", ")}</p> : null}
+          {message.attachments?.length ? <div className="mt-3 flex flex-wrap gap-2">{message.attachments.map((attachment) => <a key={attachment.id} href={attachment.fileUrl} className="rounded-sm border border-border px-2 py-1 text-xs font-semibold text-primary hover:bg-white dark:border-white/10 dark:text-secondary">{attachment.fileName}</a>)}</div> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TicketTimeline({ ticket }: { ticket: SupportTicket }) {
+  const commentEvents = ticket.messages.map((message) => ({ id: `comment-${message.id}`, at: message.at, actorName: message.authorName, type: message.kind === "internal_note" ? "internal note" : "reply", fromValue: null, toValue: message.body.slice(0, 90) }));
+  const events = [...ticket.events, ...commentEvents].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  return (
+    <div className="grid gap-2">
+      {events.map((event) => (
+        <div key={event.id} className="rounded-md border border-border bg-white/65 p-3 text-sm dark:border-white/10 dark:bg-white/8">
+          <p className="font-semibold text-ink dark:text-cream">{event.actorName} <span className="font-normal text-muted-foreground dark:text-white/50">{event.at}</span></p>
+          <p className="mt-1 text-muted-foreground dark:text-white/68">{event.type}{event.fromValue || event.toValue ? `: ${event.fromValue ?? ""}${event.fromValue && event.toValue ? " -> " : ""}${event.toValue ?? ""}` : ""}</p>
         </div>
       ))}
     </div>

@@ -556,6 +556,91 @@ export const operationsPortalShifts = pgTable("operations_portal_shifts", {
   deletedAt: timestamp("deleted_at", { mode: "date" })
 });
 
+export const operationsPortalTickets = pgTable(
+  "operations_portal_tickets",
+  {
+    id: text("id").primaryKey().default(sql`'ops-ticket-' || gen_random_uuid()::text`),
+    organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+    clientId: text("client_id").notNull(),
+    subject: text("subject").notNull(),
+    description: text("description").notNull().default(""),
+    status: text("status").$type<"open" | "waiting_on_staff" | "waiting_on_client" | "resolved" | "closed">().notNull().default("open"),
+    priority: text("priority").$type<"low" | "normal" | "high">().notNull().default("normal"),
+    category: text("category").$type<"HVAC" | "Electrical" | "Facilities" | "Billing" | "Access" | "Other">().notNull().default("Other"),
+    dueDate: date("due_date", { mode: "date" }),
+    tags: text("tags").array().notNull().default([]),
+    assigneeId: text("assignee_id"),
+    source: text("source").$type<"client" | "internal">().notNull().default("internal"),
+    projectId: text("project_id"),
+    invoiceId: text("invoice_id"),
+    resolvedAt: timestamp("resolved_at", { mode: "date" }),
+    closedAt: timestamp("closed_at", { mode: "date" }),
+    createdBy: text("created_by"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { mode: "date" })
+  },
+  (ticket) => ({
+    statusIdx: index("operations_portal_tickets_org_status_idx").on(ticket.organizationId, ticket.status, ticket.priority),
+    assigneeIdx: index("operations_portal_tickets_assignee_idx").on(ticket.organizationId, ticket.assigneeId, ticket.status),
+    clientIdx: index("operations_portal_tickets_client_idx").on(ticket.organizationId, ticket.clientId, ticket.status)
+  })
+);
+
+export const operationsPortalTicketComments = pgTable(
+  "operations_portal_ticket_comments",
+  {
+    id: text("id").primaryKey().default(sql`'ops-ticket-comment-' || gen_random_uuid()::text`),
+    organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+    ticketId: text("ticket_id").notNull().references(() => operationsPortalTickets.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"internal_note" | "public_reply">().notNull().default("public_reply"),
+    authorRole: text("author_role").notNull(),
+    authorName: text("author_name").notNull(),
+    body: text("body").notNull(),
+    mentions: text("mentions").array().notNull().default([]),
+    createdBy: text("created_by"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (comment) => ({
+    ticketIdx: index("operations_portal_ticket_comments_ticket_idx").on(comment.organizationId, comment.ticketId, comment.createdAt)
+  })
+);
+
+export const operationsPortalTicketAttachments = pgTable(
+  "operations_portal_ticket_attachments",
+  {
+    id: text("id").primaryKey().default(sql`'ops-ticket-attachment-' || gen_random_uuid()::text`),
+    organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+    ticketId: text("ticket_id").notNull().references(() => operationsPortalTickets.id, { onDelete: "cascade" }),
+    commentId: text("comment_id").references(() => operationsPortalTicketComments.id, { onDelete: "set null" }),
+    fileUrl: text("file_url").notNull(),
+    fileName: text("file_name").notNull(),
+    uploadedBy: text("uploaded_by").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (attachment) => ({
+    ticketIdx: index("operations_portal_ticket_attachments_ticket_idx").on(attachment.organizationId, attachment.ticketId, attachment.createdAt)
+  })
+);
+
+export const operationsPortalTicketEvents = pgTable(
+  "operations_portal_ticket_events",
+  {
+    id: text("id").primaryKey().default(sql`'ops-ticket-event-' || gen_random_uuid()::text`),
+    organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+    ticketId: text("ticket_id").notNull().references(() => operationsPortalTickets.id, { onDelete: "cascade" }),
+    actorId: text("actor_id"),
+    actorName: text("actor_name").notNull(),
+    type: text("type").notNull(),
+    fromValue: text("from_value"),
+    toValue: text("to_value"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow()
+  },
+  (event) => ({
+    ticketIdx: index("operations_portal_ticket_events_ticket_idx").on(event.organizationId, event.ticketId, event.createdAt)
+  })
+);
+
 export const missionOpenShiftClaims = pgTable("mission_open_shift_claims", {
   id: uuid("id").defaultRandom().primaryKey(),
   organizationId: uuid("organization_id").notNull(),

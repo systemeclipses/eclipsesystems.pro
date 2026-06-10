@@ -86,6 +86,9 @@ export type PortalMessage = {
   authorName: string;
   body: string;
   at: string;
+  kind?: "internal_note" | "public_reply";
+  mentions?: string[];
+  attachments?: TicketAttachment[];
 };
 
 export type MessageThread = {
@@ -104,17 +107,46 @@ export type ChatThread = {
 };
 
 export type TicketStatus = "open" | "waiting_on_staff" | "waiting_on_client" | "resolved" | "closed";
+export type TicketCategory = "HVAC" | "Electrical" | "Facilities" | "Billing" | "Access" | "Other";
+
+export type TicketAttachment = {
+  id: string;
+  fileUrl: string;
+  fileName: string;
+  uploadedBy: string;
+  createdAt: string;
+  commentId?: string | null;
+};
+
+export type TicketEvent = {
+  id: string;
+  actorName: string;
+  type: "created" | "status" | "assignee" | "priority" | "category" | "tags" | "due_date" | "comment" | "attachment" | "link" | "closed" | "reopened";
+  fromValue?: string | null;
+  toValue?: string | null;
+  at: string;
+};
 
 export type SupportTicket = {
   id: string;
   clientId: string;
   subject: string;
+  description?: string;
   status: TicketStatus;
   priority: "low" | "normal" | "high";
+  category: TicketCategory;
+  dueDate?: string;
+  tags: string[];
+  resolvedAt?: string | null;
+  closedAt?: string | null;
+  projectId?: string | null;
+  invoiceId?: string | null;
   lastUpdate: string;
   assigneeId: string;
   source: "client" | "internal";
   messages: PortalMessage[];
+  attachments: TicketAttachment[];
+  events: TicketEvent[];
 };
 
 export type EmployeeProfile = {
@@ -528,18 +560,40 @@ const tickets: SupportTicket[] = Array.from({ length: 32 }, (_, index) => {
   const assignees = ["employee-jamal", "employee-brett", "employee-sofia", "employee-derrick", "employee-hannah", "employee-aaron", "employee-ryan", "employee-olivia"];
   const assigneeId = client.id === "client-cahaba" && index % clients.length === 4 ? "employee-jamal" : assignees[index % assignees.length];
   const source = index % 3 === 0 ? "internal" : "client";
+  const status = ["open", "waiting_on_staff", "waiting_on_client", "resolved"][index % 4] as TicketStatus;
+  const priority = client.id === "client-cahaba" && index % clients.length === 4 ? "high" : ["normal", "high", "low"][index % 3] as SupportTicket["priority"];
+  const category = ["HVAC", "Electrical", "Facilities", "Billing", "Access", "Other"][index % 6] as TicketCategory;
+  const dueOffset = priority === "high" ? index % 5 - 1 : index % 9 + 1;
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + dueOffset);
+  const createdBody = "Opened with site notes, asset history, and the requested service window.";
+  const staffBody = "Reviewing the last work order and coordinating the next step.";
+  const publicKind = source === "client" ? "public_reply" : "internal_note";
   return {
     id: `ticket-${index + 1}`,
     clientId: client.id,
     subject: client.id === "client-cahaba" && index % clients.length === 4 ? "Walk-in cooler climbing above set point" : ["PM window change", "Invoice question", "Parts approval", "Gate code needed", "Electrical panel follow-up", "Training completion check"][index % 6],
-    status: ["open", "waiting_on_staff", "waiting_on_client", "resolved"][index % 4] as TicketStatus,
-    priority: client.id === "client-cahaba" && index % clients.length === 4 ? "high" : ["normal", "high", "low"][index % 3] as SupportTicket["priority"],
+    description: client.id === "client-cahaba" && index % clients.length === 4 ? "Client reports cooler temperature climbing above set point during lunch prep. Need dispatch review, photos, and client-safe updates." : "Ticket created from the shared operations/client workflow with enough context for dispatch, office, and client follow-up.",
+    status,
+    priority,
+    category,
+    dueDate: dueDate.toISOString().slice(0, 10),
+    tags: [category.toLowerCase(), priority === "high" ? "sla" : "routine", source],
+    resolvedAt: status === "resolved" ? rel(-1) : null,
+    closedAt: null,
+    projectId: index % 5 === 0 ? projects[index % projects.length]?.id ?? null : null,
+    invoiceId: index % 7 === 0 ? invoices[index % invoices.length]?.id ?? null : null,
     source,
     assigneeId,
     lastUpdate: rel(-(index % 10)),
     messages: [
-      { id: `ticket-msg-${index}-1`, authorRole: source === "client" ? "client" : "employee", authorName: source === "client" ? contacts[index % contacts.length].name : employees.find((employee) => employee.id === assigneeId)!.name, body: "Opened with site notes, asset history, and the requested service window.", at: rel(-2) },
-      { id: `ticket-msg-${index}-2`, authorRole: "employee", authorName: employees.find((employee) => employee.id === assigneeId)!.name, body: "Reviewing the last work order and coordinating the next step.", at: rel(-1) }
+      { id: `ticket-msg-${index}-1`, authorRole: source === "client" ? "client" : "employee", authorName: source === "client" ? contacts[index % contacts.length].name : employees.find((employee) => employee.id === assigneeId)!.name, body: createdBody, at: rel(-2), kind: publicKind },
+      { id: `ticket-msg-${index}-2`, authorRole: "employee", authorName: employees.find((employee) => employee.id === assigneeId)!.name, body: staffBody, at: rel(-1), kind: source === "client" ? "public_reply" : "internal_note", mentions: index % 4 === 0 ? ["employee-marcus"] : [] }
+    ],
+    attachments: index % 4 === 0 ? [{ id: `ticket-attachment-${index}`, fileName: "site-photo.jpg", fileUrl: "https://example.com/site-photo.jpg", uploadedBy: assigneeId, createdAt: rel(-1), commentId: `ticket-msg-${index}-2` }] : [],
+    events: [
+      { id: `ticket-event-${index}-created`, actorName: source === "client" ? contacts[index % contacts.length].name : employees.find((employee) => employee.id === assigneeId)!.name, type: "created", toValue: status, at: rel(-2) },
+      { id: `ticket-event-${index}-status`, actorName: employees.find((employee) => employee.id === assigneeId)!.name, type: "status", fromValue: "open", toValue: status, at: rel(-1) }
     ]
   };
 });

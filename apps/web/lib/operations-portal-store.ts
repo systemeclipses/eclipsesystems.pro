@@ -81,7 +81,9 @@ type PortalState = OperationsPortalSeed & {
   denyTimeCorrection: (entryId: string, reason: string, actor?: PortalViewer) => void;
   approveShiftSwap: (shiftId: string, actor?: PortalViewer) => void;
   denyShiftSwap: (shiftId: string, reason: string, actor?: PortalViewer) => void;
-  updateTicket: (ticketId: string, changes: Partial<Pick<SupportTicket, "assigneeId" | "priority" | "status">>, comment?: string, actor?: PortalViewer) => void;
+  setTicketCache: (tickets: SupportTicket[]) => void;
+  upsertTicket: (ticket: SupportTicket) => void;
+  updateTicket: (ticketId: string, changes: Partial<Pick<SupportTicket, "assigneeId" | "priority" | "status" | "category" | "dueDate" | "tags" | "projectId" | "invoiceId">>, comment?: string, actor?: PortalViewer) => void;
   assignCourse: (employeeIds: string[], courseId: string, actor?: PortalViewer, reason?: TrainingAssignment["reason"], dueDate?: string) => void;
   removeTrainingAssignment: (assignmentId: string, actor?: PortalViewer) => void;
   completeTrainingAssignment: (assignmentId: string) => void;
@@ -99,7 +101,7 @@ type PortalState = OperationsPortalSeed & {
   sendMessage: (threadId: string, body: string, actor?: PortalViewer) => void;
   sendChatMessage: (threadId: string, body: string, employeeId?: string) => void;
   openTicket: (subject: string, actor?: PortalViewer) => void;
-  replyToTicket: (ticketId: string, body: string, actor?: PortalViewer) => void;
+  replyToTicket: (ticketId: string, body: string, actor?: PortalViewer, kind?: "internal_note" | "public_reply", mentions?: string[]) => void;
   resetDemo: () => void;
 };
 
@@ -254,6 +256,11 @@ export const useOperationsPortalStore = create<PortalState>((set) => ({
   setSelectedDocument: (selectedDocumentId) => set({ selectedDocumentId, activePage: "documents" }),
   setSelectedThread: (selectedThreadId) => set({ selectedThreadId, activePage: "messages" }),
   setSelectedTicket: (selectedTicketId) => set({ selectedTicketId, activePage: "tickets" }),
+  setTicketCache: (tickets) => set((state) => ({ tickets, selectedTicketId: tickets.find((ticket) => ticket.id === state.selectedTicketId)?.id ?? tickets[0]?.id ?? state.selectedTicketId })),
+  upsertTicket: (ticket) => set((state) => ({
+    tickets: state.tickets.some((item) => item.id === ticket.id) ? state.tickets.map((item) => (item.id === ticket.id ? ticket : item)) : [ticket, ...state.tickets],
+    selectedTicketId: ticket.id
+  })),
   setSchedulingCache: (shifts) => set({ shifts }),
   upsertSchedulingShift: (shift) =>
     set((state) => ({
@@ -384,8 +391,10 @@ export const useOperationsPortalStore = create<PortalState>((set) => ({
       return {
         tickets: state.tickets.map((item) => {
           if (item.id !== ticketId) return item;
-          const messages = comment?.trim() ? [...item.messages, messageFrom(effectiveViewer, state.contacts, comment.trim())] : item.messages;
-          return { ...item, ...changes, messages, lastUpdate: "Just now" };
+          const messages = comment?.trim() ? [...item.messages, { ...messageFrom(effectiveViewer, state.contacts, comment.trim()), kind: "internal_note" as const }] : item.messages;
+          const resolvedAt = changes.status === "resolved" ? "Just now" : item.resolvedAt;
+          const closedAt = changes.status === "closed" ? "Just now" : changes.status === "open" ? null : item.closedAt;
+          return { ...item, ...changes, resolvedAt, closedAt, messages, lastUpdate: "Just now" };
         })
       };
     }),
@@ -508,22 +517,33 @@ export const useOperationsPortalStore = create<PortalState>((set) => ({
         id: makeId("ticket"),
         clientId,
         subject,
+        description: subject,
         priority: "normal",
+        category: "Other",
+        dueDate: undefined,
+        tags: ["new"],
+        projectId: null,
+        invoiceId: null,
+        resolvedAt: null,
+        closedAt: null,
         status: effectiveViewer.role === "client" ? "waiting_on_staff" : "open",
         assigneeId: "employee-jamal",
         source: effectiveViewer.role === "client" ? "client" : "internal",
         lastUpdate: "Just now",
-        messages: [messageFrom(effectiveViewer, state.contacts, `Opened ticket: ${subject}`)]
+        messages: [{ ...messageFrom(effectiveViewer, state.contacts, `Opened ticket: ${subject}`), kind: effectiveViewer.role === "client" ? "public_reply" : "internal_note" }],
+        attachments: [],
+        events: [{ id: makeId("ticket-event"), actorName: actorLabel(effectiveViewer, state.contacts), type: "created", toValue: "open", at: "Just now" }]
       };
       return { tickets: [ticket, ...state.tickets], selectedTicketId: ticket.id, activePage: "tickets" };
     }),
-  replyToTicket: (ticketId, body, actor) =>
+  replyToTicket: (ticketId, body, actor, kind = "public_reply", mentions = []) =>
     set((state) => ({
       tickets: state.tickets.map((ticket) => {
         if (ticket.id !== ticketId) return ticket;
         const effectiveViewer = actor ?? state.viewer;
         const nextStatus = effectiveViewer.role === "client" ? "waiting_on_staff" : "waiting_on_client";
-        return { ...ticket, status: nextStatus, lastUpdate: "Just now", messages: [...ticket.messages, messageFrom(effectiveViewer, state.contacts, body)] };
+        const message = { ...messageFrom(effectiveViewer, state.contacts, body), kind: effectiveViewer.role === "client" ? "public_reply" as const : kind, mentions };
+        return { ...ticket, status: kind === "internal_note" ? ticket.status : nextStatus, lastUpdate: "Just now", messages: [...ticket.messages, message], events: [...ticket.events, { id: makeId("ticket-event"), actorName: actorLabel(effectiveViewer, state.contacts), type: "comment", toValue: kind, at: "Just now" }] };
       })
     })),
   resetDemo: () =>
