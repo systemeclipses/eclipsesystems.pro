@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { claimPersistedPortalShift, createPersistedPortalShift, listPersistedPortalShifts } from "@/src/db/queries/operations-portal-scheduling";
+import { claimPersistedPortalShift, createPersistedPortalShift, listPersistedPortalShifts, updatePersistedPortalShift } from "@/src/db/queries/operations-portal-scheduling";
 
 export async function GET() {
   try {
@@ -32,12 +32,25 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const body = await request.json().catch(() => ({}));
-  if (typeof body.shiftId !== "string" || typeof body.employeeId !== "string") {
-    return NextResponse.json({ error: "shiftId and employeeId are required." }, { status: 400 });
+  if (typeof body.shiftId !== "string") {
+    return NextResponse.json({ error: "shiftId is required." }, { status: 400 });
   }
 
   try {
-    const shift = await claimPersistedPortalShift({ shiftId: body.shiftId, employeeId: body.employeeId });
+    const hasEdits = typeof body.day === "string" || typeof body.time === "string" || typeof body.site === "string" || typeof body.status === "string" || body.employeeId === null;
+    if (!hasEdits && typeof body.employeeId !== "string") {
+      return NextResponse.json({ error: "employeeId is required." }, { status: 400 });
+    }
+    const shift = hasEdits
+      ? await updatePersistedPortalShift({
+          shiftId: body.shiftId,
+          employeeId: typeof body.employeeId === "string" ? body.employeeId : body.employeeId === null ? null : undefined,
+          day: typeof body.day === "string" ? body.day : undefined,
+          time: typeof body.time === "string" ? body.time : undefined,
+          site: typeof body.site === "string" ? body.site : undefined,
+          status: body.status === "open" || body.status === "swap_requested" || body.status === "published" ? body.status : undefined
+        })
+      : await claimPersistedPortalShift({ shiftId: body.shiftId, employeeId: body.employeeId });
     return NextResponse.json({ shift });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to update shift." }, { status: 400 });

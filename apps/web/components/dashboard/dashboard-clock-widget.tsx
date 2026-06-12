@@ -70,7 +70,7 @@ export function DashboardClockWidget({
 
   const isClockedIn = Boolean(running) && state !== "CLOCKED_OUT";
   const duration = running ? Math.max(0, Math.floor((Date.now() - new Date(running.started_at).getTime()) / 1000)) : 0;
-  const statusText = state === "ON_BREAK" ? "You are on break" : isClockedIn ? "You are clocked in" : "You are clocked out";
+  const latestPunchText = latestPunch ? `Last ${latestPunch.label.toLowerCase()} at ${formatTime(latestPunch.time)}` : "No punches yet today";
   const cardTone = isClockedIn
     ? "border-green-200 bg-green-600 text-white dark:border-secondary/40 dark:bg-secondary dark:text-primary"
     : "border-[#d7c9ac] bg-[hsl(35_69%_90%)] text-[hsl(132_16%_13%)]";
@@ -130,7 +130,7 @@ export function DashboardClockWidget({
         <Clock3 className={`h-5 w-5 ${iconText}`} />
       </div>
 
-      <p className={`mt-6 text-sm font-semibold ${mutedText}`}>{statusText}</p>
+      <p className={`mt-6 text-sm font-semibold ${mutedText}`}>{latestPunchText}</p>
       <p className="mt-2 font-mono text-5xl font-semibold leading-none tabular-nums">{isClockedIn ? formatDuration(duration) : "--:--:--"}</p>
 
       <button
@@ -143,7 +143,7 @@ export function DashboardClockWidget({
       </button>
 
       <div className={`mt-5 rounded-sm p-3 ${detailTone}`}>
-        <p className={`text-xs font-semibold uppercase ${mutedText}`}>Most recent punch today</p>
+        <p className={`text-xs font-semibold uppercase ${mutedText}`}>Last punch</p>
         <p className="mt-1 text-sm font-semibold">
           {latestPunch ? `${latestPunch.label} at ${formatTime(latestPunch.time)}` : "No punches yet today"}
         </p>

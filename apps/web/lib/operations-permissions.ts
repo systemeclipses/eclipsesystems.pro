@@ -75,7 +75,7 @@ const moduleToggles: Record<OperationsModule, boolean> = {
 const adminNav: OperationsNavItem[] = [
   { module: "dashboard", page: "dashboard", label: "Dashboard", role: "admin" },
   { module: "timekeeping", page: "timekeeping", label: "Timekeeping", role: "admin" },
-  { module: "scheduling", page: "scheduling", label: "Scheduling", role: "admin" },
+  { module: "scheduling", page: "scheduling", label: "Schedule", role: "admin" },
   { module: "billing", page: "billing", label: "Invoicing & Billing", role: "admin" },
   { module: "hr", page: "hr", label: "HR", role: "admin" },
   { module: "documents", page: "documents", label: "Documents", role: "admin" },
@@ -90,8 +90,8 @@ const adminNav: OperationsNavItem[] = [
 
 const staffNav: OperationsNavItem[] = [
   { module: "dashboard", page: "dashboard", label: "My Day/Home", role: "staff" },
-  { module: "timekeeping", page: "my-timekeeping", label: "My Timekeeping", role: "staff" },
-  { module: "scheduling", page: "my-schedule", label: "My Schedule", role: "staff" },
+  { module: "timekeeping", page: "my-timekeeping", label: "Timekeeping", role: "staff" },
+  { module: "scheduling", page: "my-schedule", label: "Schedule", role: "staff" },
   { module: "ticketing", page: "ticketing", label: "My Tasks/Tickets", role: "staff" },
   { module: "chat", page: "chat", label: "Chat", role: "staff" },
   { module: "lms", page: "lms", label: "My Training", role: "staff" },
@@ -103,9 +103,9 @@ const staffNav: OperationsNavItem[] = [
 
 const managerNav: OperationsNavItem[] = [
   { module: "dashboard", page: "dashboard", label: "Team Dashboard", role: "manager" },
-  ...staffNav.slice(1, 9),
-  { module: "timekeeping", page: "timekeeping", label: "Team Timekeeping", role: "manager" },
-  { module: "scheduling", page: "scheduling", label: "Team Schedule", role: "manager" },
+  ...staffNav.slice(1, 9).filter((item) => !["timekeeping", "scheduling", "ticketing", "lms"].includes(item.module)),
+  { module: "timekeeping", page: "timekeeping", label: "Timekeeping", role: "manager" },
+  { module: "scheduling", page: "scheduling", label: "Schedule", role: "manager" },
   { module: "hr", page: "hr", label: "Team PTO", role: "manager" },
   { module: "ticketing", page: "ticketing", label: "Team Tasks", role: "manager" },
   { module: "lms", page: "lms", label: "Team Training", role: "manager" }

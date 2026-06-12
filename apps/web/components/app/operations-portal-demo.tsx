@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DndContext, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -33,7 +34,7 @@ import {
   UsersRound
 } from "lucide-react";
 import { portalBrand } from "@/lib/portal-brand";
-import { type CourseCatalogItem, type PortalMessage, type PortalRole, type PortalViewer, type StaffShift, type TicketCategory, type TrainingAssignment } from "@/lib/operations-portal-data";
+import { type CourseCatalogItem, type PortalMessage, type PortalRole, type PortalViewer, type StaffShift, type StaffTimeEntry, type TicketCategory, type TrainingAssignment } from "@/lib/operations-portal-data";
 import { getClientName, invoiceTotal, useOperationsPortalStore, visibleForViewer, type ClientDocument, type ClientInvoice, type ClientProject, type DemoHighlight, type MessageThread, type SupportTicket } from "@/lib/operations-portal-store";
 import type { PortalPage } from "@/lib/operations-portal-store";
 import { can, isOperationsAdmin, isOperationsManager, resourceScope, scopedEmployeeIds, visibleOperationsNav, type PermissionScope } from "@/lib/operations-permissions";
@@ -42,6 +43,7 @@ type Surface = "operations" | "client";
 
 type DemoProps = {
   surface: Surface;
+  ticketSlug?: string;
 };
 
 type LearningPath = {
@@ -52,6 +54,7 @@ type LearningPath = {
 };
 
 type SidebarNavItem = { page: PortalPage; label: string; icon: typeof LayoutDashboard };
+type ReportView = "general" | "monitoring" | "technicians" | "satisfaction";
 
 const clientNav: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }> = [
   { page: "dashboard", label: "Home", icon: LayoutDashboard },
@@ -94,6 +97,28 @@ function money(value: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
 }
 
+function entryHours(entry: StaffTimeEntry, now = new Date()) {
+  if (!entry.clockedIn || !entry.clockStartedAt) return entry.hours;
+  const elapsed = Math.max(0, now.getTime() - new Date(entry.clockStartedAt).getTime());
+  return Math.round((elapsed / 3_600_000) * 100) / 100;
+}
+
+function formatPunchTime(value?: string) {
+  if (!value) return null;
+  return new Date(value).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function weekDateLabel(offset: number) {
+  if (offset === 0) return "Today";
+  return `${offset} day${offset === 1 ? "" : "s"} ago`;
+}
+
+function compactWeekDateLabel(offset: number) {
+  if (offset === 0) return "Today";
+  if (offset === 1) return "Yesterday";
+  return `${offset} days ago`;
+}
+
 function statusLabel(value: string) {
   return value.replaceAll("_", " ");
 }
@@ -111,6 +136,23 @@ function denyReason(label: string) {
 
 function surfaceForRole(role: PortalRole) {
   return role === "client" ? "Client Portal" : "Operations Hub";
+}
+
+function slugifyTicketSubject(subject: string) {
+  const slug = subject.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return slug || "ticket";
+}
+
+function ticketSlug(ticket: Pick<SupportTicket, "id" | "subject">) {
+  return `${ticket.id}-${slugifyTicketSubject(ticket.subject)}`;
+}
+
+function ticketMatchesSlug(ticket: Pick<SupportTicket, "id" | "subject">, slug: string) {
+  return slug === ticket.id || slug === ticketSlug(ticket) || slug.startsWith(`${ticket.id}-`);
+}
+
+function ticketDetailHref(surface: Surface, ticket: Pick<SupportTicket, "id" | "subject">) {
+  return `${surface === "client" ? "/client-portal" : "/operations"}/tickets/${ticketSlug(ticket)}`;
 }
 
 const demoSteps = [
@@ -138,7 +180,7 @@ function groupedOperationsNav(items: SidebarNavItem[]) {
   const byPage = new Map(available.map((item) => [item.page, item]));
   const pick = (pages: PortalPage[]) => pages.map((page) => byPage.get(page)).filter(Boolean) as SidebarNavItem[];
   return [
-    { id: "workforce", label: "Workforce", icon: Clock3, items: pick(["my-timekeeping", "timekeeping", "my-schedule", "scheduling", "hr", "time-off", "profile"]) },
+    { id: "workforce", label: "Workforce", icon: Clock3, items: pick(["my-timekeeping", "timekeeping", "my-schedule", "scheduling", "hr", "time-off"]) },
     { id: "client-ops", label: "Client Ops", icon: Building2, items: pick(["ticketing", "billing", "client-back-office", "documents"]) },
     { id: "comms", label: "Comms + Docs", icon: MessageSquareText, items: pick(["chat", "company-home", "knowledge"]) },
     { id: "learning", label: "Learning", icon: BookOpenCheck, items: pick(["lms"]) },
@@ -146,16 +188,25 @@ function groupedOperationsNav(items: SidebarNavItem[]) {
   ].filter((group) => group.items.length > 0);
 }
 
+const reportViews: Array<{ id: ReportView; label: string; icon: typeof LayoutDashboard; items: string[] }> = [
+  { id: "general", label: "General", icon: BarChart3, items: ["Executive overview", "Revenue trend", "Ticket volume", "Schedule coverage"] },
+  { id: "monitoring", label: "Monitoring", icon: Bell, items: ["SLA breaches", "Open risk", "Overdue training", "PTO coverage"] },
+  { id: "technicians", label: "Technicians", icon: UsersRound, items: ["Utilization", "First response", "Completion rate", "Training status"] },
+  { id: "satisfaction", label: "Satisfaction", icon: CheckCircle2, items: ["Client sentiment", "Resolved tickets", "Repeat issues", "Portal adoption"] }
+];
+
 function actorForPane(role: "staff" | "client", clientId: string): PortalViewer {
   return role === "client" ? { role: "client", clientId } : { role: "admin" };
 }
 
-export function OperationsPortalDemo({ surface }: DemoProps) {
+export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: DemoProps) {
   const store = useOperationsPortalStore();
 
   const isClient = store.viewer.role === "client";
   const navItems = isClient ? clientNav : uniqueNavItems(visibleOperationsNav(store.viewer).map((item) => ({ ...item, icon: operationsNavIcons[item.page] })));
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({ workforce: true, "client-ops": true });
+  const [sidebarMode, setSidebarMode] = useState<"main" | "reports">("main");
+  const [activeReport, setActiveReport] = useState<ReportView | null>(null);
   const clientId = isClient ? store.viewer.clientId ?? store.selectedClientId : store.selectedClientId;
   const selectedClient = store.clients.find((client) => client.id === clientId) ?? store.clients[0];
   const visibleProjects = visibleForViewer(store.projects, store.viewer);
@@ -168,13 +219,15 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
   const selectedDocument = visibleDocuments.find((document) => document.id === store.selectedDocumentId) ?? visibleDocuments[0];
   const selectedThread = visibleThreads.find((thread) => thread.id === store.selectedThreadId) ?? visibleThreads[0];
   const selectedTicket = visibleTickets.find((ticket) => ticket.id === store.selectedTicketId) ?? visibleTickets[0];
+  const routeTicket = routeTicketSlug ? visibleTickets.find((ticket) => ticketMatchesSlug(ticket, routeTicketSlug)) : undefined;
   const demoClient = store.clients.find((client) => client.id === store.demoClientId) ?? store.clients[0];
   const demoProject = store.projects.find((project) => project.clientId === demoClient.id) ?? store.projects[0];
   const demoInvoice = store.invoices.find((invoice) => invoice.clientId === demoClient.id) ?? store.invoices[0];
   const demoDocument = store.documents.find((document) => document.clientId === demoClient.id) ?? store.documents[0];
   const demoThread = store.threads.find((thread) => thread.clientId === demoClient.id) ?? store.threads[0];
   const demoTicket = store.tickets.find((ticket) => ticket.clientId === demoClient.id) ?? store.tickets[0];
-  const onDashboard = store.activePage === "dashboard" && !store.demoMode;
+  const onDashboard = store.activePage === "dashboard" && !store.demoMode && !activeReport && !routeTicketSlug;
+  const reportLabel = routeTicketSlug ? `Tickets / ${routeTicket?.subject ?? "Ticket"}` : activeReport ? reportViews.find((view) => view.id === activeReport)?.label ?? "Reports" : undefined;
 
   function fireDemoStep(stepIndex = store.demoStepIndex) {
     const step = demoSteps[stepIndex];
@@ -200,6 +253,16 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
       store.setViewer({ role: "admin" });
     }
   }, []);
+
+  useEffect(() => {
+    if (!routeTicketSlug) return;
+    if (surface === "operations") {
+      store.setActivePage("ticketing");
+    } else {
+      store.setActivePage("tickets");
+    }
+    if (routeTicket) store.setSelectedTicket(routeTicket.id);
+  }, [routeTicketSlug, routeTicket?.id, surface]);
 
   useEffect(() => {
     if (!store.demoMode || !store.demoAutoplay) return;
@@ -231,9 +294,24 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-[#2f4135] p-4 text-white md:flex md:flex-col">
         <Link href="/templates" className={`${portalBrand.fonts.title} text-3xl leading-none text-cream`}>{portalBrand.logoText}</Link>
         {!isClient ? <div className="mt-5"><NotificationBell surface="sidebar" /></div> : null}
-        <nav className="mt-7 grid gap-1">
-          {isClient ? <FlatSidebarNav items={navItems} activePage={store.activePage} onSelect={store.setActivePage} /> : <GroupedSidebarNav items={navItems} activePage={store.activePage} openGroups={openNavGroups} onToggle={(groupId) => setOpenNavGroups((current) => ({ ...current, [groupId]: !current[groupId] }))} onSelect={store.setActivePage} />}
+        <nav className="mt-7 grid flex-1 content-start gap-1">
+          {isClient ? (
+            <FlatSidebarNav items={navItems} activePage={store.activePage} onSelect={store.setActivePage} />
+          ) : sidebarMode === "reports" ? (
+            <ReportsSidebarNav activeReport={activeReport} onBack={() => setSidebarMode("main")} onSelect={(report) => { setActiveReport(report); store.setActivePage("dashboard"); }} />
+          ) : (
+            <GroupedSidebarNav
+              items={navItems}
+              activePage={store.activePage}
+              reportsActive={Boolean(activeReport)}
+              openGroups={openNavGroups}
+              onReports={() => setSidebarMode("reports")}
+              onToggle={(groupId) => setOpenNavGroups((current) => ({ ...current, [groupId]: !current[groupId] }))}
+              onSelect={(page) => { setActiveReport(null); store.setActivePage(page); }}
+            />
+          )}
         </nav>
+        {!isClient && sidebarMode === "main" ? <SidebarProfileButton active={store.activePage === "profile"} onSelect={() => { setActiveReport(null); store.setActivePage("profile"); }} /> : null}
       </aside>
 
       <main className="md:pl-64">
@@ -254,7 +332,7 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
               </div>
             </header>
           ) : (
-            <ModuleTopBar selectedClientId={selectedClient.id} navItems={navItems} isClient={isClient} />
+            <ModuleTopBar selectedClientId={selectedClient.id} navItems={navItems} isClient={isClient} reportLabel={reportLabel} />
           )}
 
           {store.demoMode ? (
@@ -299,7 +377,11 @@ export function OperationsPortalDemo({ surface }: DemoProps) {
           ) : null}
 
           <section className={onDashboard ? "mt-5" : "mt-4"}>
-            {isClient ? (
+            {routeTicketSlug ? (
+              <TicketRouteWorkspace ticket={routeTicket} surface={surface} />
+            ) : activeReport && !isClient ? (
+              <ReportsWorkspace report={activeReport} />
+            ) : isClient ? (
               <ClientPortalWorkspace
                 clientId={selectedClient.id}
                 project={selectedProject}
@@ -389,7 +471,7 @@ function FlatSidebarNav({ items, activePage, onSelect }: { items: SidebarNavItem
   );
 }
 
-function GroupedSidebarNav({ items, activePage, openGroups, onToggle, onSelect }: { items: SidebarNavItem[]; activePage: PortalPage; openGroups: Record<string, boolean>; onToggle: (groupId: string) => void; onSelect: (page: PortalPage) => void }) {
+function GroupedSidebarNav({ items, activePage, reportsActive, openGroups, onReports, onToggle, onSelect }: { items: SidebarNavItem[]; activePage: PortalPage; reportsActive: boolean; openGroups: Record<string, boolean>; onReports: () => void; onToggle: (groupId: string) => void; onSelect: (page: PortalPage) => void }) {
   const groups = groupedOperationsNav(items);
   const home = items.find((item) => item.page === "dashboard");
 
@@ -404,6 +486,11 @@ function GroupedSidebarNav({ items, activePage, openGroups, onToggle, onSelect }
           <span className="min-w-0 flex-1">{home.label}</span>
         </button>
       ) : null}
+      <button onClick={onReports} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${reportsActive ? "bg-white/12 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
+        <BarChart3 className="h-[18px] w-[18px] text-secondary" />
+        <span className="min-w-0 flex-1">Reports</span>
+        <ArrowRight className="h-4 w-4 text-white/60" />
+      </button>
       {groups.map((group) => {
         const Icon = group.icon;
         const active = group.items.some((item) => item.page === activePage);
@@ -431,10 +518,62 @@ function GroupedSidebarNav({ items, activePage, openGroups, onToggle, onSelect }
   );
 }
 
-function ModuleTopBar({ selectedClientId, navItems, isClient }: { selectedClientId: string; navItems: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }>; isClient: boolean }) {
+function SidebarProfileButton({ active, onSelect }: { active: boolean; onSelect: () => void }) {
+  const store = useOperationsPortalStore();
+  const employee = store.employees.find((item) => item.id === currentEmployeeId(store.viewer)) ?? store.employees[0];
+  return (
+    <button onClick={onSelect} className={`mt-4 flex items-center gap-3 rounded-md border border-white/12 p-3 text-left transition ${active ? "bg-white/14 text-white" : "bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"}`}>
+      <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary/25 text-xs font-bold text-secondary">{employee.avatar}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold">{employee.name}</span>
+        <span className="block truncate text-xs text-white/50">Profile</span>
+      </span>
+      <UserRound className="h-4 w-4 text-secondary" />
+    </button>
+  );
+}
+
+function ReportsSidebarNav({ activeReport, onBack, onSelect }: { activeReport: ReportView | null; onBack: () => void; onSelect: (report: ReportView) => void }) {
+  const [openSections, setOpenSections] = useState<Record<ReportView, boolean>>({ general: true, monitoring: false, technicians: false, satisfaction: false });
+  return (
+    <div className="motion-safe:animate-in motion-safe:slide-in-from-right-4">
+      <button onClick={onBack} className="mb-4 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] text-white/75 transition hover:bg-white/10 hover:text-white">
+        <ArrowRight className="h-4 w-4 rotate-180 text-secondary" />
+        <span>Back</span>
+      </button>
+      <p className="px-3 text-xs font-semibold uppercase tracking-[0.14em] text-white/42">Operational reports</p>
+      <div className="mt-3 grid gap-1">
+        {reportViews.map((view) => {
+          const Icon = view.icon;
+          const open = openSections[view.id] ?? activeReport === view.id;
+          return (
+            <div key={view.id} className="grid gap-1">
+              <button onClick={() => { setOpenSections((current) => ({ ...current, [view.id]: !open })); onSelect(view.id); }} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${activeReport === view.id ? "bg-white/12 text-white" : "text-white/62 hover:bg-white/10 hover:text-white"}`}>
+                <Icon className="h-[18px] w-[18px] text-secondary" />
+                <span className="min-w-0 flex-1">{view.label}</span>
+                <ChevronDown className={`h-4 w-4 text-white/50 transition ${open ? "rotate-180" : ""}`} />
+              </button>
+              {open ? (
+                <div className="ml-5 grid gap-1 border-l border-white/12 pl-2">
+                  {view.items.map((item) => (
+                    <button key={item} onClick={() => onSelect(view.id)} className="rounded-md px-3 py-1.5 text-left text-sm text-white/50 transition hover:bg-white/8 hover:text-white">
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ModuleTopBar({ selectedClientId, navItems, isClient, reportLabel }: { selectedClientId: string; navItems: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }>; isClient: boolean; reportLabel?: string }) {
   const { clients, viewer, activePage, demoMode, setViewer, setDemoMode, resetDemo } = useOperationsPortalStore();
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
-  const activeLabel = navItems.find((item) => item.page === activePage)?.label ?? (isClient ? "Client Portal" : "Operations Hub");
+  const activeLabel = reportLabel ? `Reports / ${reportLabel}` : navItems.find((item) => item.page === activePage)?.label ?? (isClient ? "Client Portal" : "Operations Hub");
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0];
 
   return (
@@ -495,7 +634,7 @@ function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar
       id: entry.id,
       type: entry.status === "needs_correction" ? "Correction" : "Timesheet",
       title: employeeName(entry.employeeId),
-      meta: `${entry.date} · ${entry.hours}h${entry.correctedHours ? ` -> ${entry.correctedHours}h` : ""}`,
+      meta: `${entry.date} · ${entryHours(entry).toFixed(2)}h${entry.correctedHours ? ` -> ${entry.correctedHours}h` : ""}`,
       primaryLabel: "Approve",
       primary: () => store.approveTimeEntry(entry.id),
       dangerLabel: entry.status === "needs_correction" ? "Deny" : undefined,
@@ -791,6 +930,95 @@ function OperationsWorkspace() {
   return <ExecutiveDashboardPanel scope={resourceScope(store.viewer, "dashboard")} />;
 }
 
+function ReportsWorkspace({ report }: { report: ReportView }) {
+  const store = useOperationsPortalStore();
+  const view = reportViews.find((item) => item.id === report) ?? reportViews[0];
+  const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
+  const admin = isOperationsAdmin(store.viewer);
+  const visibleTickets = store.tickets.filter((ticket) => admin || scopedIds.includes(ticket.assigneeId));
+  const openTickets = visibleTickets.filter((ticket) => ticket.status !== "resolved" && ticket.status !== "closed");
+  const overdueTickets = visibleTickets.filter(isTicketOverdue);
+  const completedTraining = store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status === "complete").length;
+  const activeTraining = store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status !== "removed").length;
+  const assignedShiftCount = store.shifts.filter((shift) => shift.employeeId && scopedIds.includes(shift.employeeId)).length;
+  const utilization = Math.round((assignedShiftCount / Math.max(store.shifts.length, 1)) * 100);
+  const reportMetrics: Record<ReportView, Array<{ label: string; value: string; detail: string }>> = {
+    general: [
+      { label: "Open tickets", value: String(openTickets.length), detail: "Across visible queues" },
+      { label: "Scheduled shifts", value: String(assignedShiftCount), detail: "Current period coverage" },
+      { label: "Invoices active", value: String(store.invoices.filter((invoice) => invoice.status !== "paid").length), detail: "Sent, payable, or overdue" },
+      { label: "Training complete", value: `${Math.round((completedTraining / Math.max(activeTraining, 1)) * 100)}%`, detail: "Assigned enrollments" }
+    ],
+    monitoring: [
+      { label: "SLA breached", value: String(overdueTickets.length), detail: "Due dates past target" },
+      { label: "Waiting on client", value: String(visibleTickets.filter((ticket) => ticket.status === "waiting_on_client").length), detail: "Needs customer action" },
+      { label: "Pending PTO", value: String(store.ptoRequests.filter((request) => request.status === "pending" && scopedIds.includes(request.employeeId)).length), detail: "Approval queue" },
+      { label: "Overdue LMS", value: String(store.training.filter((item) => item.status === "overdue" && scopedIds.includes(item.employeeId)).length), detail: "Training risk" }
+    ],
+    technicians: [
+      { label: "Utilization", value: `${utilization}%`, detail: "Assigned scheduled work" },
+      { label: "Assigned tickets", value: String(visibleTickets.filter((ticket) => ticket.assigneeId).length), detail: "Owned queue" },
+      { label: "Resolved", value: String(visibleTickets.filter((ticket) => ticket.status === "resolved" || ticket.status === "closed").length), detail: "Completed tickets" },
+      { label: "Team members", value: String(scopedIds.length), detail: "Visible employees" }
+    ],
+    satisfaction: [
+      { label: "Client replies", value: String(visibleTickets.filter((ticket) => ticket.source === "client").length), detail: "Portal-originated tickets" },
+      { label: "Resolved tickets", value: String(visibleTickets.filter((ticket) => ticket.status === "resolved" || ticket.status === "closed").length), detail: "Closed loop" },
+      { label: "Repeat issues", value: String(visibleTickets.filter((ticket) => ticket.tags.includes("routine")).length), detail: "Routine recurring work" },
+      { label: "Portal docs", value: String(store.documents.filter((document) => document.status !== "draft").length), detail: "Shared client artifacts" }
+    ]
+  };
+  const rows = visibleTickets.slice(0, 6);
+
+  return (
+    <section className="grid gap-5">
+      <div className="rounded-md border border-border bg-white/80 p-5 dark:border-white/10 dark:bg-[#15231a]">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-primary dark:text-secondary">Operational reports</p>
+            <h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">{view.label}</h2>
+          </div>
+          <span className="rounded-sm bg-cream px-3 py-2 text-sm font-semibold text-primary dark:bg-white/8 dark:text-secondary">Live demo data</span>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
+          {reportMetrics[report].map((metric) => (
+            <div key={metric.label} className="rounded-md border border-border bg-cream/60 p-4 dark:border-white/10 dark:bg-white/8">
+              <p className="text-sm text-muted-foreground dark:text-white/62">{metric.label}</p>
+              <p className="mt-3 text-2xl font-semibold text-ink dark:text-cream">{metric.value}</p>
+              <p className="mt-1 text-xs text-muted-foreground dark:text-white/50">{metric.detail}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
+        <section className="rounded-md border border-border bg-white/80 p-5 dark:border-white/10 dark:bg-[#15231a]">
+          <p className="font-semibold text-ink dark:text-cream">Report detail</p>
+          <div className="mt-5 grid gap-3">
+            {rows.map((ticket) => (
+              <div key={ticket.id} className="grid gap-3 rounded-sm bg-cream/60 p-3 text-sm dark:bg-white/8 md:grid-cols-[1fr_140px_120px]">
+                <div>
+                  <p className="font-semibold text-ink dark:text-cream">{ticket.subject}</p>
+                  <p className="mt-1 text-muted-foreground dark:text-white/62">{getClientName(store, ticket.clientId)} · {ticket.category}</p>
+                </div>
+                <span className={isTicketOverdue(ticket) ? "font-semibold text-red-700 dark:text-red-200" : "text-muted-foreground dark:text-white/62"}>{ticketSlaLabel(ticket)}</span>
+                <span className={`w-fit rounded-sm px-2 py-1 text-xs font-semibold ${badgeClass(ticket.status)}`}>{statusLabel(ticket.status)}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+        <aside className="rounded-md border border-border bg-white/80 p-5 dark:border-white/10 dark:bg-[#15231a]">
+          <p className="font-semibold text-ink dark:text-cream">{view.label} report menu</p>
+          <div className="mt-4 grid gap-2">
+            {view.items.map((item) => (
+              <button key={item} className="rounded-sm border border-border px-3 py-2 text-left text-sm font-semibold text-primary hover:bg-cream dark:border-white/10 dark:text-secondary dark:hover:bg-white/8">{item}</button>
+            ))}
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 function currentEmployeeId(viewer: PortalViewer) {
   if (viewer.role === "manager") return "employee-marcus";
   if (viewer.role === "owner") return "employee-dale";
@@ -832,7 +1060,7 @@ function ActionCenterPanel() {
           </ActionRow>
         ))}
         {pendingTime.map((entry) => (
-          <ActionRow key={entry.id} label={`${entry.status === "needs_correction" ? "Correction" : "Timesheet"} · ${employeeName(entry.employeeId)} · ${entry.date}`} value={`${entry.hours}h${entry.correctedHours ? ` → ${entry.correctedHours}h` : ""}`}>
+          <ActionRow key={entry.id} label={`${entry.status === "needs_correction" ? "Correction" : "Timesheet"} · ${employeeName(entry.employeeId)} · ${entry.date}`} value={`${entryHours(entry).toFixed(2)}h${entry.correctedHours ? ` → ${entry.correctedHours}h` : ""}`}>
             <SmallAction onClick={() => store.approveTimeEntry(entry.id)}>Approve</SmallAction>
             {entry.status === "needs_correction" ? <SmallAction variant="danger" onClick={() => { const reason = denyReason("Deny correction"); if (reason) store.denyTimeCorrection(entry.id, reason); }}>Deny</SmallAction> : null}
           </ActionRow>
@@ -879,7 +1107,8 @@ function OperationsDashboardPanel({ scope }: { scope: PermissionScope }) {
   const scopedTasks = store.tasks.filter((task) => scopedIds.includes(task.employeeId) && task.status !== "done");
   const scopedTraining = store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status !== "complete");
   const scopedPto = store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId) && request.status === "pending");
-  const myHours = store.timeEntries.filter((entry) => entry.employeeId === myId).reduce((sum, entry) => sum + entry.hours, 0);
+  const dashboardNow = new Date();
+  const myHours = store.timeEntries.filter((entry) => entry.employeeId === myId).reduce((sum, entry) => sum + entryHours(entry, dashboardNow), 0);
   const revenue = store.invoices.filter((invoice) => invoice.status === "paid").reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
   const ar = store.invoices.filter((invoice) => invoice.status !== "paid").reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
   const openTasks = admin ? store.tasks.filter((task) => task.status !== "done") : scopedTasks;
@@ -894,12 +1123,12 @@ function OperationsDashboardPanel({ scope }: { scope: PermissionScope }) {
             <>
               <MetricTile label="Revenue collected" value={money(revenue)} />
               <MetricTile label="Accounts receivable" value={money(ar)} />
-              <MetricTile label="Team hours today" value={`${store.timeEntries.reduce((sum, entry) => sum + entry.hours, 0).toFixed(1)}h`} />
+              <MetricTile label="Team hours today" value={`${store.timeEntries.reduce((sum, entry) => sum + entryHours(entry, dashboardNow), 0).toFixed(1)}h`} />
               <MetricTile label="Utilization" value="82%" />
             </>
           ) : manager ? (
             <>
-              <MetricTile label="Team hours today" value={`${scopedEntries.reduce((sum, entry) => sum + entry.hours, 0).toFixed(1)}h`} />
+              <MetricTile label="Team hours today" value={`${scopedEntries.reduce((sum, entry) => sum + entryHours(entry, dashboardNow), 0).toFixed(1)}h`} />
               <MetricTile label="Team utilization" value="78%" />
               <MetricTile label="PTO coverage" value={`${scopedPto.length} pending`} />
               <MetricTile label="Open team tasks" value={String(scopedTasks.length)} />
@@ -931,11 +1160,11 @@ function TimekeepingPanel({ scope }: { scope: PermissionScope }) {
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const rows = store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId));
   return (
-    <RolePanel eyebrow={admin ? "Timekeeping" : manager ? "Team Timekeeping" : "My Timekeeping"} title={admin ? "All timesheets and correction queue" : manager ? "Reports' timesheets and correction queue" : "Shift clock, my hours, and corrections"} icon={Clock3}>
+    <RolePanel eyebrow="Timekeeping" title={admin ? "All timesheets and correction queue" : manager ? "Reports' timesheets and correction queue" : "Shift clock, my hours, and corrections"} icon={Clock3}>
       <div className="grid gap-3">
         {scope === "self" ? <button className="inline-flex h-11 w-fit items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white dark:bg-[#4f6a57]"><Clock3 className="h-4 w-4" /> Clock in/out</button> : null}
         {rows.map((entry) => (
-          <ActionRow key={entry.id} label={`${scope === "self" ? "Me" : employeeName(entry.employeeId)} · ${entry.date}`} value={`${entry.hours}h${entry.correctedHours ? ` → ${entry.correctedHours}h` : ""} · ${statusLabel(entry.status)}${entry.resolvedAt ? ` · ${entry.resolvedAt}` : ""}`}>
+          <ActionRow key={entry.id} label={`${scope === "self" ? "Me" : employeeName(entry.employeeId)} · ${entry.date}`} value={`${entryHours(entry).toFixed(2)}h${entry.correctedHours ? ` → ${entry.correctedHours}h` : ""} · ${statusLabel(entry.status)}${entry.resolvedAt ? ` · ${entry.resolvedAt}` : ""}`}>
             {scope === "all" || scope === "team" ? (
               <>
                 {entry.status !== "approved" ? <SmallAction onClick={() => store.approveTimeEntry(entry.id)}>Approve</SmallAction> : null}
@@ -956,7 +1185,7 @@ function SchedulingPanel({ scope }: { scope: PermissionScope }) {
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const rows = store.shifts.filter((shift) => shift.status === "open" || (shift.employeeId ? scopedIds.includes(shift.employeeId) : false));
   return (
-    <RolePanel eyebrow={admin ? "Scheduling" : manager ? "Team Schedule" : "My Schedule"} title={admin ? "Build and publish the company schedule" : manager ? "Build and publish schedules for direct reports" : "My published shifts and swap requests"} icon={CalendarDays}>
+    <RolePanel eyebrow="Schedule" title={admin || manager ? "Build and publish the company schedule" : "My published shifts and swap requests"} icon={CalendarDays}>
       <div className="grid gap-3">
         {rows.map((shift) => (
           <ActionRow key={shift.id} label={`${scope === "self" ? shift.day : shift.employeeId ? employeeName(shift.employeeId) : "Open shift"} · ${shift.site}`} value={`${shift.time} · ${statusLabel(shift.status)}${shift.swapWithEmployeeId ? ` · swap with ${employeeName(shift.swapWithEmployeeId)}` : ""}${shift.resolvedAt ? ` · ${shift.resolvedAt}` : ""}`}>
@@ -1270,17 +1499,10 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
             {["Today", "This week", "Pay period"].map((label) => <button key={label} className="rounded-md border border-white/15 px-3 py-2 text-sm font-semibold text-white/78 hover:bg-white/10">{label}</button>)}
           </div>
         </div>
-        <div className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
-          <p className="text-sm font-semibold text-primary dark:text-secondary">Clickthroughs</p>
-          <div className="mt-4 grid gap-2">
-            <SmallAction onClick={() => store.setActivePage(scope === "self" ? "my-timekeeping" : "timekeeping")}>Open timekeeping</SmallAction>
-            {admin ? <SmallAction variant="quiet" onClick={() => store.setActivePage("billing")}>Open billing</SmallAction> : null}
-            <SmallAction variant="quiet" onClick={() => store.setActivePage("ticketing")}>Open tickets</SmallAction>
-          </div>
-        </div>
+        <ClockInWidget employeeId={currentEmployeeId(store.viewer)} onReport={() => store.setActivePage(scope === "self" ? "my-timekeeping" : "timekeeping")} />
       </div>
       <div className="grid gap-3 md:grid-cols-4">
-        <MetricTile label={admin ? "Revenue collected" : "Hours this period"} value={admin ? money(paid) : `${entries.reduce((sum, entry) => sum + entry.hours, 0).toFixed(1)}h`} />
+        <MetricTile label={admin ? "Revenue collected" : "Hours this period"} value={admin ? money(paid) : `${entries.reduce((sum, entry) => sum + entryHours(entry), 0).toFixed(1)}h`} />
         <MetricTile label={admin ? "Accounts receivable" : "Open tasks"} value={admin ? money(receivable) : String(store.tasks.filter((task) => scopedIds.includes(task.employeeId) && task.status !== "done").length)} />
         <MetricTile label="Utilization" value={scope === "self" ? "76%" : scope === "team" ? "78%" : "82%"} />
         <MetricTile label="Operations health" value={scope === "self" ? "On track" : "Stable"} />
@@ -1311,7 +1533,7 @@ function TriageInboxPanel() {
   const admin = isOperationsAdmin(store.viewer);
   const items = [
     ...store.ptoRequests.filter((request) => request.status === "pending" && scopedIds.includes(request.employeeId)).map((request) => ({ id: request.id, type: "PTO", title: employeeName(request.employeeId), meta: `${request.dates} · ${request.hours}h ${request.type}`, approve: () => store.approvePtoRequest(request.id), deny: () => { const reason = denyReason("Deny PTO request"); if (reason) store.denyPtoRequest(request.id, reason); } })),
-    ...store.timeEntries.filter((entry) => (entry.status === "pending" || entry.status === "needs_correction") && scopedIds.includes(entry.employeeId)).map((entry) => ({ id: entry.id, type: entry.status === "needs_correction" ? "Correction" : "Timesheet", title: employeeName(entry.employeeId), meta: `${entry.date} · ${entry.hours}h${entry.correctedHours ? ` -> ${entry.correctedHours}h` : ""}`, approve: () => store.approveTimeEntry(entry.id), deny: entry.status === "needs_correction" ? () => { const reason = denyReason("Deny correction"); if (reason) store.denyTimeCorrection(entry.id, reason); } : undefined })),
+    ...store.timeEntries.filter((entry) => (entry.status === "pending" || entry.status === "needs_correction") && scopedIds.includes(entry.employeeId)).map((entry) => ({ id: entry.id, type: entry.status === "needs_correction" ? "Correction" : "Timesheet", title: employeeName(entry.employeeId), meta: `${entry.date} · ${entryHours(entry).toFixed(2)}h${entry.correctedHours ? ` -> ${entry.correctedHours}h` : ""}`, approve: () => store.approveTimeEntry(entry.id), deny: entry.status === "needs_correction" ? () => { const reason = denyReason("Deny correction"); if (reason) store.denyTimeCorrection(entry.id, reason); } : undefined })),
     ...store.shifts.filter((shift) => shift.status === "swap_requested" && shift.employeeId && scopedIds.includes(shift.employeeId)).map((shift) => ({ id: shift.id, type: "Shift swap", title: employeeName(shift.employeeId!), meta: `${shift.day} · ${shift.site} · ${shift.swapWithEmployeeId ? employeeName(shift.swapWithEmployeeId) : "open"}`, approve: () => store.approveShiftSwap(shift.id), deny: () => { const reason = denyReason("Deny shift swap"); if (reason) store.denyShiftSwap(shift.id, reason); } })),
     ...(admin ? store.invoices.filter((invoice) => invoice.status === "overdue").map((invoice) => ({ id: invoice.id, type: "Invoice", title: invoice.number, meta: `${getClientName(store, invoice.clientId)} · ${money(invoiceTotal(invoice))}`, approve: () => store.markInvoicePaid(invoice.id), deny: undefined })) : []),
     ...(admin ? store.threads.filter((thread) => thread.messages.at(-1)?.authorRole === "client").map((thread) => ({ id: thread.id, type: "Client message", title: getClientName(store, thread.clientId), meta: thread.subject, approve: () => store.sendMessage(thread.id, "Thanks, we have this and will follow up with the next step shortly.", { role: "admin" }), deny: undefined })) : [])
@@ -1356,25 +1578,16 @@ function TimeClockPanel({ scope }: { scope: PermissionScope }) {
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const self = scope === "self";
   const currentId = currentEmployeeId(store.viewer);
+  const [period, setPeriod] = useState<"week" | "month">("week");
+  const [periodOffset, setPeriodOffset] = useState(0);
   const rows = store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId)).slice(0, self ? 7 : 35);
-  const current = store.timeEntries.find((entry) => entry.employeeId === currentId && entry.clockedIn);
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
   return (
     <section className="grid gap-5">
       <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
-        <div className="rounded-md bg-primary p-5 text-white dark:bg-[#253629]">
-          <p className="text-sm font-semibold text-secondary">{self ? "Time clock" : "Team timekeeping"}</p>
-          <h2 className="mt-4 text-5xl font-semibold text-cream">{current ? "Clocked in" : self ? "Ready" : `${rows.filter((entry) => entry.status !== "approved").length} to review`}</h2>
-          <p className="mt-3 text-sm text-white/68">{current ? `${current.shift} · elapsed shift shown from live punch seed` : self ? "Clock in/out uses the shared timekeeping state." : "Approve timesheets and corrections in the grid."}</p>
-          {self ? <button onClick={() => store.toggleClock(currentId)} className="mt-6 inline-flex h-12 items-center gap-2 rounded-md bg-secondary px-4 text-sm font-semibold text-primary"><Clock3 className="h-4 w-4" /> {current ? "Clock out" : "Clock in"}</button> : null}
-        </div>
-        <div className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
-          <p className="text-sm font-semibold text-primary dark:text-secondary">Today's punches</p>
-          <div className="mt-4 grid gap-2">
-            {rows.filter((entry) => entry.date === "Today").slice(0, 8).map((entry) => <InfoRow key={entry.id} label={employeeName(entry.employeeId)} value={`${entry.shift} · ${entry.hours}h · ${statusLabel(entry.status)}`} />)}
-          </div>
-        </div>
+        <ClockInWidget employeeId={currentId} />
+        <EarningsSummaryPanel employeeId={currentId} period={period} offset={periodOffset} onPeriod={setPeriod} onOffset={setPeriodOffset} />
       </div>
       <div className="overflow-hidden rounded-md border border-border bg-white/70 dark:border-white/10 dark:bg-[#15231a]">
         <div className="grid min-w-[760px] grid-cols-[180px_repeat(5,minmax(110px,1fr))_130px] border-b border-border bg-cream/60 text-sm font-semibold dark:border-white/10 dark:bg-white/8">
@@ -1388,7 +1601,7 @@ function TimeClockPanel({ scope }: { scope: PermissionScope }) {
                 <div className="p-3 text-sm font-semibold text-ink dark:text-cream">{employeeName(employeeId)}</div>
                 {days.map((day, index) => {
                   const entry = employeeRows[index] ?? employeeRows[0];
-                  return <div key={day} className="p-3 text-sm text-muted-foreground dark:text-white/62">{entry ? `${entry.hours}h · ${statusLabel(entry.status)}` : "No punch"}</div>;
+                  return <div key={day} className="p-3 text-sm text-muted-foreground dark:text-white/62">{entry ? `${entryHours(entry).toFixed(2)}h · ${statusLabel(entry.status)}` : "No punch"}</div>;
                 })}
                 <div className="p-3">{employeeRows.some((entry) => entry.status !== "approved") && !self ? <SmallAction onClick={() => employeeRows.filter((entry) => entry.status !== "approved").forEach((entry) => store.approveTimeEntry(entry.id))}>Approve</SmallAction> : self ? <SmallAction variant="quiet" onClick={() => window.alert("Correction request queued in demo mode.")}>Correct</SmallAction> : <span className="text-sm text-muted-foreground">Approved</span>}</div>
               </div>
@@ -1402,12 +1615,33 @@ function TimeClockPanel({ scope }: { scope: PermissionScope }) {
 
 function ScheduleCalendarPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
+  type ShiftDraft = { employeeId: string; day: string; start: string; end: string; site: string; status: StaffShift["status"]; notes: string };
   const [view, setView] = useState<"week" | "month">("week");
   const [syncState, setSyncState] = useState<"loading" | "ready" | "error">("loading");
+  const [visibleEmployeeIds, setVisibleEmployeeIds] = useState<string[]>([]);
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<ShiftDraft | null>(null);
+  const [teamPick, setTeamPick] = useState("");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const canManageSchedule = scope === "all" || scope === "team";
-  const employees = store.employees.filter((employee) => scopedIds.includes(employee.id)).slice(0, canManageSchedule ? 9 : 1);
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const roster = store.employees.filter((employee) => scopedIds.includes(employee.id));
+  const approvedPtoByEmployee = new Map(store.ptoRequests.filter((request) => request.status === "approved").map((request) => [request.employeeId, request]));
+  const employees = (visibleEmployeeIds.length ? visibleEmployeeIds : roster.slice(0, canManageSchedule ? 6 : 1).map((employee) => employee.id))
+    .map((id) => roster.find((employee) => employee.id === id))
+    .filter(Boolean) as typeof roster;
+  const days = [
+    { key: "Mon", label: "Mon, 8" },
+    { key: "Tue", label: "Tue, 9" },
+    { key: "Wed", label: "Wed, 10" },
+    { key: "Thu", label: "Thu, 11" },
+    { key: "Fri", label: "Fri, 12" },
+    { key: "Sat", label: "Sat, 13" },
+    { key: "Sun", label: "Sun, 14" }
+  ];
+  const selectedShift = selectedShiftId ? store.shifts.find((shift) => shift.id === selectedShiftId) : undefined;
+  const openShifts = store.shifts.filter((shift) => shift.status === "open");
+  const unshownEmployees = roster.filter((employee) => !employees.some((visible) => visible.id === employee.id));
+  const draftPto = draft?.employeeId ? approvedPtoByEmployee.get(draft.employeeId) : undefined;
 
   useEffect(() => {
     let active = true;
@@ -1428,26 +1662,61 @@ function ScheduleCalendarPanel({ scope }: { scope: PermissionScope }) {
     };
   }, [store.viewer.role]);
 
-  async function createShift(status: StaffShift["status"]) {
-    const employeeId = status === "open" ? undefined : window.prompt("Employee id", employees[0]?.id ?? currentEmployeeId(store.viewer))?.trim();
-    const day = window.prompt("Day", "Thu next week")?.trim();
-    const time = window.prompt("Time", "9:00 AM - 3:00 PM")?.trim();
-    const site = window.prompt("Site", "Cahaba Brewing Co.")?.trim();
-    if (!day || !time || !site) return;
+  useEffect(() => {
+    if (visibleEmployeeIds.length || !roster.length) return;
+    setVisibleEmployeeIds(roster.slice(0, canManageSchedule ? 6 : 1).map((employee) => employee.id));
+  }, [roster.length, canManageSchedule, visibleEmployeeIds.length]);
+
+  function splitShiftTime(time: string) {
+    const [start = "9:00 AM", end = "5:00 PM"] = time.split(" - ");
+    return { start, end };
+  }
+
+  function openShiftEditor(shift: StaffShift) {
+    const time = splitShiftTime(shift.time);
+    setSelectedShiftId(shift.id);
+    setDraft({ employeeId: shift.employeeId ?? "", day: shift.day, start: time.start, end: time.end, site: shift.site, status: shift.status, notes: shift.resolutionNote ?? "" });
+  }
+
+  function openNewShift(day = "Mon this week", employeeId = "") {
+    if (employeeId && approvedPtoByEmployee.has(employeeId)) {
+      setSelectedShiftId(null);
+      setDraft({ employeeId: "", day, start: "9:00 AM", end: "5:00 PM", site: "Open coverage", status: "open", notes: "" });
+      return;
+    }
+    setSelectedShiftId(null);
+    setDraft({ employeeId, day, start: "9:00 AM", end: "5:00 PM", site: employeeId ? "Cahaba Brewing Co." : "Open coverage", status: employeeId ? "published" : "open", notes: "" });
+  }
+
+  async function persistShift() {
+    if (!draft) return;
+    if (draft.employeeId && approvedPtoByEmployee.has(draft.employeeId)) {
+      window.alert(`${employeeName(draft.employeeId)} is on approved PTO and cannot be assigned to this shift.`);
+      return;
+    }
+    const employeeId = draft.employeeId || null;
+    const status = employeeId ? draft.status === "open" ? "published" : draft.status : "open";
+    const payload = { employeeId, day: draft.day, time: `${draft.start} - ${draft.end}`, site: draft.site, status };
     const response = await fetch("/api/operations-portal/scheduling", {
-      method: "POST",
+      method: selectedShift ? "PATCH" : "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ employeeId, day, time, site, status })
+      body: JSON.stringify(selectedShift ? { shiftId: selectedShift.id, ...payload } : payload)
     });
     const data = await response.json();
     if (!response.ok) {
-      window.alert(data.error ?? "Unable to create shift.");
+      window.alert(data.error ?? "Unable to save shift.");
       return;
     }
     store.upsertSchedulingShift(data.shift);
+    if (data.shift.employeeId && !visibleEmployeeIds.includes(data.shift.employeeId)) setVisibleEmployeeIds((current) => [...current, data.shift.employeeId]);
+    openShiftEditor(data.shift);
   }
 
   async function claimShift(shift: StaffShift, employeeId: string) {
+    if (approvedPtoByEmployee.has(employeeId)) {
+      window.alert(`${employeeName(employeeId)} is on approved PTO and cannot be assigned to this shift.`);
+      return;
+    }
     const response = await fetch("/api/operations-portal/scheduling", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
@@ -1461,48 +1730,314 @@ function ScheduleCalendarPanel({ scope }: { scope: PermissionScope }) {
     store.claimShift(shift.id, employeeId);
   }
 
+  function addTeamMember() {
+    if (!teamPick) return;
+    setVisibleEmployeeIds((current) => current.includes(teamPick) ? current : [...current, teamPick]);
+    setTeamPick("");
+  }
+
+  const dayTotals = days.map((day) => {
+    const shifts = store.shifts.filter((shift) => shift.day.startsWith(day.key) && (shift.status === "open" || (shift.employeeId && employees.some((employee) => employee.id === shift.employeeId))));
+    return { key: day.key, people: new Set(shifts.map((shift) => shift.employeeId).filter(Boolean)).size, hours: shifts.reduce((sum, shift) => sum + shiftHours(shift.time), 0) };
+  });
+
   return (
-    <section className="grid gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-primary dark:text-secondary">Scheduling calendar</p>
-          <h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">{canManageSchedule ? "Week grid by employee" : "My schedule and swaps"}</h2>
-          <p className="mt-1 text-sm text-muted-foreground dark:text-white/62">{syncState === "ready" ? "Schedule is synced to Postgres." : syncState === "loading" ? "Loading persisted schedule..." : "Using local cache; schedule API unavailable."}</p>
+    <section className="grid gap-5 xl:grid-cols-[1fr_420px]">
+      <div className="grid gap-4">
+        <div className="rounded-md border border-border bg-white/75 p-4 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-primary dark:text-secondary">Scheduling calendar</p>
+              <h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">{canManageSchedule ? "Build the weekly schedule" : "My schedule and swaps"}</h2>
+              <p className="mt-1 text-sm text-muted-foreground dark:text-white/62">{syncState === "ready" ? "Schedule is synced to Postgres." : syncState === "loading" ? "Loading persisted schedule..." : "Using local cache; schedule API unavailable."}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button className="h-10 rounded-md bg-cream px-4 text-sm font-semibold text-ink dark:bg-white/10 dark:text-cream">Today</button>
+              <div className="flex h-10 items-center rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">Jun 8, 2026 - Jun 14, 2026</div>
+              {(["week", "month"] as const).map((item) => <button key={item} onClick={() => setView(item)} className={`h-10 rounded-md px-3 text-sm font-semibold ${view === item ? "bg-primary text-white dark:bg-[#4f6a57]" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>{item}</button>)}
+              {canManageSchedule ? <SmallAction onClick={() => openNewShift("Mon this week", employees[0]?.id ?? "")}>Create shift</SmallAction> : null}
+              {canManageSchedule ? <SmallAction variant="quiet" onClick={() => openNewShift("Mon this week")}>Open shift</SmallAction> : null}
+            </div>
+          </div>
+          {canManageSchedule ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <select value={teamPick} onChange={(event) => setTeamPick(event.target.value)} className="h-10 min-w-[220px] rounded-md border border-border bg-white px-3 text-sm font-semibold dark:border-white/10 dark:bg-[#0f1a14]">
+                <option value="">Add team member</option>
+                {unshownEmployees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}{approvedPtoByEmployee.has(employee.id) ? " - On PTO" : ""}</option>)}
+              </select>
+              <SmallAction variant="quiet" onClick={addTeamMember}>Add Employees</SmallAction>
+              <input placeholder="Search team or role" className="h-10 min-w-[220px] rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
+            </div>
+          ) : null}
         </div>
-        <div className="flex gap-2">
-          {(["week", "month"] as const).map((item) => <button key={item} onClick={() => setView(item)} className={`h-10 rounded-md px-3 text-sm font-semibold ${view === item ? "bg-primary text-white dark:bg-[#4f6a57]" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>{item}</button>)}
-          {canManageSchedule ? <SmallAction onClick={() => createShift("published")}>New shift</SmallAction> : null}
-          {canManageSchedule ? <SmallAction variant="quiet" onClick={() => createShift("open")}>Open shift</SmallAction> : null}
-        </div>
-      </div>
-      <div className="overflow-x-auto rounded-md border border-border bg-white/70 dark:border-white/10 dark:bg-[#15231a]">
-        <div className="grid min-w-[820px] grid-cols-[180px_repeat(5,minmax(120px,1fr))] border-b border-border bg-cream/60 dark:border-white/10 dark:bg-white/8">
-          <div className="p-3 text-sm font-semibold">Employee</div>{days.map((day) => <div key={day} className="p-3 text-sm font-semibold">{view === "week" ? day : `${day} · month`}</div>)}
-        </div>
-        {employees.map((employee) => (
-          <div key={employee.id} className="grid min-w-[820px] grid-cols-[180px_repeat(5,minmax(120px,1fr))] border-b border-border last:border-b-0 dark:border-white/10">
-            <div className="p-3 text-sm font-semibold text-ink dark:text-cream">{employee.name}</div>
+        <div className="overflow-x-auto rounded-md border border-border bg-white/70 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+          <div className="grid min-w-[1120px] grid-cols-[230px_repeat(7,minmax(126px,1fr))] border-b border-border bg-cream/60 dark:border-white/10 dark:bg-white/8">
+            <div className="p-3 text-sm font-semibold text-muted-foreground">View by first name</div>{days.map((day) => <div key={day.key} className="p-3 text-center text-sm font-semibold text-ink dark:text-cream">{view === "week" ? day.label : `${day.key} · month`}</div>)}
+          </div>
+          <div className="grid min-w-[1120px] grid-cols-[230px_repeat(7,minmax(126px,1fr))] border-b border-border dark:border-white/10">
+            <div className="p-3 text-sm font-semibold text-ink dark:text-cream">Open shifts ({openShifts.length})<p className="text-xs font-normal text-muted-foreground">{openShifts.reduce((sum, shift) => sum + shiftHours(shift.time), 0).toFixed(2)} hrs</p></div>
             {days.map((day) => {
-              const shift = store.shifts.find((item) => item.employeeId === employee.id && item.day.startsWith(day));
-              return (
-                <div key={day} className="min-h-24 p-2">
-                  {shift ? (
-                    <div className={`rounded-md border p-2 text-xs ${shift.status === "swap_requested" ? "border-red-200 bg-red-50 text-red-800 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-100" : "border-secondary/40 bg-secondary/20 text-primary dark:text-[#edf0ce]"}`}>
-                      <p className="font-semibold">{shift.time}</p>
-                      <p className="mt-1">{shift.site}</p>
-                      {shift.status === "swap_requested" ? <div className="mt-2 flex gap-1">{canManageSchedule ? <><button onClick={() => store.approveShiftSwap(shift.id)} className="rounded bg-primary px-2 py-1 text-white">Approve</button><button onClick={() => { const reason = denyReason("Deny shift swap"); if (reason) store.denyShiftSwap(shift.id, reason); }} className="rounded border border-red-300 px-2 py-1">Deny</button></> : <span>Swap requested</span>}</div> : null}
-                    </div>
-                  ) : null}
-                </div>
-              );
+              const shifts = openShifts.filter((shift) => shift.day.startsWith(day.key));
+              return <div key={day.key} className="min-h-20 border-l border-border p-2 dark:border-white/10">{shifts.map((shift) => <ShiftBlock key={shift.id} shift={shift} onClick={() => openShiftEditor(shift)} />)}</div>;
             })}
           </div>
+          {employees.map((employee) => (
+            <div key={employee.id} className="grid min-w-[1120px] grid-cols-[230px_repeat(7,minmax(126px,1fr))] border-b border-border last:border-b-0 dark:border-white/10">
+              <div className="flex items-center gap-3 p-3 text-sm">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary/30 text-xs font-bold text-primary dark:bg-secondary/20 dark:text-secondary">{employee.avatar}</span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate font-semibold text-ink dark:text-cream">{employee.name}</p>
+                    {approvedPtoByEmployee.has(employee.id) ? <span className="shrink-0 rounded-sm bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700 dark:bg-amber-300/10 dark:text-amber-100">On PTO</span> : null}
+                  </div>
+                  <p className="truncate text-xs text-muted-foreground dark:text-white/58">{employee.title}</p>
+                </div>
+              </div>
+              {days.map((day) => {
+                const shifts = store.shifts.filter((item) => item.employeeId === employee.id && item.day.startsWith(day.key));
+                const pto = approvedPtoByEmployee.get(employee.id);
+                return (
+                  <div key={day.key} className="min-h-24 border-l border-border p-2 dark:border-white/10">
+                    {shifts.map((shift) => <ShiftBlock key={shift.id} shift={shift} onClick={() => openShiftEditor(shift)} />)}
+                    {pto && shifts.length === 0 ? <div className="grid h-full min-h-16 place-items-center rounded-md border border-amber-200 bg-amber-50/70 px-2 text-center text-xs font-bold text-amber-800 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">On PTO</div> : null}
+                    {canManageSchedule && !pto && shifts.length === 0 ? <button onClick={() => openNewShift(`${day.key} this week`, employee.id)} className="h-full min-h-16 w-full rounded-md border border-dashed border-border text-xs font-semibold text-muted-foreground opacity-0 transition hover:opacity-100 dark:border-white/10">+ Shift</button> : null}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          <div className="grid min-w-[1120px] grid-cols-[230px_repeat(7,minmax(126px,1fr))] border-t border-border bg-[#edf0ce] text-primary dark:border-white/10 dark:bg-[#223225] dark:text-cream">
+            <div className="p-3 text-sm font-bold">Wages / Hours</div>
+            {dayTotals.map((total) => (
+              <div key={total.key} className="border-l border-primary/15 bg-white/35 p-3 text-right dark:border-white/10 dark:bg-white/6">
+                <p className="text-sm font-bold tabular-nums">${(total.hours * 50).toFixed(2)}</p>
+                <p className="mt-1 text-xs font-semibold text-primary/70 dark:text-cream/68">{total.people} {total.people === 1 ? "employee" : "employees"} · {total.hours.toFixed(2)}h</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <aside className="rounded-md border border-border bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+        {draft ? (
+          <div className="grid gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-primary dark:text-secondary">{selectedShift ? "Edit shift" : "New shift"}</p>
+                <h3 className="mt-1 text-2xl font-semibold text-ink dark:text-cream">{draft.employeeId ? employeeName(draft.employeeId) : "Open shift"}</h3>
+              </div>
+              <button onClick={() => { setDraft(null); setSelectedShiftId(null); }} className="text-2xl leading-none text-muted-foreground hover:text-ink dark:hover:text-cream">x</button>
+            </div>
+            {selectedShift?.status === "swap_requested" ? <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-100">Swap requested for this shift.</div> : null}
+            {draftPto ? <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">{employeeName(draftPto.employeeId)} is on approved PTO ({draftPto.dates}) and cannot be scheduled.</div> : null}
+            <label className="grid gap-1 text-sm font-semibold text-muted-foreground dark:text-white/62">Team member
+              <select value={draft.employeeId} onChange={(event) => setDraft({ ...draft, employeeId: event.target.value, status: event.target.value ? "published" : "open" })} disabled={!canManageSchedule} className="h-11 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
+                <option value="">Open shift</option>
+                {roster.map((employee) => <option key={employee.id} value={employee.id} disabled={approvedPtoByEmployee.has(employee.id)}>{employee.name}{approvedPtoByEmployee.has(employee.id) ? " - On PTO" : ""}</option>)}
+              </select>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="grid gap-1 text-sm font-semibold text-muted-foreground dark:text-white/62">Start
+                <input value={draft.start} onChange={(event) => setDraft({ ...draft, start: event.target.value })} disabled={!canManageSchedule} className="h-11 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold text-muted-foreground dark:text-white/62">End
+                <input value={draft.end} onChange={(event) => setDraft({ ...draft, end: event.target.value })} disabled={!canManageSchedule} className="h-11 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" />
+              </label>
+            </div>
+            <label className="grid gap-1 text-sm font-semibold text-muted-foreground dark:text-white/62">Day
+              <select value={draft.day} onChange={(event) => setDraft({ ...draft, day: event.target.value })} disabled={!canManageSchedule} className="h-11 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
+                {days.map((day) => <option key={day.key} value={`${day.key} this week`}>{day.label}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-semibold text-muted-foreground dark:text-white/62">Site / role
+              <input value={draft.site} onChange={(event) => setDraft({ ...draft, site: event.target.value })} disabled={!canManageSchedule} className="h-11 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold text-muted-foreground dark:text-white/62">Shift notes
+              <textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} disabled={!canManageSchedule} className="min-h-24 rounded-md border border-border bg-white px-3 py-2 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="Leave a note for the employee." />
+            </label>
+            {canManageSchedule ? (
+              <div className="flex flex-wrap gap-2">
+                <SmallAction onClick={persistShift}>Save</SmallAction>
+                {selectedShift?.status === "open" && draft.employeeId && !draftPto ? <SmallAction variant="quiet" onClick={() => claimShift(selectedShift, draft.employeeId)}>Assign</SmallAction> : null}
+                {selectedShift?.status === "swap_requested" ? <><SmallAction variant="quiet" onClick={() => store.approveShiftSwap(selectedShift.id)}>Approve</SmallAction><SmallAction variant="danger" onClick={() => { const reason = denyReason("Deny shift swap"); if (reason) store.denyShiftSwap(selectedShift.id, reason); }}>Deny</SmallAction></> : null}
+                {selectedShift ? <SmallAction variant="quiet" onClick={() => setDraft({ ...draft, employeeId: "", status: "open" })}>Make open</SmallAction> : null}
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="grid min-h-[520px] place-items-center rounded-md border border-dashed border-border p-6 text-center dark:border-white/10">
+            <div>
+              <CalendarDays className="mx-auto h-10 w-10 text-primary dark:text-secondary" />
+              <h3 className="mt-3 text-xl font-semibold text-ink dark:text-cream">Select a shift</h3>
+              <p className="mt-2 text-sm text-muted-foreground dark:text-white/62">Click an existing shift or an empty cell to assign, edit, or publish coverage.</p>
+            </div>
+          </div>
+        )}
+      </aside>
+    </section>
+  );
+}
+
+function ClockInWidget({ employeeId, onReport }: { employeeId: string; onReport?: () => void }) {
+  const store = useOperationsPortalStore();
+  const [location, setLocation] = useState<"Office" | "Home" | "Field">("Office");
+  const [now, setNow] = useState(() => new Date());
+  const employee = store.employees.find((item) => item.id === employeeId) ?? store.employees[0];
+  const current = store.timeEntries.find((entry) => entry.employeeId === employeeId && entry.clockedIn);
+  const todaysEntries = store.timeEntries.filter((entry) => entry.employeeId === employeeId && entry.date === "Today");
+  const todaysHours = todaysEntries.reduce((sum, entry) => sum + entryHours(entry, now), 0);
+  const clockTime = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true });
+  const [clockValue, meridiem] = clockTime.split(" ");
+  const lastPunch = current
+    ? `Last clocked in at ${formatPunchTime(current.clockStartedAt) ?? punchTimeFromShift(current.shift, "in")}`
+    : todaysEntries.length
+      ? `Last clocked out at ${formatPunchTime(todaysEntries[0].clockEndedAt) || punchTimeFromShift(todaysEntries[0].shift, "out")}`
+      : "Last clocked out: no punches today";
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <section className="grid content-start gap-4 rounded-md border border-border bg-white/90 p-4 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-ink dark:text-cream">Hi, {employee.name}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground dark:text-white/62">{lastPunch}</p>
+        </div>
+        <span className="shrink-0 rounded-sm bg-secondary/25 px-2 py-1 text-[11px] font-bold text-secondary">{current ? "In" : "Out"}</span>
+      </div>
+      <div className={`mx-auto grid h-48 w-48 place-items-center rounded-full border-[10px] bg-white text-center shadow-inner transition-colors dark:bg-[#0f1a14] ${current ? "border-cream shadow-[0_0_26px_rgba(237,240,206,0.28)] dark:border-cream" : "border-border dark:border-white/10"}`}>
+        <div>
+          <p className="whitespace-nowrap text-[1.8rem] font-black leading-none tracking-normal text-ink tabular-nums dark:text-cream">{clockValue}</p>
+          <p className="mt-2 text-[1.8rem] font-black leading-none tracking-normal text-ink dark:text-cream">{meridiem ?? ""}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-1 rounded-full bg-cream p-1 dark:bg-white/8">
+        {(["Office", "Home", "Field"] as const).map((item) => (
+          <button key={item} onClick={() => setLocation(item)} className={`h-8 rounded-full text-[11px] font-bold transition ${location === item ? "bg-secondary text-primary shadow-sm" : "text-muted-foreground hover:bg-white/70 dark:hover:bg-white/10"}`}>
+            {item}
+          </button>
         ))}
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        {store.shifts.filter((shift) => shift.status === "open").map((shift) => <ActionRow key={shift.id} label={`Open shift · ${shift.day}`} value={`${shift.site} · ${shift.time}`}><SmallAction onClick={() => claimShift(shift, canManageSchedule ? employees[0]?.id ?? currentEmployeeId(store.viewer) : currentEmployeeId(store.viewer))}>{canManageSchedule ? "Assign" : "Claim"}</SmallAction></ActionRow>)}
+      <button onClick={() => store.toggleClock(employeeId)} className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-md text-sm font-bold text-white shadow-sm transition ${current ? "bg-[#7d4b3f] hover:bg-[#6b4036]" : "bg-primary hover:bg-primary/90 dark:bg-[#4f6a57]"}`}>
+        {current ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        {current ? "Clock Out" : "Clock In"}
+      </button>
+      <div className="rounded-md bg-cream/70 px-4 py-3 text-center dark:bg-white/8">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/58">{current ? "Current session" : "Today total"}</p>
+        <p className="mt-1 text-2xl font-black text-primary tabular-nums dark:text-secondary">{(current ? entryHours(current, now) : todaysHours).toFixed(2)}h</p>
       </div>
     </section>
+  );
+}
+
+function punchTimeFromShift(shift: string, direction: "in" | "out") {
+  const [startedAt, endedAt] = shift.split(" - ");
+  const value = direction === "in" ? startedAt : endedAt;
+  return value?.trim() || "just now";
+}
+
+function EarningsSummaryPanel({ employeeId, period, offset, onPeriod, onOffset }: { employeeId: string; period: "week" | "month"; offset: number; onPeriod: (period: "week" | "month") => void; onOffset: (updater: number | ((current: number) => number)) => void }) {
+  const store = useOperationsPortalStore();
+  const [now, setNow] = useState(() => new Date());
+  const payRate = 24;
+  const rows = store.timeEntries.filter((entry) => entry.employeeId === employeeId);
+  const visibleRows = period === "week" ? rows.slice(Math.max(0, offset * 5), Math.max(0, offset * 5) + 5) : rows.slice(Math.max(0, offset * 18), Math.max(0, offset * 18) + 18);
+  const totalHours = visibleRows.reduce((sum, entry) => sum + entryHours(entry, now), 0);
+  const totalPay = totalHours * payRate;
+  const dailyRows = Array.from({ length: period === "week" ? 7 : 12 }, (_, index) => {
+    const dayOffset = offset * 7 + index;
+    const date = weekDateLabel(dayOffset);
+    const entries = rows.filter((entry) => entry.date === date);
+    const hours = entries.reduce((sum, entry) => sum + entryHours(entry, now), 0);
+    const status = entries.some((entry) => entry.status === "needs_correction") ? "needs correction" : entries.some((entry) => entry.status === "pending") ? "pending" : entries.length ? "approved" : "no punches";
+    const firstEntry = entries[entries.length - 1];
+    const lastEntry = entries[0];
+    const start = firstEntry?.shift.split(" - ")[0] ?? "--";
+    const end = lastEntry?.shift.split(" - ")[1] ?? "--";
+    return { id: date, label: compactWeekDateLabel(dayOffset), range: entries.length ? `${start} - ${end}` : "No punches", hours, status };
+  });
+  const weeklyRows = Array.from({ length: Math.ceil(visibleRows.length / 5) }, (_, index) => {
+    const entries = visibleRows.slice(index * 5, index * 5 + 5);
+    const hours = entries.reduce((sum, entry) => sum + entryHours(entry, now), 0);
+    return {
+      id: `week-${index}`,
+      label: index === 0 ? "Week 1" : `Week ${index + 1}`,
+      range: entries.length ? `${entries[entries.length - 1].date} - ${entries[0].date}` : "No entries",
+      hours,
+      status: entries.some((entry) => entry.status === "needs_correction") ? "needs correction" : entries.some((entry) => entry.status === "pending") ? "pending" : "approved"
+    };
+  }).filter((row) => row.hours > 0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-lg font-semibold text-primary dark:text-secondary">Earnings + hours</p>
+        <div className="flex gap-2">
+          <button onClick={() => onOffset((current) => current + 1)} className="h-9 rounded-md border border-border px-3 text-sm font-semibold text-primary dark:border-white/10 dark:text-secondary">Back</button>
+          <button onClick={() => onOffset((current) => Math.max(0, current - 1))} className="h-9 rounded-md border border-border px-3 text-sm font-semibold text-primary dark:border-white/10 dark:text-secondary">Forward</button>
+          <select value={period} onChange={(event) => { onPeriod(event.target.value as "week" | "month"); onOffset(0); }} className="h-9 rounded-md border border-border bg-white px-2 text-sm font-semibold dark:border-white/10 dark:bg-[#0f1a14]">
+            <option value="week">Weekly</option>
+            <option value="month">Monthly</option>
+          </select>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <MetricTile label="Worked" value={`${totalHours.toFixed(1)}h`} />
+        <MetricTile label="Made" value={money(totalPay)} />
+        <MetricTile label="Status" value={visibleRows.some((entry) => entry.status === "pending") ? "Pending" : "Approved"} />
+      </div>
+      <div className="mt-4 grid gap-2">
+        {period === "month" ? weeklyRows.map((row) => (
+          <div key={row.id} className="grid gap-2 rounded-md bg-cream/70 px-3 py-3 text-sm dark:bg-white/8 sm:grid-cols-[1fr_auto]">
+            <span className="font-semibold text-ink dark:text-cream">{row.label}<span className="ml-2 font-normal text-muted-foreground dark:text-white/50">{row.range}</span></span>
+            <span className="text-muted-foreground dark:text-white/62">{row.hours.toFixed(1)}h · {money(row.hours * payRate)} · {row.status}</span>
+          </div>
+        )) : dailyRows.map((day) => (
+          <div key={day.id} className="grid gap-2 rounded-md bg-cream/70 px-3 py-3 text-sm dark:bg-white/8 sm:grid-cols-[1fr_auto]">
+            <span className="font-semibold text-ink dark:text-cream">{day.label}</span>
+            <span className="text-muted-foreground dark:text-white/62">{day.range} · {day.hours.toFixed(2)}h · {money(day.hours * payRate)} · {day.status}</span>
+          </div>
+        ))}
+        {period === "month" && weeklyRows.length === 0 ? <p className="rounded-md bg-cream/70 p-3 text-sm text-muted-foreground dark:bg-white/8 dark:text-white/62">No time entries in this period.</p> : null}
+      </div>
+    </section>
+  );
+}
+
+function shiftHours(time: string) {
+  const [start, end] = time.split(" - ");
+  const parse = (value?: string) => {
+    if (!value) return 0;
+    const match = value.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+    if (!match) return 0;
+    let hours = Number(match[1]);
+    const minutes = Number(match[2] ?? 0);
+    const period = match[3].toUpperCase();
+    if (period === "PM" && hours < 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+    return hours + minutes / 60;
+  };
+  const duration = parse(end) - parse(start);
+  return duration > 0 ? duration : 0;
+}
+
+function ShiftBlock({ shift, onClick }: { shift: StaffShift; onClick: () => void }) {
+  const open = shift.status === "open";
+  const swap = shift.status === "swap_requested";
+  return (
+    <button onClick={onClick} className={`mb-2 w-full rounded-md border p-2 text-left text-xs transition hover:-translate-y-0.5 hover:shadow-sm ${swap ? "border-red-300 bg-red-50 text-red-800 dark:border-red-300/30 dark:bg-red-300/10 dark:text-red-100" : open ? "border-dashed border-primary/60 bg-secondary/25 text-primary dark:border-secondary/70 dark:bg-secondary/15 dark:text-secondary" : "border-secondary/40 bg-secondary/20 text-primary dark:text-[#edf0ce]"}`}>
+      <p className="font-bold">{shift.time}</p>
+      <p className="mt-1 truncate">{open ? "No role" : shift.site}</p>
+      {open ? <p className="mt-1 text-[11px] opacity-75">{shift.site}</p> : null}
+      {swap ? <p className="mt-2 rounded-sm bg-white/60 px-1.5 py-0.5 text-[11px] font-semibold dark:bg-white/10">Swap requested</p> : null}
+    </button>
   );
 }
 
@@ -1536,16 +2071,28 @@ function BillingDashboardPanel() {
 
 function PeopleHubPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
-  const [tab, setTab] = useState<"people" | "timeoff" | "onboarding">("people");
+  const [tab, setTab] = useState<"people" | "timeoff">("people");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const canApprove = scope === "all" || scope === "team";
   const people = store.employees.filter((employee) => scopedIds.includes(employee.id));
   return (
     <section className="grid gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-primary dark:text-secondary">People hub</p><h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">Directory, Time Off, and onboarding</h2></div><div className="flex gap-2">{(["people", "timeoff", "onboarding"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`h-10 rounded-md px-3 text-sm font-semibold ${tab === item ? "bg-primary text-white dark:bg-[#4f6a57]" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>{item === "timeoff" ? "Time Off" : item}</button>)}</div></div>
-      {tab === "people" ? <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{people.map((employee) => <article key={employee.id} className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><div className="grid h-12 w-12 place-items-center rounded-sm bg-primary text-sm font-semibold text-white dark:bg-secondary dark:text-[#101a14]">{employee.avatar}</div><p className="mt-4 font-semibold text-ink dark:text-cream">{employee.name}</p><p className="text-sm text-muted-foreground dark:text-white/62">{employee.title}</p><InfoRow label="PTO balance" value={`${employee.ptoBalance}h`} /></article>)}</div> : null}
+      <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-primary dark:text-secondary">People hub</p><h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">Directory and Time Off</h2></div><div className="flex gap-2">{(["people", "timeoff"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`h-10 rounded-md px-3 text-sm font-semibold ${tab === item ? "bg-primary text-white dark:bg-[#4f6a57]" : "border border-border text-primary dark:border-white/10 dark:text-secondary"}`}>{item === "people" ? "People" : "Time Off"}</button>)}</div></div>
+      {tab === "people" ? (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {people.map((employee) => (
+            <article key={employee.id} className="relative rounded-md border border-border bg-white/70 p-4 pr-20 dark:border-white/10 dark:bg-[#15231a]">
+              <div className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-sm bg-primary text-sm font-semibold text-white dark:bg-secondary dark:text-[#101a14]">{employee.avatar}</div>
+              <p className="font-semibold text-ink dark:text-cream">{employee.name}</p>
+              <p className="text-sm text-muted-foreground dark:text-white/62">{employee.title}</p>
+              <div className="pt-10">
+                <InfoRow label="PTO balance" value={`${employee.ptoBalance}h`} />
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
       {tab === "timeoff" ? <div className="grid gap-3">{store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId)).map((request) => <ActionRow key={request.id} label={`${employeeName(request.employeeId)} · ${request.dates}`} value={`${statusLabel(request.status)} · ${request.hours}h · ${request.type}`}>{canApprove && request.status === "pending" ? <><SmallAction onClick={() => store.approvePtoRequest(request.id)}>Approve</SmallAction><SmallAction variant="danger" onClick={() => { const reason = denyReason("Deny PTO request"); if (reason) store.denyPtoRequest(request.id, reason); }}>Deny</SmallAction></> : null}</ActionRow>)}</div> : null}
-      {tab === "onboarding" ? <OnboardingModule canAdmin={canApprove} /> : null}
     </section>
   );
 }
@@ -1739,6 +2286,7 @@ function FileLibraryPanel({ scope }: { scope: PermissionScope }) {
 
 function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
+  const router = useRouter();
   const [mode, setMode] = useState<"queue" | "board">("queue");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | SupportTicket["status"]>("all");
@@ -1796,6 +2344,10 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
     if (Array.isArray(data.tickets)) data.tickets.forEach((ticket: SupportTicket) => store.upsertTicket(ticket));
     setSelectedIds([]);
   };
+  const openTicketDetail = (ticket: SupportTicket) => {
+    store.setSelectedTicket(ticket.id);
+    router.push(ticketDetailHref("operations", ticket));
+  };
 
   return (
     <section className="grid gap-5">
@@ -1805,7 +2357,7 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
             <p className="text-sm font-semibold text-primary dark:text-secondary">Help desk</p>
             <h2 className="mt-1 text-3xl font-semibold text-ink dark:text-cream">Tickets</h2>
           </div>
-          <button onClick={async () => { const subject = window.prompt("New ticket subject"); if (subject?.trim()) { store.openTicket(subject.trim()); const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: subject.trim(), clientId: store.selectedClientId, category: "Other", source: "internal" }) }); const data = await response.json(); if (data.ticket) store.upsertTicket(data.ticket); } }} className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 dark:bg-[#4f6a57]">
+          <button onClick={async () => { const subject = window.prompt("New ticket subject"); if (subject?.trim()) { store.openTicket(subject.trim()); const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: subject.trim(), clientId: store.selectedClientId, category: "Other", source: "internal" }) }); const data = await response.json(); if (data.ticket) { store.upsertTicket(data.ticket); openTicketDetail(data.ticket); } } }} className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 dark:bg-[#4f6a57]">
             + New ticket
           </button>
         </div>
@@ -1838,18 +2390,17 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
             </div>
             <div className="mt-3 grid gap-2">
               {columnTickets.map((ticket) => (
-                <DraggableTicketCard key={ticket.id} ticket={ticket} clientName={getClientName(store, ticket.clientId)} selected={selectedIds.includes(ticket.id)} onSelect={(checked) => setSelectedIds((current) => checked ? [...current, ticket.id] : current.filter((id) => id !== ticket.id))} onOpen={() => store.setSelectedTicket(ticket.id)} />
+                <DraggableTicketCard key={ticket.id} ticket={ticket} clientName={getClientName(store, ticket.clientId)} selected={selectedIds.includes(ticket.id)} onSelect={(checked) => setSelectedIds((current) => checked ? [...current, ticket.id] : current.filter((id) => id !== ticket.id))} onOpen={() => openTicketDetail(ticket)} />
               ))}
             </div>
           </TicketDropColumn>
         );
-      })}</div></DndContext> : <TicketQueueTable tickets={tickets} selectedIds={selectedIds} onSelect={(ticketId, checked) => setSelectedIds((current) => checked ? [...current, ticketId] : current.filter((id) => id !== ticketId))} onOpen={(ticketId) => store.setSelectedTicket(ticketId)} onPatch={patchTicket} />}
-      {store.selectedTicketId ? <TicketDetail ticket={store.tickets.find((ticket) => ticket.id === store.selectedTicketId) ?? tickets[0]} /> : null}
+      })}</div></DndContext> : <TicketQueueTable tickets={tickets} selectedIds={selectedIds} onSelect={(ticketId, checked) => setSelectedIds((current) => checked ? [...current, ticketId] : current.filter((id) => id !== ticketId))} onOpen={openTicketDetail} onPatch={patchTicket} />}
     </section>
   );
 }
 
-function TicketQueueTable({ tickets, selectedIds, onSelect, onOpen, onPatch }: { tickets: SupportTicket[]; selectedIds: string[]; onSelect: (ticketId: string, checked: boolean) => void; onOpen: (ticketId: string) => void; onPatch: (ticketId: string, changes: Partial<SupportTicket>) => Promise<void> }) {
+function TicketQueueTable({ tickets, selectedIds, onSelect, onOpen, onPatch }: { tickets: SupportTicket[]; selectedIds: string[]; onSelect: (ticketId: string, checked: boolean) => void; onOpen: (ticket: SupportTicket) => void; onPatch: (ticketId: string, changes: Partial<SupportTicket>) => Promise<void> }) {
   const store = useOperationsPortalStore();
   return (
     <section className="overflow-x-auto rounded-md border border-border bg-white/80 shadow-sm dark:border-white/10 dark:bg-[#15231a]">
@@ -1869,7 +2420,7 @@ function TicketQueueTable({ tickets, selectedIds, onSelect, onOpen, onPatch }: {
         return (
           <div key={ticket.id} className="grid grid-cols-[42px_1.7fr_160px_190px_120px_190px_116px] items-center gap-3 border-b border-border px-4 py-4 last:border-b-0 hover:bg-cream/55 dark:border-white/10 dark:hover:bg-white/6">
             <input type="checkbox" checked={selectedIds.includes(ticket.id)} onChange={(event) => onSelect(ticket.id, event.target.checked)} className="h-4 w-4" />
-            <button onClick={() => onOpen(ticket.id)} className="min-w-0 text-left">
+            <button onClick={() => onOpen(ticket)} className="min-w-0 text-left">
               <p className="truncate text-sm font-semibold text-ink dark:text-cream">#{index + 13} {ticket.subject}</p>
               <p className="mt-1 truncate text-sm text-muted-foreground dark:text-white/62"><span className="font-semibold text-primary dark:text-secondary">{clientName}</span> · {ticket.category}</p>
               <p className="mt-1 text-xs text-muted-foreground dark:text-white/50">Created {ticket.lastUpdate} · Modified just now</p>
@@ -2304,6 +2855,7 @@ function MessagesPanel({ threads, selectedThread, isClient }: { threads: Message
 
 function TicketsPanel({ tickets, selectedTicket, isClient }: { tickets: SupportTicket[]; selectedTicket?: SupportTicket; isClient: boolean }) {
   const store = useOperationsPortalStore();
+  const router = useRouter();
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const clientTickets = isClient ? tickets.filter((ticket) => ticket.clientId === store.selectedClientId) : tickets;
@@ -2312,28 +2864,35 @@ function TicketsPanel({ tickets, selectedTicket, isClient }: { tickets: SupportT
     store.openTicket(subject.trim());
     const response = await fetch("/api/operations-portal/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject: subject.trim(), description: description.trim() || subject.trim(), clientId: store.selectedClientId, category: "Facilities", source: isClient ? "client" : "internal" }) });
     const data = await response.json();
-    if (data.ticket) store.upsertTicket(data.ticket);
+    if (data.ticket) {
+      store.upsertTicket(data.ticket);
+      openTicketDetail(data.ticket);
+    }
     setSubject("");
     setDescription("");
   };
+  const openTicketDetail = (ticket: SupportTicket) => {
+    store.setSelectedTicket(ticket.id);
+    router.push(ticketDetailHref(isClient ? "client" : "operations", ticket));
+  };
   return (
-    <TwoColumn
-      list={
-        <>
-          <div className="rounded-md border border-border bg-white/65 p-3 dark:border-white/10 dark:bg-[#15231a]">
-            <label className="grid gap-2 text-sm font-semibold text-muted-foreground dark:text-white/62">{isClient ? "Create support request" : "Open ticket"}
-              <input value={subject} onChange={(event) => setSubject(event.target.value)} className="h-10 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="New support request" />
-            </label>
-            <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="mt-3 min-h-20 w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="Describe the issue, location, and urgency" />
-            <button onClick={createClientTicket} className="mt-3 inline-flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white dark:bg-[#4f6a57]">
-              <Ticket className="h-4 w-4" /> Create
-            </button>
-          </div>
-          {clientTickets.map((ticket) => <RowButton key={ticket.id} active={ticket.id === selectedTicket?.id} title={ticket.subject} meta={`${isClient ? ticketSlaLabel(ticket) : getClientName(store, ticket.clientId)} · ${ticket.priority}`} badge={ticket.status} onClick={() => store.setSelectedTicket(ticket.id)} />)}
-        </>
-      }
-      detail={selectedTicket ? <DetailShell eyebrow={isClient ? "Support request" : "Ticket queue"} title={selectedTicket.subject} icon={Ticket}><TicketDetail ticket={selectedTicket} /></DetailShell> : null}
-    />
+    <section className="grid gap-3 xl:grid-cols-[360px_1fr]">
+      <div className="grid content-start gap-3">
+        <div className="rounded-md border border-border bg-white/65 p-3 dark:border-white/10 dark:bg-[#15231a]">
+          <label className="grid gap-2 text-sm font-semibold text-muted-foreground dark:text-white/62">{isClient ? "Create support request" : "Open ticket"}
+            <input value={subject} onChange={(event) => setSubject(event.target.value)} className="h-10 rounded-md border border-border bg-white px-3 text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="New support request" />
+          </label>
+          <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="mt-3 min-h-20 w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream" placeholder="Describe the issue, location, and urgency" />
+          <button onClick={createClientTicket} className="mt-3 inline-flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white dark:bg-[#4f6a57]">
+            <Ticket className="h-4 w-4" /> Create
+          </button>
+        </div>
+        {clientTickets.map((ticket) => <RowButton key={ticket.id} active={ticket.id === selectedTicket?.id} title={ticket.subject} meta={`${isClient ? ticketSlaLabel(ticket) : getClientName(store, ticket.clientId)} · ${ticket.priority}`} badge={ticket.status} onClick={() => openTicketDetail(ticket)} />)}
+      </div>
+      <div className="rounded-md border border-dashed border-border bg-white/45 p-5 text-sm text-muted-foreground dark:border-white/10 dark:bg-[#15231a]/60 dark:text-white/58">
+        Select a ticket to open its dedicated workspace.
+      </div>
+    </section>
   );
 }
 
@@ -2443,6 +3002,26 @@ function ThreadDetail({ thread }: { thread: MessageThread }) {
       <MessageList messages={thread.messages} />
       <ReplyBox value={body} onChange={setBody} onSend={() => { if (body.trim()) { store.sendMessage(thread.id, body.trim()); setBody(""); } }} />
     </div>
+  );
+}
+
+function TicketRouteWorkspace({ ticket, surface }: { ticket?: SupportTicket; surface: Surface }) {
+  const backHref = surface === "client" ? "/client-portal" : "/operations";
+  if (!ticket) {
+    return (
+      <section className="rounded-md border border-border bg-white/75 p-5 dark:border-white/10 dark:bg-[#15231a]">
+        <Link href={backHref} className="text-sm font-semibold text-primary dark:text-secondary">Back to ticket queue</Link>
+        <h2 className="mt-4 text-2xl font-semibold text-ink dark:text-cream">Ticket not found</h2>
+        <p className="mt-2 text-sm text-muted-foreground dark:text-white/62">This ticket is unavailable or outside the current viewer's scope.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="grid gap-4">
+      <Link href={backHref} className="w-fit text-sm font-semibold text-primary hover:underline dark:text-secondary">Back to ticket queue</Link>
+      <TicketDetail ticket={ticket} />
+    </section>
   );
 }
 

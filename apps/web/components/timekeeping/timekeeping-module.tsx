@@ -75,6 +75,11 @@ type ClockSuccess = {
   earned?: string;
 } | null;
 
+type LatestClockEvent = {
+  label: "Clocked in" | "Clocked out";
+  time: string;
+} | null;
+
 type ManagerQueue = {
   pendingRequests: Array<{
     id: string;
@@ -211,6 +216,30 @@ function greetingFor(date: Date) {
   return "Good evening";
 }
 
+function formatClockEventTime(value: string | Date) {
+  return format(new Date(value), "EEE, MMM d 'at' h:mm a");
+}
+
+function latestClockEvent(entries: Entry[], active: Running): LatestClockEvent {
+  const events: Array<{ label: "Clocked in" | "Clocked out"; time: string; timestamp: number }> = [];
+
+  if (active) {
+    const time = new Date(active.started_at);
+    events.push({ label: "Clocked in", time: time.toISOString(), timestamp: time.getTime() });
+  }
+
+  for (const entry of entries) {
+    const startedAt = new Date(entry.started_at);
+    events.push({ label: "Clocked in", time: startedAt.toISOString(), timestamp: startedAt.getTime() });
+    if (entry.ended_at) {
+      const endedAt = new Date(entry.ended_at);
+      events.push({ label: "Clocked out", time: endedAt.toISOString(), timestamp: endedAt.getTime() });
+    }
+  }
+
+  return events.sort((a, b) => b.timestamp - a.timestamp)[0] ?? null;
+}
+
 function parseJson<T>(text: string): T | null {
   try {
     return JSON.parse(text) as T;
@@ -232,6 +261,7 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<TabId>(() => readTab(searchParams.get("tab")));
   const [active, setActive] = useState(running);
+  const [lastClockEvent, setLastClockEvent] = useState<LatestClockEvent>(() => latestClockEvent(entries, running));
   const [shiftState, setShiftState] = useState(currentShift.state);
   const [breakStartedAt, setBreakStartedAt] = useState<string | null>(currentShift.shift?.currentBreakStartedAt ?? null);
   const [tick, setTick] = useState(0);
@@ -375,19 +405,23 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
     if (active) {
       const duration = secondsFor(active);
       const earned = money(Math.round((duration / 3600) * summary.payRateCents));
-      const subtitle = `at ${format(new Date(), "h:mm a")}`;
+      const clockedOutAt = new Date().toISOString();
+      const subtitle = `at ${format(new Date(clockedOutAt), "h:mm a")}`;
       setClockNotice(`Clocked out. ${formatDuration(duration)} recorded.`);
       setClockSuccess({ title: "Clocked out", subtitle, detail: `${formatDuration(duration)} worked`, earned });
+      setLastClockEvent({ label: "Clocked out", time: clockedOutAt });
       vibrate([20, 30, 20]);
       window.setTimeout(() => setClockSuccess(null), 2200);
       setActive(null);
       setBreakStartedAt(null);
       setShiftState("CLOCKED_OUT");
     } else {
+      const startedAt = payload?.started_at ?? new Date().toISOString();
       setClockNotice("Clocked in successfully.");
       setShiftState(payload?.current_state ?? "CLOCKED_IN");
-      setActive({ id: payload?.id ?? crypto.randomUUID(), description: null, punch_note: note || null, started_at: payload?.started_at ?? new Date().toISOString(), ended_at: null, duration_seconds: null, status: payload?.flags?.length ? "flagged" : "draft", review_flag: payload?.flags?.[0] ?? null });
-      setClockSuccess({ title: "Clocked in", subtitle: `at ${format(new Date(payload?.started_at ?? new Date()), "h:mm a")}`, detail: "Main Site" });
+      setActive({ id: payload?.id ?? crypto.randomUUID(), description: null, punch_note: note || null, started_at: startedAt, ended_at: null, duration_seconds: null, status: payload?.flags?.length ? "flagged" : "draft", review_flag: payload?.flags?.[0] ?? null });
+      setLastClockEvent({ label: "Clocked in", time: startedAt });
+      setClockSuccess({ title: "Clocked in", subtitle: `at ${format(new Date(startedAt), "h:mm a")}`, detail: "Main Site" });
       vibrate([20, 30, 20]);
       window.setTimeout(() => setClockSuccess(null), 1400);
     }
@@ -552,13 +586,11 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
 
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold text-ink md:text-3xl">
-              {active ? shiftState === "ON_BREAK" ? "On break" : "You're clocked in" : `${greetingFor(now)}, ${employeeName}`}
+              {lastClockEvent ? `Last ${lastClockEvent.label.toLowerCase()}` : `${greetingFor(now)}, ${employeeName}`}
             </h1>
             <p className="text-base text-muted-foreground">
-              {active
-                ? shiftState === "ON_BREAK"
-                  ? `Started at ${breakStartedAt ? format(new Date(breakStartedAt), "h:mm a") : "now"} · Break is ${paidBreaks ? "paid" : "unpaid"}`
-                  : `Started at ${format(new Date(active.started_at), "h:mm a")} at Main Site`
+              {lastClockEvent
+                ? `${formatClockEventTime(lastClockEvent.time)}${active ? " · Main Site" : ""}${shiftState === "ON_BREAK" ? ` · On ${paidBreaks ? "paid" : "unpaid"} break` : ""}`
                 : format(now, "EEEE, MMMM d, yyyy")}
             </p>
           </div>
@@ -653,8 +685,12 @@ export function TimekeepingModule({ running, entries, categories, requests, mana
             {entries.slice(0, 5).map((entry) => (
               <div key={entry.id} className="flex items-start justify-between gap-4 border-b border-border pb-3 text-sm last:border-b-0">
                 <div>
-                  <p className="font-semibold">{format(new Date(entry.started_at), "MMM d, h:mm a")}{entry.ended_at ? ` - ${format(new Date(entry.ended_at), "h:mm a")}` : " - now"}</p>
-                  <p className="mt-1 text-muted-foreground">{entry.ended_at ? `${formatShortDuration(secondsFor(entry))} worked` : "Clocked in at Main Site"}</p>
+                  <p className="font-semibold">
+                    {entry.ended_at ? `Clocked out ${formatClockEventTime(entry.ended_at)}` : `Clocked in ${formatClockEventTime(entry.started_at)}`}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {entry.ended_at ? `Clocked in ${formatClockEventTime(entry.started_at)} · ${formatShortDuration(secondsFor(entry))} worked` : "Still clocked in at Main Site"}
+                  </p>
                 </div>
                 {entry.review_flag ? <span className="inline-flex items-center gap-1 rounded-sm bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700"><AlertTriangle className="h-3.5 w-3.5" /> Review</span> : null}
               </div>

@@ -20,6 +20,18 @@ function due(value: number) {
   return value < 0 ? `Overdue by ${Math.abs(value)} day${Math.abs(value) === 1 ? "" : "s"}` : rel(value);
 }
 
+function todayAt(time: string) {
+  const match = time.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+  const date = new Date();
+  if (!match) return date.toISOString();
+  const [, hourValue, minuteValue, meridiem] = match;
+  let hour = Number(hourValue);
+  if (meridiem.toUpperCase() === "PM" && hour !== 12) hour += 12;
+  if (meridiem.toUpperCase() === "AM" && hour === 12) hour = 0;
+  date.setHours(hour, Number(minuteValue), 0, 0);
+  return date.toISOString();
+}
+
 export type ClientCompany = {
   id: string;
   name: string;
@@ -177,6 +189,8 @@ export type StaffTimeEntry = {
   shift: string;
   note?: string;
   clockedIn?: boolean;
+  clockStartedAt?: string;
+  clockEndedAt?: string;
   correctedHours?: number;
   resolvedBy?: string;
   resolvedAt?: string;
@@ -599,17 +613,22 @@ const tickets: SupportTicket[] = Array.from({ length: 32 }, (_, index) => {
 });
 
 const timeEntries: StaffTimeEntry[] = employees.flatMap((employee, employeeIndex) =>
-  Array.from({ length: employee.id === "employee-nina" ? 4 : 18 }, (_, index) => ({
-    id: `time-${employee.id}-${index}`,
-    employeeId: employee.id,
-    date: index === 0 ? "Today" : rel(-index),
-    shift: employee.department === "Field Operations" ? "7:30 AM - 4:00 PM" : "8:30 AM - 5:00 PM",
-    hours: index % 9 === 0 ? 9.5 : index % 11 === 0 ? 5.75 : 8,
+  Array.from({ length: employee.id === "employee-nina" ? 4 : 18 }, (_, index) => {
+    const shift = employee.department === "Field Operations" ? "7:30 AM - 4:00 PM" : "8:30 AM - 5:00 PM";
+    const clockedIn = index === 0 && ["employee-jamal", "employee-sofia", "employee-hannah", "employee-ryan"].includes(employee.id);
+    return {
+      id: `time-${employee.id}-${index}`,
+      employeeId: employee.id,
+      date: index === 0 ? "Today" : rel(-index),
+      shift,
+      hours: clockedIn ? 0 : index % 9 === 0 ? 9.5 : index % 11 === 0 ? 5.75 : 8,
       status: employee.id === "employee-brett" && index === 0 ? "needs_correction" : index % 13 === 0 ? "needs_correction" : index % 5 === 0 ? "pending" : "approved",
       note: index % 13 === 0 ? "Missed punch needs manager review" : undefined,
       correctedHours: index % 13 === 0 ? 8 : undefined,
-      clockedIn: index === 0 && ["employee-jamal", "employee-sofia", "employee-hannah", "employee-ryan"].includes(employee.id)
-  }))
+      clockedIn,
+      clockStartedAt: clockedIn ? todayAt(shift.split(" - ")[0]) : undefined
+    };
+  })
 );
 
 const shifts: StaffShift[] = [

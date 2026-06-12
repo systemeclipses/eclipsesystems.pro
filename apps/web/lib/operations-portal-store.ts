@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { portalSeedData, type Announcement, type ClientDocument, type ClientInvoice, type ClientProject, type Contact, type CourseCatalogItem, type MessageThread, type OperationsPortalSeed, type PortalMessage, type PortalViewer, type StaffShift, type SupportTicket, type TicketStatus, type TrainingAssignment } from "@/lib/operations-portal-data";
+import { portalSeedData, type Announcement, type ClientDocument, type ClientInvoice, type ClientProject, type Contact, type CourseCatalogItem, type MessageThread, type OperationsPortalSeed, type PortalMessage, type PortalViewer, type StaffShift, type StaffTimeEntry, type SupportTicket, type TicketStatus, type TrainingAssignment } from "@/lib/operations-portal-data";
 import { defaultOperationsPage, pageAllowed, scopedEmployeeIds } from "@/lib/operations-permissions";
 
 export type PortalPage =
@@ -107,6 +107,18 @@ type PortalState = OperationsPortalSeed & {
 
 function makeId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function measuredHours(entry: StaffTimeEntry, endedAt = new Date()) {
+  if (!entry.clockStartedAt) return entry.hours;
+  const startedAt = new Date(entry.clockStartedAt);
+  const elapsed = Math.max(0, endedAt.getTime() - startedAt.getTime());
+  return Math.round((elapsed / 3_600_000) * 100) / 100;
+}
+
+function shiftRange(startedAt: Date, endedAt?: Date) {
+  const formatTime = (date: Date) => date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+  return endedAt ? `${formatTime(startedAt)} - ${formatTime(endedAt)}` : `${formatTime(startedAt)} - now`;
 }
 
 function cloneSeed(): OperationsPortalSeed {
@@ -280,19 +292,26 @@ export const useOperationsPortalStore = create<PortalState>((set) => ({
       const effectiveEmployeeId = employeeId ?? (state.viewer.role === "manager" ? "employee-marcus" : state.viewer.role === "owner" ? "employee-dale" : state.viewer.role === "admin" ? "employee-carol" : "employee-jamal");
       const activeEntry = state.timeEntries.find((entry) => entry.employeeId === effectiveEmployeeId && entry.clockedIn);
       if (activeEntry) {
+        const endedAt = new Date();
         return {
-          timeEntries: state.timeEntries.map((entry) => (entry.id === activeEntry.id ? { ...entry, clockedIn: false, hours: Math.max(entry.hours, 8), status: "pending" } : entry))
+          timeEntries: state.timeEntries.map((entry) => (
+            entry.id === activeEntry.id
+              ? { ...entry, clockedIn: false, clockEndedAt: endedAt.toISOString(), hours: measuredHours(entry, endedAt), shift: entry.clockStartedAt ? shiftRange(new Date(entry.clockStartedAt), endedAt) : entry.shift, status: "pending" }
+              : entry
+          ))
         };
       }
+      const startedAt = new Date();
       return {
         timeEntries: [{
           id: makeId("time"),
           employeeId: effectiveEmployeeId,
           date: "Today",
-          shift: "Live clock session",
+          shift: shiftRange(startedAt),
           hours: 0,
           status: "pending" as const,
           clockedIn: true,
+          clockStartedAt: startedAt.toISOString(),
           note: "Started from Time Clock."
         }, ...state.timeEntries]
       };
@@ -350,7 +369,7 @@ export const useOperationsPortalStore = create<PortalState>((set) => ({
       const entry = state.timeEntries.find((item) => item.id === entryId);
       if (!entry || entry.status === "approved" || !actorCanAccessEmployee(state, effectiveViewer, entry.employeeId)) return {};
       return {
-        timeEntries: state.timeEntries.map((item) => (item.id === entryId ? { ...item, status: "approved", hours: item.correctedHours ?? item.hours, resolvedBy: actorLabel(effectiveViewer, state.contacts), resolvedAt: stamp("Approved", effectiveViewer, state.contacts), resolutionNote: item.status === "needs_correction" ? "Corrected punch applied." : "Timesheet period approved and locked." } : item))
+        timeEntries: state.timeEntries.map((item) => (item.id === entryId ? { ...item, status: "approved", hours: item.correctedHours ?? measuredHours(item), resolvedBy: actorLabel(effectiveViewer, state.contacts), resolvedAt: stamp("Approved", effectiveViewer, state.contacts), resolutionNote: item.status === "needs_correction" ? "Corrected punch applied." : "Timesheet period approved and locked." } : item))
       };
     }),
   denyTimeCorrection: (entryId, reason, actor) =>
