@@ -97,15 +97,52 @@ function money(value: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
 }
 
+function clockTimeMinutes(value?: string) {
+  const match = value?.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+  if (!match) return null;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2] ?? 0);
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours < 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
+function shiftDurationHours(time: string) {
+  const [start, end] = time.split(" - ");
+  const startMinutes = clockTimeMinutes(start);
+  const endMinutes = clockTimeMinutes(end);
+  if (startMinutes === null || endMinutes === null) return null;
+  const durationMinutes = endMinutes >= startMinutes ? endMinutes - startMinutes : endMinutes + 24 * 60 - startMinutes;
+  return Math.round((durationMinutes / 60) * 100) / 100;
+}
+
 function entryHours(entry: StaffTimeEntry, now = new Date()) {
-  if (!entry.clockedIn || !entry.clockStartedAt) return entry.hours;
-  const elapsed = Math.max(0, now.getTime() - new Date(entry.clockStartedAt).getTime());
-  return Math.round((elapsed / 3_600_000) * 100) / 100;
+  if (entry.clockStartedAt) {
+    const endedAt = entry.clockEndedAt ? new Date(entry.clockEndedAt) : entry.clockedIn ? now : null;
+    if (endedAt) {
+      const elapsed = Math.max(0, endedAt.getTime() - new Date(entry.clockStartedAt).getTime());
+      return Math.round((elapsed / 3_600_000) * 100) / 100;
+    }
+  }
+
+  return shiftDurationHours(entry.shift) ?? entry.hours;
 }
 
 function formatPunchTime(value?: string) {
   if (!value) return null;
   return new Date(value).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function entryTimeRange(entry: StaffTimeEntry, now = new Date()) {
+  if (entry.clockStartedAt) {
+    const startedAt = formatPunchTime(entry.clockStartedAt) ?? entry.shift.split(" - ")[0] ?? "--";
+    const endedAt = entry.clockEndedAt ? formatPunchTime(entry.clockEndedAt) : entry.clockedIn ? formatPunchTime(now.toISOString()) : null;
+    if (endedAt) return { start: startedAt, end: endedAt };
+  }
+
+  const [start = "--", end = "--"] = entry.shift.split(" - ");
+  return { start, end };
 }
 
 function weekDateLabel(offset: number) {
@@ -1954,8 +1991,8 @@ function EarningsSummaryPanel({ employeeId, period, offset, onPeriod, onOffset }
     const status = entries.some((entry) => entry.status === "needs_correction") ? "needs correction" : entries.some((entry) => entry.status === "pending") ? "pending" : entries.length ? "approved" : "no punches";
     const firstEntry = entries[entries.length - 1];
     const lastEntry = entries[0];
-    const start = firstEntry?.shift.split(" - ")[0] ?? "--";
-    const end = lastEntry?.shift.split(" - ")[1] ?? "--";
+    const start = firstEntry ? entryTimeRange(firstEntry, now).start : "--";
+    const end = lastEntry ? entryTimeRange(lastEntry, now).end : "--";
     return { id: date, label: compactWeekDateLabel(dayOffset), range: entries.length ? `${start} - ${end}` : "No punches", hours, status };
   });
   const weeklyRows = Array.from({ length: Math.ceil(visibleRows.length / 5) }, (_, index) => {
@@ -2017,20 +2054,7 @@ function EarningsSummaryPanel({ employeeId, period, offset, onPeriod, onOffset }
 }
 
 function shiftHours(time: string) {
-  const [start, end] = time.split(" - ");
-  const parse = (value?: string) => {
-    if (!value) return 0;
-    const match = value.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
-    if (!match) return 0;
-    let hours = Number(match[1]);
-    const minutes = Number(match[2] ?? 0);
-    const period = match[3].toUpperCase();
-    if (period === "PM" && hours < 12) hours += 12;
-    if (period === "AM" && hours === 12) hours = 0;
-    return hours + minutes / 60;
-  };
-  const duration = parse(end) - parse(start);
-  return duration > 0 ? duration : 0;
+  return shiftDurationHours(time) ?? 0;
 }
 
 function ShiftBlock({ shift, onClick }: { shift: StaffShift; onClick: () => void }) {
