@@ -2000,9 +2000,14 @@ function EarningsSummaryPanel({ employeeId, period, offset, onPeriod, onOffset }
             <span className="text-muted-foreground dark:text-white/62">{row.hours.toFixed(1)}h · {money(row.hours * payRate)} · {row.status}</span>
           </div>
         )) : dailyRows.map((day) => (
-          <div key={day.id} className="grid gap-2 rounded-md bg-cream/70 px-3 py-3 text-sm dark:bg-white/8 sm:grid-cols-[1fr_auto]">
+          <div key={day.id} className="grid gap-3 rounded-md bg-cream/70 px-3 py-3 text-sm dark:bg-white/8 sm:grid-cols-[1fr_auto] sm:items-center">
             <span className="font-semibold text-ink dark:text-cream">{day.label}</span>
-            <span className="text-muted-foreground dark:text-white/62">{day.range} · {day.hours.toFixed(2)}h · {money(day.hours * payRate)} · {day.status}</span>
+            <span className="flex flex-wrap gap-1.5 sm:justify-end">
+              <span className="rounded-sm bg-white/70 px-2 py-1 text-xs font-semibold text-ink dark:bg-white/10 dark:text-cream">{day.range}</span>
+              <span className="rounded-sm bg-secondary/30 px-2 py-1 text-xs font-bold text-primary tabular-nums dark:bg-secondary/15 dark:text-secondary">{day.hours.toFixed(2)}h</span>
+              <span className="rounded-sm bg-primary/10 px-2 py-1 text-xs font-bold text-primary tabular-nums dark:bg-white/10 dark:text-cream">{money(day.hours * payRate)}</span>
+              <span className={`rounded-sm px-2 py-1 text-xs font-bold capitalize ${day.status === "approved" ? "bg-green-50 text-green-700 dark:bg-green-300/10 dark:text-green-100" : day.status === "pending" ? "bg-amber-50 text-amber-700 dark:bg-amber-300/10 dark:text-amber-100" : day.status === "needs correction" ? "bg-red-50 text-red-700 dark:bg-red-300/10 dark:text-red-100" : "bg-white/60 text-muted-foreground dark:bg-white/8 dark:text-white/58"}`}>{day.status}</span>
+            </span>
           </div>
         ))}
         {period === "month" && weeklyRows.length === 0 ? <p className="rounded-md bg-cream/70 p-3 text-sm text-muted-foreground dark:bg-white/8 dark:text-white/62">No time entries in this period.</p> : null}
