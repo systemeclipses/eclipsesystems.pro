@@ -2527,10 +2527,15 @@ function ticketSlaLabel(ticket: SupportTicket) {
 }
 
 function TicketMetric({ label, value }: { label: string; value: string }) {
+  const tone = label === "Open"
+    ? "border-amber-300 bg-amber-100 text-amber-950 dark:border-amber-300/35 dark:bg-amber-300/18 dark:text-amber-50"
+    : label === "In progress"
+      ? "border-blue-300 bg-blue-100 text-blue-950 dark:border-blue-300/35 dark:bg-blue-300/18 dark:text-blue-50"
+      : "border-green-300 bg-green-100 text-green-950 dark:border-green-300/35 dark:bg-green-300/18 dark:text-green-50";
   return (
-    <div className="min-w-24 rounded-sm border border-border bg-cream/55 px-3 py-2 dark:border-white/10 dark:bg-white/8">
-      <p className="text-xs text-muted-foreground dark:text-white/58">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-ink dark:text-cream">{value}</p>
+    <div className={`min-w-24 rounded-sm border px-3 py-2 shadow-sm ${tone}`}>
+      <p className="text-xs font-bold uppercase tracking-[0.08em] opacity-75">{label}</p>
+      <p className="mt-1 text-xl font-black leading-none tabular-nums">{value}</p>
     </div>
   );
 }
