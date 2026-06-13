@@ -145,6 +145,19 @@ function entryTimeRange(entry: StaffTimeEntry, now = new Date()) {
   return { start, end };
 }
 
+function periodRangeLabel(period: "week" | "month", offset: number) {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const spanDays = period === "week" ? 7 : 30;
+  start.setDate(start.getDate() - offset * spanDays);
+  const end = new Date(start);
+  end.setDate(start.getDate() + spanDays - 1);
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const startLabel = start.toLocaleDateString([], { month: "short", day: "numeric", year: sameYear ? undefined : "numeric" });
+  const endLabel = end.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  return `${startLabel} - ${endLabel}`;
+}
+
 function weekDateLabel(offset: number) {
   if (offset === 0) return "Today";
   return `${offset} day${offset === 1 ? "" : "s"} ago`;
@@ -1983,6 +1996,9 @@ function EarningsSummaryPanel({ employeeId, period, offset, onPeriod, onOffset }
   const visibleRows = period === "week" ? rows.slice(Math.max(0, offset * 5), Math.max(0, offset * 5) + 5) : rows.slice(Math.max(0, offset * 18), Math.max(0, offset * 18) + 18);
   const totalHours = visibleRows.reduce((sum, entry) => sum + entryHours(entry, now), 0);
   const totalPay = totalHours * payRate;
+  const currentRange = periodRangeLabel(period, offset);
+  const previousRange = periodRangeLabel(period, offset + 1);
+  const nextRange = offset > 0 ? periodRangeLabel(period, offset - 1) : null;
   const dailyRows = Array.from({ length: period === "week" ? 7 : 12 }, (_, index) => {
     const dayOffset = offset * 7 + index;
     const date = weekDateLabel(dayOffset);
@@ -2015,10 +2031,13 @@ function EarningsSummaryPanel({ employeeId, period, offset, onPeriod, onOffset }
   return (
     <section className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-lg font-semibold text-primary dark:text-secondary">Earnings + hours</p>
-        <div className="flex gap-2">
-          <button onClick={() => onOffset((current) => current + 1)} className="h-9 rounded-md border border-border px-3 text-sm font-semibold text-primary dark:border-white/10 dark:text-secondary">Back</button>
-          <button onClick={() => onOffset((current) => Math.max(0, current - 1))} className="h-9 rounded-md border border-border px-3 text-sm font-semibold text-primary dark:border-white/10 dark:text-secondary">Forward</button>
+        <div>
+          <p className="text-lg font-semibold text-primary dark:text-secondary">Earnings + hours</p>
+          <p className="mt-1 text-sm font-semibold text-muted-foreground dark:text-white/58">{currentRange}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => onOffset((current) => current + 1)} className="min-h-9 rounded-md border border-border px-3 py-2 text-sm font-semibold text-primary dark:border-white/10 dark:text-secondary">{previousRange}</button>
+          <button onClick={() => onOffset((current) => Math.max(0, current - 1))} disabled={!nextRange} className="min-h-9 rounded-md border border-border px-3 py-2 text-sm font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-45 dark:border-white/10 dark:text-secondary">{nextRange ?? "Current range"}</button>
           <select value={period} onChange={(event) => { onPeriod(event.target.value as "week" | "month"); onOffset(0); }} className="h-9 rounded-md border border-border bg-white px-2 text-sm font-semibold dark:border-white/10 dark:bg-[#0f1a14]">
             <option value="week">Weekly</option>
             <option value="month">Monthly</option>
