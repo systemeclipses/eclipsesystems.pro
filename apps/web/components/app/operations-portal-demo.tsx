@@ -1032,10 +1032,10 @@ function ReportsWorkspace({ report }: { report: ReportView }) {
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-4">
           {reportMetrics[report].map((metric) => (
-            <div key={metric.label} className="rounded-md border border-border bg-cream/60 p-4 dark:border-white/10 dark:bg-white/8">
-              <p className="text-sm text-muted-foreground dark:text-white/62">{metric.label}</p>
-              <p className="mt-3 text-2xl font-semibold text-ink dark:text-cream">{metric.value}</p>
-              <p className="mt-1 text-xs text-muted-foreground dark:text-white/50">{metric.detail}</p>
+            <div key={metric.label} className="rounded-md border border-primary/15 bg-white/82 p-4 shadow-sm dark:border-secondary/20 dark:bg-[#203226]">
+              <p className="text-sm font-bold text-primary dark:text-secondary">{metric.label}</p>
+              <p className="mt-3 text-3xl font-black leading-none text-ink tabular-nums dark:text-cream">{metric.value}</p>
+              <p className="mt-2 text-xs font-semibold leading-5 text-muted-foreground dark:text-white/64">{metric.detail}</p>
             </div>
           ))}
         </div>
