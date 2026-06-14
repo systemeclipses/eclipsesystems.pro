@@ -1,6 +1,12 @@
 DO $$ BEGIN
-  ALTER TABLE memberships ADD CONSTRAINT memberships_id_org_unique UNIQUE (id, organization_id);
-EXCEPTION WHEN duplicate_object THEN NULL;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'memberships_id_org_unique'
+      AND conrelid = 'memberships'::regclass
+  ) THEN
+    ALTER TABLE memberships ADD CONSTRAINT memberships_id_org_unique UNIQUE (id, organization_id);
+  END IF;
 END $$;
 
 CREATE TABLE IF NOT EXISTS membership_product_roles (

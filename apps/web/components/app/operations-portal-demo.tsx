@@ -23,23 +23,27 @@ import {
   Home,
   LayoutDashboard,
   MessageSquareText,
+  Moon,
   Pause,
   Play,
   ReceiptText,
   RotateCcw,
   Send,
   Settings,
+  Sun,
   Ticket,
   UserRound,
   UsersRound
 } from "lucide-react";
 import { portalBrand } from "@/lib/portal-brand";
+import { applyEclipseTheme, getStoredThemePreference, playEclipseTransition, resolveThemePreference, saveAccountThemePreference, type ThemePreference } from "@/components/app/theme-toggle";
 import { type CourseCatalogItem, type PortalMessage, type PortalRole, type PortalViewer, type StaffShift, type StaffTimeEntry, type TicketCategory, type TrainingAssignment } from "@/lib/operations-portal-data";
 import { getClientName, invoiceTotal, useOperationsPortalStore, visibleForViewer, type ClientDocument, type ClientInvoice, type ClientProject, type DemoHighlight, type MessageThread, type SupportTicket } from "@/lib/operations-portal-store";
 import type { PortalPage } from "@/lib/operations-portal-store";
 import { can, isOperationsAdmin, isOperationsManager, resourceScope, scopedEmployeeIds, visibleOperationsNav, type PermissionScope } from "@/lib/operations-permissions";
 
 type Surface = "operations" | "client";
+type TicketBoardColumnKey = "open" | "in_progress" | "resolved";
 
 type DemoProps = {
   surface: Surface;
@@ -92,6 +96,10 @@ const operationsNavIcons: Record<PortalPage, typeof LayoutDashboard> = {
 };
 
 const projectStatuses: ClientProject["status"][] = ["Discovery", "In progress", "Client review", "Blocked", "Launched"];
+const selectWithInsetArrow = "appearance-none bg-[position:calc(100%-1rem)_center] bg-[length:14px_14px] bg-no-repeat pr-12";
+const selectArrowStyle = {
+  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23d9dec4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")"
+};
 
 function money(value: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
@@ -278,6 +286,34 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
   const demoTicket = store.tickets.find((ticket) => ticket.clientId === demoClient.id) ?? store.tickets[0];
   const onDashboard = store.activePage === "dashboard" && !store.demoMode && !activeReport && !routeTicketSlug;
   const reportLabel = routeTicketSlug ? `Tickets / ${routeTicket?.subject ?? "Ticket"}` : activeReport ? reportViews.find((view) => view.id === activeReport)?.label ?? "Reports" : undefined;
+  const selectedContact = selectedClient ? store.contacts.find((contact) => contact.id === selectedClient.primaryContactId) : undefined;
+  const currentPerson = isClient
+    ? selectedContact?.name ?? selectedClient?.name ?? "there"
+    : store.employees.find((employee) => employee.id === currentEmployeeId(store.viewer))?.name ?? "there";
+  const firstName = currentPerson.split(" ")[0] ?? "there";
+  const dashboardGreeting = isClient
+    ? {
+        eyebrow: "Client Portal",
+        title: `Welcome back, ${firstName}.`,
+        body: "Your Eclipse project updates, invoices, documents, support tickets, and messages are ready in one place."
+      }
+    : store.viewer.role === "manager"
+      ? {
+          eyebrow: "Operations Hub",
+          title: `Good to see you, ${firstName}.`,
+          body: "Your Eclipse team schedule, time approvals, PTO coverage, tickets, and training follow-ups are ready for review."
+        }
+      : store.viewer.role === "employee"
+        ? {
+            eyebrow: "My Eclipse Workspace",
+            title: `Welcome back, ${firstName}.`,
+            body: "Your clock, schedule, tasks, training, PTO, and messages are lined up for today."
+          }
+        : {
+            eyebrow: "Operations Hub",
+            title: `Welcome back, ${firstName}.`,
+            body: "Eclipse operations, client work, scheduling, billing, tickets, learning, and team activity are ready."
+          };
 
   function fireDemoStep(stepIndex = store.demoStepIndex) {
     const step = demoSteps[stepIndex];
@@ -342,8 +378,10 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
   return (
     <section className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-[#2f4135] p-4 text-white md:flex md:flex-col">
-        <Link href="/templates" className={`${portalBrand.fonts.title} text-3xl leading-none text-cream`}>{portalBrand.logoText}</Link>
-        {!isClient ? <div className="mt-5"><NotificationBell surface="sidebar" /></div> : null}
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/templates" className={`${portalBrand.fonts.title} text-3xl leading-none text-cream`}>{portalBrand.logoText}</Link>
+          {!isClient ? <NotificationBell surface="sidebar" /> : null}
+        </div>
         <nav className="mt-7 grid flex-1 content-start gap-1">
           {isClient ? (
             <FlatSidebarNav items={navItems} activePage={store.activePage} onSelect={store.setActivePage} />
@@ -370,12 +408,12 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
             <header className="rounded-md bg-primary p-5 text-white md:p-7">
               <div className="grid gap-5 xl:grid-cols-[1fr_520px] xl:items-end">
                 <div>
-                  <p className="text-sm font-semibold text-secondary">Operations Hub + Client Portal</p>
+                  <p className="text-sm font-semibold text-secondary">{dashboardGreeting.eyebrow}</p>
                   <h1 className="mt-3 max-w-5xl font-title text-5xl leading-[0.9] text-cream md:text-7xl">
-                    Same data, different front doors.
+                    {dashboardGreeting.title}
                   </h1>
                   <p className="mt-5 max-w-3xl text-sm leading-6 text-white/74 md:text-base">
-                    Flip the demo viewer, issue an invoice, pay it from the client side, sign documents, exchange messages, and watch the same entities update across both surfaces.
+                    {dashboardGreeting.body}
                   </p>
                 </div>
                 <ViewerSwitcher selectedClientId={selectedClient.id} />
@@ -458,46 +496,35 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
 }
 
 function ViewerSwitcher({ selectedClientId }: { selectedClientId: string }) {
-  const { clients, viewer, demoMode, setViewer, setDemoMode, resetDemo } = useOperationsPortalStore();
+  const { viewer, setViewer } = useOperationsPortalStore();
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
-  const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0];
 
   return (
     <div className="rounded-md border border-white/15 bg-white/10 p-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/52">{demoMode ? "Demo Mode" : "Demo viewer"}</p>
-          <p className="mt-1 text-sm text-white/72">{demoMode ? "Presentation split for prospects." : "Switch roles to prove shared data."}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/52">Eclipse Workspace</p>
+          <p className="mt-1 text-sm text-white/72">Switch roles inside the Eclipse workspace.</p>
         </div>
-        <button onClick={() => setDemoMode(!demoMode)} aria-pressed={demoMode} className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition ${demoMode ? "border-secondary bg-secondary text-primary" : "border-white/15 text-white/80 hover:bg-white/10"}`}>
-          <LayoutDashboard className="h-4 w-4" /> Demo Mode
-        </button>
-        {viewer.role !== "client" ? <NotificationBell surface="header" /> : null}
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        {!demoMode ? (
-          <label className="grid min-w-0 gap-2 text-sm font-semibold text-white/70">
-            View
-            <span className="relative min-w-0">
-              <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-11 w-full min-w-0 appearance-none truncate rounded-md border border-white/15 bg-[#101a14] py-0 pl-3 pr-12 text-white">
-                <option value="owner">Owner/Admin view</option>
-                <option value="manager">Manager view (as Marcus)</option>
-                <option value="employee">Staff view</option>
-                <option value="client">Client view</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/80" />
-            </span>
-          </label>
-        ) : (
-          <button onClick={() => { resetDemo(); setDemoMode(true); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-white/15 px-3 text-sm font-semibold text-white/80 hover:bg-white/10">
-            <RotateCcw className="h-4 w-4" /> Reset demo
-          </button>
-        )}
+        <label className="grid min-w-0 gap-2 text-sm font-semibold text-white/70">
+          View
+          <span className="relative min-w-0">
+            <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-11 w-full min-w-0 appearance-none truncate rounded-md border border-white/15 bg-[#101a14] py-0 pl-3 pr-12 text-white">
+              <option value="owner">Owner/Admin view</option>
+              <option value="manager">Manager view (as Marcus)</option>
+              <option value="employee">Staff view</option>
+              <option value="client">Client view</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/80" />
+          </span>
+        </label>
         <div className="grid min-w-0 gap-2 text-sm font-semibold text-white/70">
-          Current surface
+          Workspace
           <div className="flex h-11 min-w-0 items-center justify-between gap-3 rounded-md border border-white/15 bg-[#101a14] px-3 text-white">
             <span className="truncate">{surfaceForRole(viewer.role)}</span>
-            <span className="truncate text-xs font-medium text-white/52">{selectedClient?.name}</span>
+            <span className="truncate text-xs font-medium text-white/52">Eclipse</span>
           </div>
         </div>
       </div>
@@ -621,10 +648,9 @@ function ReportsSidebarNav({ activeReport, onBack, onSelect }: { activeReport: R
 }
 
 function ModuleTopBar({ selectedClientId, navItems, isClient, reportLabel }: { selectedClientId: string; navItems: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }>; isClient: boolean; reportLabel?: string }) {
-  const { clients, viewer, activePage, demoMode, setViewer, setDemoMode, resetDemo } = useOperationsPortalStore();
+  const { viewer, activePage, setViewer } = useOperationsPortalStore();
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
   const activeLabel = reportLabel ? `Reports / ${reportLabel}` : navItems.find((item) => item.page === activePage)?.label ?? (isClient ? "Client Portal" : "Operations Hub");
-  const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0];
 
   return (
     <header className="rounded-md border border-border bg-white/75 p-3 dark:border-white/10 dark:bg-[#15231a]">
@@ -634,29 +660,19 @@ function ModuleTopBar({ selectedClientId, navItems, isClient, reportLabel }: { s
           <h1 className="mt-1 text-2xl font-semibold text-ink dark:text-cream">{activeLabel}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {!isClient ? <NotificationBell surface="topbar" /> : null}
-          <button onClick={() => setDemoMode(!demoMode)} aria-pressed={demoMode} className={`inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition ${demoMode ? "border-secondary bg-secondary text-primary" : "border-border text-primary hover:bg-cream dark:border-white/10 dark:text-secondary dark:hover:bg-white/8"}`}>
-            <LayoutDashboard className="h-4 w-4" /> Demo Mode
-          </button>
-          {demoMode ? (
-            <button onClick={() => { resetDemo(); setDemoMode(true); }} className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary hover:bg-cream dark:border-white/10 dark:text-secondary dark:hover:bg-white/8">
-              <RotateCcw className="h-4 w-4" /> Reset
-            </button>
-          ) : (
-            <label className="relative">
-              <span className="sr-only">View</span>
-              <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-10 min-w-[190px] appearance-none rounded-md border border-border bg-white py-0 pl-3 pr-10 text-sm font-semibold text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
-                <option value="owner">Owner/Admin view</option>
-                <option value="manager">Manager view</option>
-                <option value="employee">Staff view</option>
-                <option value="client">Client view</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </label>
-          )}
+          <label className="relative">
+            <span className="sr-only">View</span>
+            <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-10 min-w-[190px] appearance-none rounded-md border border-border bg-white py-0 pl-3 pr-10 text-sm font-semibold text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
+              <option value="owner">Owner/Admin view</option>
+              <option value="manager">Manager view</option>
+              <option value="employee">Staff view</option>
+              <option value="client">Client view</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          </label>
           <div className="flex h-10 min-w-[210px] items-center justify-between gap-3 rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
             <span className="truncate">{surfaceForRole(viewer.role)}</span>
-            <span className="truncate text-xs font-medium text-muted-foreground dark:text-white/52">{selectedClient?.name}</span>
+            <span className="truncate text-xs font-medium text-muted-foreground dark:text-white/52">Eclipse</span>
           </div>
         </div>
       </div>
@@ -723,7 +739,7 @@ function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar
   ];
   const count = items.length;
   const buttonClass = surface === "sidebar"
-    ? "flex w-full items-center justify-between rounded-md border border-white/12 bg-white/8 px-3 py-2.5 text-left text-sm font-semibold text-white/82 hover:bg-white/12"
+    ? "relative inline-flex h-12 min-w-12 items-center justify-center rounded-md bg-secondary px-3 text-primary hover:bg-[#c4d19f]"
     : "relative inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary hover:bg-cream dark:border-white/10 dark:text-secondary dark:hover:bg-white/8";
   const panelClass = surface === "sidebar"
     ? "left-0 top-12 w-[360px]"
@@ -732,8 +748,8 @@ function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar
   return (
     <div className="relative">
       <button onClick={() => setOpen(!open)} aria-expanded={open} className={buttonClass}>
-        <span className="inline-flex items-center gap-2"><Bell className="h-4 w-4" /> Notifications</span>
-        {count ? <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">{count}</span> : null}
+        <span className="inline-flex items-center gap-2"><Bell className={surface === "sidebar" ? "h-6 w-6" : "h-4 w-4"} />{surface === "sidebar" ? null : " Notifications"}</span>
+        {count ? <span className={surface === "sidebar" ? "ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-black leading-none text-secondary" : "rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-primary"}>{count}</span> : null}
       </button>
       {open ? (
         <div className={`absolute z-50 mt-2 max-h-[70vh] overflow-auto rounded-md border border-border bg-white p-3 shadow-xl dark:border-white/10 dark:bg-[#15231a] ${panelClass}`}>
@@ -1528,12 +1544,98 @@ function StaffNoAccess({ label }: { label: string }) {
 
 function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
+  const [period, setPeriod] = useState<"today" | "week" | "pay-period">("today");
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const admin = scope === "all";
   const manager = scope === "team";
   const entries = store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId));
   const paid = store.invoices.filter((invoice) => invoice.status === "paid").reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
   const receivable = store.invoices.filter((invoice) => invoice.status !== "paid").reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
+  const visibleTickets = admin ? store.tickets : store.tickets.filter((ticket) => scopedIds.includes(ticket.assigneeId));
+  const openTickets = visibleTickets.filter((ticket) => ticket.status !== "resolved" && ticket.status !== "closed");
+  const overdueTickets = visibleTickets.filter(isTicketOverdue);
+  const pendingApprovals = [
+    ...store.ptoRequests.filter((request) => request.status === "pending" && scopedIds.includes(request.employeeId)),
+    ...store.timeEntries.filter((entry) => (entry.status === "pending" || entry.status === "needs_correction") && scopedIds.includes(entry.employeeId)),
+    ...store.shifts.filter((shift) => shift.status === "swap_requested" && shift.employeeId && scopedIds.includes(shift.employeeId))
+  ];
+  const periodMultiplier = period === "today" ? 1 : period === "week" ? 5 : 14;
+  const periodEntries = entries.slice(0, periodMultiplier * (scope === "self" ? 1 : 4));
+  const periodHours = periodEntries.reduce((sum, entry) => sum + entryHours(entry), 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueAge = (invoice: ClientInvoice) => Math.floor((today.getTime() - new Date(`${invoice.dueDate}T00:00:00`).getTime()) / 86_400_000);
+  const invoiceStatusTone: Record<ClientInvoice["status"], string> = {
+    paid: "bg-[#78A887]",
+    sent: "bg-[#7EA0B7]",
+    payable: "bg-[#D6B15F]",
+    overdue: "bg-[#C8796F]",
+    draft: "bg-white/36"
+  };
+  const invoicePipeline = (["paid", "sent", "payable", "overdue", "draft"] as ClientInvoice["status"][]).map((status) => {
+    const invoices = store.invoices.filter((invoice) => invoice.status === status);
+    const total = invoices.reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
+    return {
+      label: statusLabel(status),
+      value: money(total),
+      detail: `${invoices.length} invoice${invoices.length === 1 ? "" : "s"}`,
+      barValue: total,
+      tone: invoiceStatusTone[status],
+      page: "billing" as PortalPage
+    };
+  });
+  const collectionBuckets = [
+    { label: "Overdue", invoices: store.invoices.filter((invoice) => invoice.status !== "paid" && invoice.status !== "draft" && dueAge(invoice) > 0), tone: "bg-[#C8796F]" },
+    { label: "Due today", invoices: store.invoices.filter((invoice) => invoice.status !== "paid" && invoice.status !== "draft" && dueAge(invoice) === 0), tone: "bg-[#D6B15F]" },
+    { label: "Due this week", invoices: store.invoices.filter((invoice) => invoice.status !== "paid" && invoice.status !== "draft" && dueAge(invoice) < 0 && dueAge(invoice) >= -7), tone: "bg-[#7EA0B7]" },
+    { label: "Drafts to send", invoices: store.invoices.filter((invoice) => invoice.status === "draft"), tone: "bg-white/36" }
+  ].map((bucket) => {
+    const total = bucket.invoices.reduce((sum, invoice) => sum + invoiceTotal(invoice), 0);
+    const nextInvoice = bucket.invoices[0];
+    return {
+      label: bucket.label,
+      value: money(total),
+      detail: nextInvoice ? `${bucket.invoices.length} invoices · next ${nextInvoice.number}` : "Nothing waiting here",
+      barValue: total,
+      tone: bucket.tone,
+      page: "billing" as PortalPage
+    };
+  });
+  const workloadQueue = [
+    { label: "Open tickets", value: String(openTickets.length), detail: `${overdueTickets.length} past SLA`, barValue: openTickets.length, tone: "bg-[#7EA0B7]", page: "ticketing" as PortalPage },
+    { label: "Approvals", value: String(pendingApprovals.length), detail: "PTO, time, and swaps", barValue: pendingApprovals.length, tone: "bg-[#D6B15F]", page: "action-center" as PortalPage },
+    { label: "Open shifts", value: String(store.shifts.filter((shift) => shift.status === "open").length), detail: "Need coverage", barValue: store.shifts.filter((shift) => shift.status === "open").length, tone: "bg-[#C8796F]", page: scope === "self" ? "my-schedule" as PortalPage : "scheduling" as PortalPage },
+    { label: "Training due", value: String(store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status !== "complete" && item.status !== "removed").length), detail: "Assigned or overdue", barValue: store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status !== "complete" && item.status !== "removed").length, tone: "bg-[#78A887]", page: "lms" as PortalPage }
+  ];
+  const coverageQueue = [
+    { label: "On PTO", value: String(store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId) && request.status === "approved").length), detail: "Blocked from scheduling", barValue: store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId) && request.status === "approved").length, tone: "bg-[#78A887]", page: scope === "self" ? "time-off" as PortalPage : "scheduling" as PortalPage },
+    { label: "Clocked in", value: String(store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId) && entry.clockedIn).length), detail: `${periodHours.toFixed(1)}h in this view`, barValue: store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId) && entry.clockedIn).length, tone: "bg-[#7EA0B7]", page: scope === "self" ? "my-timekeeping" as PortalPage : "timekeeping" as PortalPage },
+    { label: "Needs correction", value: String(store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId) && entry.status === "needs_correction").length), detail: "Timesheets to review", barValue: store.timeEntries.filter((entry) => scopedIds.includes(entry.employeeId) && entry.status === "needs_correction").length, tone: "bg-[#C8796F]", page: scope === "self" ? "my-timekeeping" as PortalPage : "timekeeping" as PortalPage },
+    { label: "Tasks open", value: String(store.tasks.filter((task) => scopedIds.includes(task.employeeId) && task.status !== "done").length), detail: "Assigned work items", barValue: store.tasks.filter((task) => scopedIds.includes(task.employeeId) && task.status !== "done").length, tone: "bg-[#D6B15F]", page: "action-center" as PortalPage }
+  ];
+  const pulseMetrics = [
+    { label: admin ? "Collected" : "Worked", value: admin ? money(paid) : `${periodHours.toFixed(1)}h`, bar: admin ? Math.min(100, Math.round((paid / Math.max(paid + receivable, 1)) * 100)) : Math.min(100, Math.round(periodHours * 4)) },
+    { label: admin ? "Receivable" : "Open tasks", value: admin ? money(receivable) : String(store.tasks.filter((task) => scopedIds.includes(task.employeeId) && task.status !== "done").length), bar: admin ? Math.min(100, Math.round((receivable / Math.max(paid + receivable, 1)) * 100)) : 52 },
+    { label: "Tickets", value: String(openTickets.length), bar: Math.min(100, openTickets.length * 9) },
+    { label: "Approvals", value: String(pendingApprovals.length), bar: Math.min(100, pendingApprovals.length * 12) }
+  ];
+  const workMix = [
+    { label: "Tickets", value: openTickets.length, tone: "bg-[#7EA0B7]" },
+    { label: "Training", value: store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status !== "complete" && item.status !== "removed").length, tone: "bg-[#D6B15F]" },
+    { label: "PTO", value: store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId) && request.status === "pending").length, tone: "bg-[#78A887]" },
+    { label: "Invoices", value: admin ? store.invoices.filter((invoice) => invoice.status !== "paid").length : 0, tone: "bg-[#C8796F]" }
+  ].filter((item) => item.value > 0 || admin);
+  const attentionItems = [
+    { label: "Overdue tickets", value: overdueTickets.length, action: "Review SLA queue", page: "ticketing" as PortalPage },
+    { label: "Pending approvals", value: pendingApprovals.length, action: "Open action queue", page: "action-center" as PortalPage },
+    { label: "Open receivables", value: admin ? money(receivable) : `${openTickets.length} tickets`, action: admin ? "Review invoices" : "Review tickets", page: admin ? "billing" as PortalPage : "ticketing" as PortalPage },
+    { label: "Coverage risks", value: store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId) && request.status === "approved").length, action: "Check schedule", page: scope === "self" ? "my-schedule" as PortalPage : "scheduling" as PortalPage }
+  ];
+  const commandNotes = [
+    { label: "Next follow-up", value: openTickets[0]?.subject ?? "No open ticket follow-ups" },
+    { label: "Busiest queue", value: openTickets.length >= pendingApprovals.length ? `${openTickets.length} active tickets` : `${pendingApprovals.length} approvals waiting` },
+    { label: "Coverage", value: `${store.shifts.filter((shift) => shift.status === "open").length} open shifts · ${store.ptoRequests.filter((request) => scopedIds.includes(request.employeeId) && request.status === "approved").length} on PTO` }
+  ];
   const recent = [
     ...store.threads.map((thread) => ({ id: thread.id, label: getClientName(store, thread.clientId), value: thread.messages.at(-1)?.body ?? thread.subject, page: "client-back-office" as PortalPage })),
     ...store.tickets.slice(0, 4).map((ticket) => ({ id: ticket.id, label: ticket.source === "client" ? "Client ticket" : "Internal ticket", value: ticket.subject, page: "ticketing" as PortalPage }))
@@ -1542,11 +1644,76 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
   return (
     <section className="grid gap-5">
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <div className="rounded-md bg-primary p-5 text-white dark:bg-[#253629]">
-          <p className="text-sm font-semibold text-secondary">{scopeLabel(scope)} executive overview</p>
-          <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-cream">{admin ? "Company health across revenue, work, and follow-ups." : manager ? "Team performance and coverage for direct reports." : "My day, hours, training, and active work."}</h2>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["Today", "This week", "Pay period"].map((label) => <button key={label} className="rounded-md border border-white/15 px-3 py-2 text-sm font-semibold text-white/78 hover:bg-white/10">{label}</button>)}
+        <div className="overflow-hidden rounded-md bg-primary text-white dark:bg-[#253629]">
+          <div className="grid items-stretch gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_360px] md:p-6">
+            <div className="flex h-full flex-col">
+              <p className="text-sm font-semibold text-secondary">{scopeLabel(scope)} executive overview</p>
+              <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-cream">
+                {admin ? "Eclipse command snapshot." : manager ? "Team coverage and follow-ups." : "Your day at Eclipse."}
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72">
+                {admin ? `${openTickets.length} open tickets, ${pendingApprovals.length} approvals, and ${money(receivable)} in receivables need attention.` : manager ? `${pendingApprovals.length} team approvals and ${openTickets.length} active tickets are in your queue.` : `${periodHours.toFixed(1)} hours, ${openTickets.length} tickets, and ${pendingApprovals.length} follow-ups are tied to your workspace.`}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {[
+                  ["today", "Today"],
+                  ["week", "This week"],
+                  ["pay-period", "Pay period"]
+                ].map(([id, label]) => (
+                  <button key={id} onClick={() => setPeriod(id as typeof period)} className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${period === id ? "border-secondary bg-secondary text-primary" : "border-white/15 text-white/78 hover:bg-white/10"}`}>{label}</button>
+                ))}
+              </div>
+              <div className="mt-6 grid gap-3 lg:grid-cols-3">
+                {commandNotes.map((note) => (
+                  <button key={note.label} onClick={() => store.setActivePage(note.label === "Coverage" ? scope === "self" ? "my-schedule" : "scheduling" : note.label === "Next follow-up" ? "ticketing" : "action-center")} className="rounded-md border border-white/12 bg-white/7 p-3 text-left transition hover:bg-white/12">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-white/42">{note.label}</p>
+                    <p className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-cream">{note.value}</p>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-4">
+                {pulseMetrics.map((metric, index) => (
+                  <div key={metric.label} className="rounded-md border border-white/12 bg-white/8 p-3">
+                    <p className="text-xs font-semibold text-white/58">{metric.label}</p>
+                    <p className="mt-2 text-2xl font-black text-cream tabular-nums">{metric.value}</p>
+                    <div className="mt-3 h-1.5 rounded-full bg-white/12">
+                      <div className="h-full rounded-full bg-secondary transition-all duration-700 ease-out" style={{ width: `${Math.max(8, metric.bar)}%`, transitionDelay: `${index * 80}ms` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-md border border-white/12 bg-[#102017] p-4 shadow-inner">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-secondary">Needs attention</p>
+                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-secondary motion-safe:animate-pulse" />
+              </div>
+              <div className="mt-4 grid gap-2">
+                {attentionItems.map((item) => (
+                  <button key={item.label} onClick={() => store.setActivePage(item.page)} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-sm bg-white/8 px-3 py-2 text-left transition hover:bg-white/12">
+                    <span>
+                      <span className="block text-sm font-semibold text-cream">{item.label}</span>
+                      <span className="block text-xs text-white/52">{item.action}</span>
+                    </span>
+                    <span className="text-xl font-black text-secondary tabular-nums">{item.value}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 border-t border-white/10 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/42">Work mix</p>
+                <div className="mt-3 grid gap-2">
+                  {workMix.map((item) => (
+                    <div key={item.label} className="grid grid-cols-[80px_1fr_32px] items-center gap-2 text-xs">
+                      <span className="font-semibold text-white/62">{item.label}</span>
+                      <span className="h-2 rounded-full bg-white/10">
+                        <span className={`block h-full rounded-full ${item.tone} transition-all duration-700`} style={{ width: `${Math.max(8, Math.min(100, item.value * 14))}%` }} />
+                      </span>
+                      <span className="text-right font-bold text-cream tabular-nums">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <ClockInWidget employeeId={currentEmployeeId(store.viewer)} onReport={() => store.setActivePage(scope === "self" ? "my-timekeeping" : "timekeeping")} />
@@ -1558,8 +1725,8 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
         <MetricTile label="Operations health" value={scope === "self" ? "On track" : "Stable"} />
       </div>
       <div className="grid gap-5 xl:grid-cols-[1fr_1fr_360px]">
-        <ChartPanel title="Revenue trend" bars={[62, 48, 72, 68, 86, 74]} labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]} />
-        <ChartPanel title="AR aging" bars={[80, 54, 32, 18]} labels={["0-15", "16-30", "31-60", "60+"]} />
+        <DashboardQueuePanel title={admin ? "Invoice pipeline" : "Workload queues"} summary={admin ? `${money(paid)} collected · ${money(receivable)} open` : `${openTickets.length} tickets · ${pendingApprovals.length} approvals`} items={admin ? invoicePipeline : workloadQueue} onOpen={(page) => store.setActivePage(page)} />
+        <DashboardQueuePanel title={admin ? "Cash collection queue" : "Coverage and follow-up"} summary={admin ? "Due-date buckets from live invoices" : "Schedule, time, training, and tasks"} items={admin ? collectionBuckets : coverageQueue} onOpen={(page) => store.setActivePage(page)} />
         <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
           <p className="text-sm font-semibold text-primary dark:text-secondary">Recent activity</p>
           <div className="mt-4 grid gap-3">
@@ -2356,9 +2523,14 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
       return true;
     })
     .filter((ticket) => `${ticket.subject} ${ticket.description ?? ""} ${ticket.category} ${ticket.tags.join(" ")} ${getClientName(store, ticket.clientId)}`.toLowerCase().includes(query.toLowerCase()));
-  const columns: Array<{ key: SupportTicket["status"]; label: string }> = [{ key: "open", label: "Open" }, { key: "waiting_on_staff", label: "In progress" }, { key: "waiting_on_client", label: "Waiting on client" }, { key: "resolved", label: "Resolved" }, { key: "closed", label: "Closed" }];
+  const columns: Array<{ key: TicketBoardColumnKey; label: string; targetStatus: SupportTicket["status"] }> = [
+    { key: "open", label: "Open", targetStatus: "open" },
+    { key: "in_progress", label: "In progress", targetStatus: "waiting_on_staff" },
+    { key: "resolved", label: "Resolved", targetStatus: "resolved" }
+  ];
+  const boardColumnFor = (status: SupportTicket["status"]) => status === "open" ? "open" : status === "resolved" || status === "closed" ? "resolved" : "in_progress";
   const openCount = tickets.filter((ticket) => ticket.status === "open").length;
-  const progressCount = tickets.filter((ticket) => ticket.status === "waiting_on_staff").length;
+  const progressCount = tickets.filter((ticket) => boardColumnFor(ticket.status) === "in_progress").length;
   const resolvedCount = tickets.filter((ticket) => ticket.status === "resolved" || ticket.status === "closed").length;
   const patchTicket = async (ticketId: string, changes: Partial<SupportTicket>) => {
     store.updateTicket(ticketId, changes);
@@ -2368,11 +2540,12 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
   };
   const onDragEnd = (event: DragEndEvent) => {
     const ticketId = String(event.active.id);
-    const status = event.over?.id as SupportTicket["status"] | undefined;
-    if (!status || !columns.some((column) => column.key === status)) return;
+    const columnKey = event.over?.id as TicketBoardColumnKey | undefined;
+    const column = columns.find((item) => item.key === columnKey);
+    if (!column) return;
     const ticket = store.tickets.find((item) => item.id === ticketId);
-    if (!ticket || ticket.status === status) return;
-    void patchTicket(ticketId, { status });
+    if (!ticket || ticket.status === column.targetStatus) return;
+    void patchTicket(ticketId, { status: column.targetStatus });
   };
 
   useEffect(() => {
@@ -2422,14 +2595,14 @@ function TicketBoardPanel({ scope }: { scope: PermissionScope }) {
         </div>
         <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_170px_170px_190px]">
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tickets" className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]" />
-          <select value={savedView} onChange={(event) => setSavedView(event.target.value as typeof savedView)} className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="my">My tickets</option><option value="unassigned">Unassigned</option><option value="overdue">Overdue/SLA</option><option value="client">Client replies</option></select>
-          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All statuses</option>{columns.map((column) => <option key={column.key} value={column.key}>{column.label}</option>)}</select>
-          <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as typeof priorityFilter)} className="h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
+          <select value={savedView} onChange={(event) => setSavedView(event.target.value as typeof savedView)} style={selectArrowStyle} className={`${selectWithInsetArrow} h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]`}><option value="my">My tickets</option><option value="unassigned">Unassigned</option><option value="overdue">Overdue/SLA</option><option value="client">Client replies</option></select>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} style={selectArrowStyle} className={`${selectWithInsetArrow} h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]`}><option value="all">All statuses</option><option value="open">Open</option><option value="waiting_on_staff">In progress</option><option value="waiting_on_client">Waiting on client</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
+          <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as typeof priorityFilter)} style={selectArrowStyle} className={`${selectWithInsetArrow} h-11 rounded-md border border-border bg-white px-3 text-sm dark:border-white/10 dark:bg-[#0f1a14]`}><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
         </div>
       </div>
       {selectedIds.length ? <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-white/80 p-3 text-sm dark:border-white/10 dark:bg-[#15231a]"><span className="font-semibold">{selectedIds.length} selected</span><SmallAction onClick={() => bulkChange({ status: "resolved" })}>Resolve</SmallAction><SmallAction variant="quiet" onClick={() => bulkChange({ assigneeId: currentEmployee })}>Assign to me</SmallAction><SmallAction variant="danger" onClick={() => bulkChange({ status: "closed" })}>Close</SmallAction></div> : null}
-      {mode === "board" ? <DndContext sensors={sensors} onDragEnd={onDragEnd}><div className="grid gap-3 xl:grid-cols-5">{columns.map((column) => {
-        const columnTickets = tickets.filter((ticket) => ticket.status === column.key).slice(0, 12);
+      {mode === "board" ? <DndContext sensors={sensors} onDragEnd={onDragEnd}><div className="grid gap-3 xl:grid-cols-3">{columns.map((column) => {
+        const columnTickets = tickets.filter((ticket) => boardColumnFor(ticket.status) === column.key).slice(0, 12);
         return (
           <TicketDropColumn key={column.key} id={column.key} label={column.label} count={columnTickets.length}>
             <div className="flex items-center justify-between gap-3">
@@ -2486,7 +2659,7 @@ function TicketQueueTable({ tickets, selectedIds, onSelect, onOpen, onPatch }: {
   );
 }
 
-function TicketDropColumn({ id, children }: { id: SupportTicket["status"]; label: string; count: number; children: React.ReactNode }) {
+function TicketDropColumn({ id, children }: { id: TicketBoardColumnKey; label: string; count: number; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return <div ref={setNodeRef} className={`rounded-md p-3 text-white transition ${isOver ? "bg-[#334235]" : "bg-[#222522] dark:bg-[#1a211c]"}`}>{children}</div>;
 }
@@ -2527,15 +2700,12 @@ function ticketSlaLabel(ticket: SupportTicket) {
 }
 
 function TicketMetric({ label, value }: { label: string; value: string }) {
-  const tone = label === "Open"
-    ? "border-amber-300 bg-amber-100 text-amber-950 dark:border-amber-300/35 dark:bg-amber-300/18 dark:text-amber-50"
-    : label === "In progress"
-      ? "border-blue-300 bg-blue-100 text-blue-950 dark:border-blue-300/35 dark:bg-blue-300/18 dark:text-blue-50"
-      : "border-green-300 bg-green-100 text-green-950 dark:border-green-300/35 dark:bg-green-300/18 dark:text-green-50";
+  const accent = label === "Open" ? "bg-[#D6B15F]" : label === "In progress" ? "bg-[#7EA0B7]" : "bg-[#78A887]";
   return (
-    <div className={`min-w-24 rounded-sm border px-3 py-2 shadow-sm ${tone}`}>
-      <p className="text-xs font-bold uppercase tracking-[0.08em] opacity-75">{label}</p>
-      <p className="mt-1 text-xl font-black leading-none tabular-nums">{value}</p>
+    <div className="min-w-24 rounded-sm border border-white/10 bg-[#17291d] px-3 py-2 shadow-sm dark:bg-[#17291d]">
+      <div className={`mb-2 h-1 w-8 rounded-full ${accent}`} />
+      <p className="text-xs font-semibold text-white/72">{label}</p>
+      <p className="mt-1 text-xl font-black leading-none text-white tabular-nums">{value}</p>
     </div>
   );
 }
@@ -2546,12 +2716,136 @@ function MessagingAppPanel({ scope }: { scope: PermissionScope }) {
   const threads = scope === "all" ? store.chatThreads : store.chatThreads.filter((thread) => thread.type === "channel" || thread.memberIds.includes(myId));
   const [selectedId, setSelectedId] = useState(threads[0]?.id);
   const [body, setBody] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newChatType, setNewChatType] = useState<"dm" | "channel">("dm");
+  const [newChatName, setNewChatName] = useState("");
+  const [newChatMembers, setNewChatMembers] = useState<string[]>([]);
+  const [addingMembers, setAddingMembers] = useState(false);
+  const [memberAdds, setMemberAdds] = useState<string[]>([]);
   const selected = threads.find((thread) => thread.id === selectedId) ?? threads[0];
+  const members = selected?.memberIds.map((memberId) => store.employees.find((employee) => employee.id === memberId)).filter((employee): employee is NonNullable<typeof employee> => Boolean(employee)) ?? [];
+  const chatName = (thread: typeof threads[number]) => {
+    if (thread.type !== "dm") return thread.name;
+    const otherMemberId = thread.memberIds.find((memberId) => memberId !== myId) ?? thread.memberIds[0];
+    return store.employees.find((employee) => employee.id === otherMemberId)?.name ?? thread.name;
+  };
+  const employeeOptions = store.employees.filter((employee) => employee.id !== myId);
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const visibleThreads = normalizedSearch
+    ? threads.filter((thread) => `${chatName(thread)} ${thread.messages.map((message) => `${employeeName(message.employeeId)} ${message.body}`).join(" ")}`.toLowerCase().includes(normalizedSearch))
+    : threads;
+  const messageResults = normalizedSearch
+    ? threads.flatMap((thread) => thread.messages
+        .filter((message) => `${chatName(thread)} ${employeeName(message.employeeId)} ${message.body}`.toLowerCase().includes(normalizedSearch))
+        .map((message) => ({ thread, message })))
+        .slice(0, 8)
+    : [];
+  const toggleNewChatMember = (employeeId: string) => {
+    setNewChatMembers((current) => current.includes(employeeId) ? current.filter((id) => id !== employeeId) : [...current, employeeId]);
+  };
+  const addableMembers = selected ? employeeOptions.filter((employee) => !selected.memberIds.includes(employee.id)) : [];
+  const toggleMemberAdd = (employeeId: string) => {
+    setMemberAdds((current) => current.includes(employeeId) ? current.filter((id) => id !== employeeId) : [...current, employeeId]);
+  };
+  const startChat = () => {
+    if (newChatMembers.length === 0) return;
+    const threadId = store.createChatThread(newChatType, newChatMembers, newChatName, myId);
+    setSelectedId(threadId);
+    setCreating(false);
+    setNewChatName("");
+    setNewChatMembers([]);
+    setSearchQuery("");
+  };
+  const addMembersToSelected = () => {
+    if (!selected || memberAdds.length === 0) return;
+    store.addChatMembers(selected.id, memberAdds);
+    setMemberAdds([]);
+    setAddingMembers(false);
+  };
   return (
-    <section className="grid min-h-[680px] overflow-hidden rounded-md border border-border bg-white/70 dark:border-white/10 dark:bg-[#15231a] lg:grid-cols-[280px_1fr_280px]">
-      <aside className="border-r border-border p-3 dark:border-white/10"><p className="p-2 text-sm font-semibold text-primary dark:text-secondary">Channels + DMs</p>{threads.map((thread) => <button key={thread.id} onClick={() => setSelectedId(thread.id)} className={`mt-2 w-full rounded-md p-3 text-left ${thread.id === selected?.id ? "bg-secondary/25" : "hover:bg-cream dark:hover:bg-white/8"}`}><p className="font-semibold text-ink dark:text-cream">{thread.name}</p><p className="text-sm text-muted-foreground dark:text-white/62">{thread.messages.length} messages</p></button>)}</aside>
-      <main className="flex min-h-[520px] flex-col p-4">{selected ? <><div className="border-b border-border pb-4 dark:border-white/10"><h2 className="text-2xl font-semibold text-ink dark:text-cream">{selected.name}</h2></div><div className="flex-1 overflow-auto py-4"><div className="grid gap-3">{selected.messages.map((message) => <div key={message.id} className={`max-w-[78%] rounded-md p-3 ${message.employeeId === myId ? "ml-auto bg-secondary/30" : "bg-cream/75 dark:bg-white/8"}`}><p className="text-sm font-semibold text-ink dark:text-cream">{employeeName(message.employeeId)} <span className="font-normal text-muted-foreground">{message.at}</span></p><p className="mt-1 text-sm text-muted-foreground dark:text-white/68">{message.body}</p></div>)}</div></div><ReplyBox value={body} onChange={setBody} onSend={() => { if (body.trim()) { store.sendChatMessage(selected.id, body.trim(), myId); setBody(""); } }} /></> : null}</main>
-      <aside className="border-l border-border p-4 dark:border-white/10"><p className="text-sm font-semibold text-primary dark:text-secondary">Context</p><InfoRow label="Unread" value={String(threads.filter((thread) => thread.messages.at(-1)?.employeeId !== myId).length)} /><InfoRow label="Members" value={String(selected?.memberIds.length ?? 0)} /></aside>
+    <section className="grid h-[min(640px,calc(100vh-180px))] min-h-[500px] overflow-hidden rounded-md border border-border bg-white/70 dark:border-white/10 dark:bg-[#15231a] lg:grid-cols-[280px_1fr_280px]">
+      <aside className="flex min-h-0 flex-col border-r border-border p-3 dark:border-white/10">
+        <div className="flex items-center justify-between gap-3 p-2">
+          <p className="text-sm font-semibold text-primary dark:text-secondary">Channels + DMs</p>
+          <button onClick={() => setCreating((value) => !value)} className="rounded-sm border border-border px-2 py-1 text-xs font-bold text-primary hover:bg-cream dark:border-white/10 dark:text-secondary dark:hover:bg-white/8">{creating ? "Close" : "New"}</button>
+        </div>
+        <label className="mt-2 block">
+          <span className="sr-only">Search previous messages</span>
+          <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-ink placeholder:text-muted-foreground dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream dark:placeholder:text-white/45" placeholder="Search messages" />
+        </label>
+        {creating ? (
+          <div className="mt-3 rounded-md border border-border bg-white p-3 dark:border-white/10 dark:bg-[#0f1a14]">
+            <div className="grid grid-cols-2 gap-2">
+              {(["dm", "channel"] as const).map((type) => (
+                <button key={type} onClick={() => setNewChatType(type)} className={`h-9 rounded-sm text-xs font-bold ${newChatType === type ? "bg-secondary text-primary" : "border border-border text-primary dark:border-white/10 dark:text-cream"}`}>{type === "dm" ? "DM" : "Channel"}</button>
+              ))}
+            </div>
+            {newChatType === "channel" ? <input value={newChatName} onChange={(event) => setNewChatName(event.target.value)} className="mt-3 h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream" placeholder="#channel-name" /> : null}
+            <div className="mt-3 max-h-52 overflow-auto pr-1">
+              {employeeOptions.map((employee) => (
+                <label key={employee.id} className={`mt-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-sm font-semibold transition ${newChatMembers.includes(employee.id) ? "bg-secondary/20 text-cream" : "text-cream hover:bg-white/8"}`}>
+                  <input type="checkbox" checked={newChatMembers.includes(employee.id)} onChange={() => toggleNewChatMember(employee.id)} className="h-4 w-4 accent-[#b4c292]" />
+                  <span className="min-w-0 truncate">{employee.name}</span>
+                </label>
+              ))}
+            </div>
+            <button disabled={newChatMembers.length === 0} onClick={startChat} className="mt-3 h-10 w-full rounded-md bg-primary text-sm font-semibold text-white disabled:opacity-45 dark:bg-[#4f6a57]">Start chat</button>
+          </div>
+        ) : null}
+        <div className="mt-3 grid flex-1 content-start gap-2 overflow-y-auto pr-1">
+          {visibleThreads.map((thread) => <button key={thread.id} onClick={() => setSelectedId(thread.id)} className={`w-full rounded-md p-3 text-left transition ${thread.id === selected?.id ? "bg-secondary/25" : "hover:bg-white/8"}`}><p className="font-semibold text-cream">{chatName(thread)}</p><p className="text-sm text-white/62">{thread.messages.length} messages</p></button>)}
+          {visibleThreads.length === 0 ? <p className="rounded-sm bg-cream/70 p-3 text-sm text-muted-foreground dark:bg-white/8 dark:text-white/62">No chats found.</p> : null}
+        </div>
+        {messageResults.length ? (
+          <div className="mt-5 border-t border-border pt-4 dark:border-white/10">
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground dark:text-white/45">Previous messages</p>
+            <div className="mt-2 grid gap-2">
+              {messageResults.map(({ thread, message }) => (
+                <button key={`${thread.id}-${message.id}`} onClick={() => setSelectedId(thread.id)} className="rounded-sm bg-[#0f1a14] p-3 text-left">
+                  <p className="truncate text-xs font-semibold text-secondary">{chatName(thread)} · {employeeName(message.employeeId)}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-white/72">{message.body}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </aside>
+      <main className="flex min-h-0 flex-col p-4">{selected ? <><div className="border-b border-border pb-4 dark:border-white/10"><h2 className="text-2xl font-semibold text-ink dark:text-cream">{chatName(selected)}</h2></div><div className="min-h-0 flex-1 overflow-y-auto py-4 pr-1"><div className="grid gap-3">{selected.messages.map((message) => <div key={message.id} className={`max-w-[78%] rounded-md border p-3 shadow-sm ${message.employeeId === myId ? "ml-auto border-[#6d7d56] bg-[#46583a]" : "border-white/10 bg-[#17291d]"}`}><p className="text-sm font-semibold text-cream">{employeeName(message.employeeId)} <span className="font-normal text-white/58">{message.at}</span></p><p className="mt-1 text-sm leading-5 text-white/76">{message.body}</p></div>)}</div></div><ReplyBox value={body} onChange={setBody} onSend={() => { if (body.trim()) { store.sendChatMessage(selected.id, body.trim(), myId); setBody(""); } }} /></> : null}</main>
+      <aside className="flex min-h-0 flex-col border-l border-border p-4 dark:border-white/10">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-primary dark:text-secondary">Team members</p>
+          <button disabled={!selected || addableMembers.length === 0} onClick={() => setAddingMembers((value) => !value)} className="rounded-sm border border-border px-2 py-1 text-xs font-bold text-primary hover:bg-cream disabled:opacity-45 dark:border-white/10 dark:text-secondary dark:hover:bg-white/8">{addingMembers ? "Close" : "Add"}</button>
+        </div>
+        {addingMembers ? (
+          <div className="mt-4 rounded-md border border-white/10 bg-[#0f1a14] p-3">
+            <div className="max-h-44 overflow-y-auto pr-1">
+              {addableMembers.map((employee) => (
+                <label key={employee.id} className={`mt-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-sm font-semibold transition ${memberAdds.includes(employee.id) ? "bg-secondary/20 text-cream" : "text-cream hover:bg-white/8"}`}>
+                  <input type="checkbox" checked={memberAdds.includes(employee.id)} onChange={() => toggleMemberAdd(employee.id)} className="h-4 w-4 accent-[#b4c292]" />
+                  <span className="min-w-0 truncate">{employee.name}</span>
+                </label>
+              ))}
+              {addableMembers.length === 0 ? <p className="text-sm text-white/58">Everyone is already in this chat.</p> : null}
+            </div>
+            <button disabled={memberAdds.length === 0} onClick={addMembersToSelected} className="mt-3 h-10 w-full rounded-md bg-primary text-sm font-semibold text-white disabled:opacity-45 dark:bg-[#4f6a57]">Add to chat</button>
+          </div>
+        ) : null}
+        <div className="mt-4 grid flex-1 content-start gap-2 overflow-y-auto pr-1">
+          {members.map((member) => (
+            <div key={member.id} className="grid grid-cols-[36px_1fr] items-center gap-3 rounded-sm bg-[#0f1a14] p-3">
+              <span className="grid h-9 w-9 place-items-center rounded-sm bg-secondary text-xs font-black text-primary">{member.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+              <span className="min-w-0">
+                <span className="flex items-center gap-2">
+                  <span className="truncate text-sm font-semibold text-cream">{member.name}</span>
+                  {member.id === myId ? <span className="rounded-sm bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-secondary">You</span> : null}
+                </span>
+                <span className="mt-0.5 block truncate text-xs text-white/58">{member.title}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </aside>
     </section>
   );
 }
@@ -2559,7 +2853,7 @@ function MessagingAppPanel({ scope }: { scope: PermissionScope }) {
 function LearningPortalPanel({ scope }: { scope: PermissionScope }) {
   const store = useOperationsPortalStore();
   const [tab, setTab] = useState<"mine" | "catalog" | "manage">("mine");
-  const [selectedCourseId, setSelectedCourseId] = useState(store.courseCatalog[0]?.id ?? "");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
   const [selectedEnrollmentId, setSelectedEnrollmentId] = useState(store.training.find((item) => item.status !== "complete" && item.status !== "removed")?.id ?? "");
   const [paths, setPaths] = useState<LearningPath[]>([]);
   const [syncState, setSyncState] = useState("Seed preview");
@@ -2572,8 +2866,10 @@ function LearningPortalPanel({ scope }: { scope: PermissionScope }) {
   const scopedIds = scopedEmployeeIds(store.viewer, store.employees);
   const admin = scope === "all" || scope === "team";
   const rows = store.training.filter((item) => scopedIds.includes(item.employeeId) && item.status !== "removed");
-  const activeEnrollment = rows.find((item) => item.id === selectedEnrollmentId) ?? rows.find((item) => item.status !== "complete") ?? rows[0];
-  const activeCourse = store.courseCatalog.find((course) => course.id === (activeEnrollment?.courseId ?? selectedCourseId)) ?? store.courseCatalog[0];
+  const activeEnrollment = selectedCourseId
+    ? rows.find((item) => item.courseId === selectedCourseId)
+    : rows.find((item) => item.id === selectedEnrollmentId) ?? rows.find((item) => item.status !== "complete") ?? rows[0];
+  const activeCourse = store.courseCatalog.find((course) => course.id === (selectedCourseId || activeEnrollment?.courseId)) ?? store.courseCatalog[0];
   const required = rows.filter((item) => item.status === "overdue" || (item.dueDate && item.status !== "complete")).sort((a, b) => (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"));
   const inProgress = rows.filter((item) => item.status === "in_progress");
   const assigned = rows.filter((item) => item.status === "assigned");
@@ -2674,15 +2970,15 @@ function LearningPortalPanel({ scope }: { scope: PermissionScope }) {
 
       {tab === "mine" ? <div className="grid gap-5 xl:grid-cols-[1fr_430px]">
         <div className="grid gap-4">
-          <LearningBucket title="Required & due" items={required} admin={admin} selectedId={activeEnrollment?.id} onSelect={setSelectedEnrollmentId} onRemove={removeAssignment} />
-          <LearningBucket title="In progress" items={inProgress} admin={admin} selectedId={activeEnrollment?.id} onSelect={setSelectedEnrollmentId} onRemove={removeAssignment} />
-          <LearningBucket title="Assigned, not started" items={assigned} admin={admin} selectedId={activeEnrollment?.id} onSelect={setSelectedEnrollmentId} onRemove={removeAssignment} />
-          <details className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><summary className="cursor-pointer font-semibold text-ink dark:text-cream">Completed + certificates</summary><div className="mt-3 grid gap-2">{completed.map((item) => <button key={item.id} onClick={() => setSelectedEnrollmentId(item.id)} className="rounded-sm bg-cream/70 p-3 text-left text-sm dark:bg-white/8"><span className="font-semibold">{item.course}</span><span className="ml-2 text-muted-foreground">{item.certificateIssued ?? "Certificate ready"}</span></button>)}</div></details>
+          <LearningBucket title="Required & due" items={required} admin={admin} selectedId={activeEnrollment?.id} onSelect={(id) => { setSelectedCourseId(""); setSelectedEnrollmentId(id); }} onRemove={removeAssignment} />
+          <LearningBucket title="In progress" items={inProgress} admin={admin} selectedId={activeEnrollment?.id} onSelect={(id) => { setSelectedCourseId(""); setSelectedEnrollmentId(id); }} onRemove={removeAssignment} />
+          <LearningBucket title="Assigned, not started" items={assigned} admin={admin} selectedId={activeEnrollment?.id} onSelect={(id) => { setSelectedCourseId(""); setSelectedEnrollmentId(id); }} onRemove={removeAssignment} />
+          <details className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><summary className="cursor-pointer font-semibold text-ink dark:text-cream">Completed + certificates</summary><div className="mt-3 grid gap-2">{completed.map((item) => <button key={item.id} onClick={() => { setSelectedCourseId(""); setSelectedEnrollmentId(item.id); }} className="rounded-sm bg-cream/70 p-3 text-left text-sm dark:bg-white/8"><span className="font-semibold">{item.course}</span><span className="ml-2 text-muted-foreground">{item.certificateIssued ?? "Certificate ready"}</span></button>)}</div></details>
         </div>
         <CoursePlayer course={activeCourse} assignment={activeEnrollment} onComplete={completeSelected} />
       </div> : null}
 
-      {tab === "catalog" ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{store.courseCatalog.map((course) => <article key={course.id} className="rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#15231a]"><button onClick={() => { setSelectedCourseId(course.id); setTab("mine"); }} className="grid aspect-video w-full place-items-center rounded-sm bg-primary text-secondary dark:bg-secondary dark:text-primary"><BookOpenCheck className="h-8 w-8" /></button><p className="mt-3 font-semibold text-ink dark:text-cream">{course.title}</p><p className="text-sm text-muted-foreground dark:text-white/62">{course.category} · {course.duration}</p><p className="mt-2 text-sm leading-6 text-muted-foreground dark:text-white/68">{course.description}</p><SmallAction onClick={() => { setAssignMode("course"); setAssignCourseId(course.id); setAssignReason("manual"); if (admin) setTab("manage"); else void selfEnroll(course.id); }}>{admin ? "Assign" : "Self-enroll"}</SmallAction></article>)}</div> : null}
+      {tab === "catalog" ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{store.courseCatalog.map((course) => <button key={course.id} onClick={() => { setSelectedCourseId(course.id); setSelectedEnrollmentId(""); setTab("mine"); }} className="rounded-md border border-border bg-white/70 p-4 text-left transition hover:border-secondary/70 hover:bg-secondary/15 dark:border-white/10 dark:bg-[#15231a] dark:hover:bg-white/8"><span className="grid aspect-video w-full place-items-center rounded-sm bg-primary text-secondary dark:bg-secondary dark:text-primary"><BookOpenCheck className="h-8 w-8" /></span><span className="mt-3 block font-semibold text-ink dark:text-cream">{course.title}</span><span className="block text-sm text-muted-foreground dark:text-white/62">{course.category} · {course.duration}</span><span className="mt-2 block text-sm leading-6 text-muted-foreground dark:text-white/68">{course.description}</span><span className="mt-3 inline-flex" onClick={(event) => event.stopPropagation()}><SmallAction onClick={() => { setAssignMode("course"); setAssignCourseId(course.id); setAssignReason("manual"); if (admin) setTab("manage"); else void selfEnroll(course.id); }}>{admin ? "Assign" : "Self-enroll"}</SmallAction></span></button>)}</div> : null}
 
       {tab === "manage" && admin ? <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
         <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
@@ -2745,9 +3041,76 @@ function ClientManagementPanel() {
 }
 
 function SettingsLayoutPanel() {
-  const sections = ["Company & branding", "Module toggles", "Users & roles", "Integrations", "Billing"];
+  const sections = ["Appearance", "Company & branding", "Module toggles", "Users & roles", "Integrations", "Billing"];
   const [section, setSection] = useState(sections[0]);
-  return <section className="grid gap-5 lg:grid-cols-[260px_1fr]"><aside className="rounded-md border border-border bg-white/70 p-3 dark:border-white/10 dark:bg-[#15231a]">{sections.map((item) => <button key={item} onClick={() => setSection(item)} className={`mt-2 w-full rounded-md p-3 text-left text-sm font-semibold ${section === item ? "bg-secondary/25 text-primary" : "hover:bg-cream dark:hover:bg-white/8"}`}>{item}</button>)}</aside><main className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]"><p className="text-sm font-semibold text-primary dark:text-secondary">Settings</p><h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">{section}</h2><div className="mt-5 grid gap-3"><InfoRow label="Persisted demo state" value="Enabled" /><InfoRow label="Scope enforcement" value="Role-gated" /><InfoRow label="Module toggles" value="Visible nav updates through permissions helper" /><SmallAction onClick={() => window.alert(`${section} saved in demo settings.`)}>Save changes</SmallAction></div></main></section>;
+  const [themePreference, setThemePreference] = useState<ThemePreference>("light");
+  const themeMode = resolveThemePreference(themePreference);
+
+  useEffect(() => {
+    const initial = getStoredThemePreference();
+    setThemePreference(initial);
+    applyEclipseTheme(initial);
+    const sync = (event: Event) => {
+      const next = (event as CustomEvent<{ preference: ThemePreference }>).detail?.preference;
+      if (next === "light" || next === "dark" || next === "system") setThemePreference(next);
+    };
+    window.addEventListener("eclipse-theme-change", sync);
+    return () => window.removeEventListener("eclipse-theme-change", sync);
+  }, []);
+
+  function setTheme(next: ThemePreference) {
+    const nextMode = resolveThemePreference(next);
+    setThemePreference(next);
+    playEclipseTransition(nextMode);
+    applyEclipseTheme(next);
+    void saveAccountThemePreference(next).catch(() => undefined);
+  }
+
+  const themeOptions: Array<{ id: ThemePreference; label: string; detail: string; icon: typeof Sun }> = [
+    { id: "light", label: "Light", detail: "Bright workspace for daytime review", icon: Sun },
+    { id: "dark", label: "Dark", detail: "Low-glare operations mode", icon: Moon },
+    { id: "system", label: "System", detail: "Follow this device setting", icon: Settings }
+  ];
+
+  return (
+    <section className="grid gap-5 lg:grid-cols-[260px_1fr]">
+      <aside className="rounded-md border border-border bg-white/70 p-3 dark:border-white/10 dark:bg-[#15231a]">
+        {sections.map((item) => <button key={item} onClick={() => setSection(item)} className={`mt-2 w-full rounded-md p-3 text-left text-sm font-semibold transition ${section === item ? "bg-secondary/25 text-cream dark:text-cream" : "text-cream hover:bg-white/8"}`}>{item}</button>)}
+      </aside>
+      <main className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
+        <p className="text-sm font-semibold text-primary dark:text-secondary">Settings</p>
+        <h2 className="mt-2 text-3xl font-semibold text-ink dark:text-cream">{section}</h2>
+        {section === "Appearance" ? (
+          <div className="mt-5 grid gap-5">
+            <div className="grid gap-3 md:grid-cols-3">
+              {themeOptions.map((option) => {
+                const Icon = option.icon;
+                const active = themePreference === option.id;
+                return (
+                  <button key={option.id} onClick={() => setTheme(option.id)} className={`rounded-md border p-4 text-left transition ${active ? "border-secondary bg-secondary/30 text-ink dark:text-cream" : "border-border bg-white/80 text-ink hover:bg-secondary/15 dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream dark:hover:bg-white/8"}`}>
+                    <Icon className="h-5 w-5 text-primary dark:text-secondary" />
+                    <p className="mt-4 text-lg font-semibold">{option.label}</p>
+                    <p className="mt-1 text-sm text-muted-foreground dark:text-white/62">{option.detail}</p>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="rounded-md border border-border bg-cream/70 p-4 dark:border-white/10 dark:bg-[#0f1a14]">
+              <p className="text-sm font-semibold text-ink dark:text-cream">Current appearance</p>
+              <p className="mt-1 text-sm text-muted-foreground dark:text-white/62">{themePreference === "system" ? `System, currently ${themeMode}` : `${themeMode} mode`} is applied across the portal.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-3">
+            <InfoRow label="Persisted demo state" value="Enabled" />
+            <InfoRow label="Scope enforcement" value="Role-gated" />
+            <InfoRow label="Module toggles" value="Visible nav updates through permissions helper" />
+            <SmallAction onClick={() => window.alert(`${section} saved in demo settings.`)}>Save changes</SmallAction>
+          </div>
+        )}
+      </main>
+    </section>
+  );
 }
 
 function ClientDashboardPanel(props: { clientId: string; project?: ClientProject; invoice?: ClientInvoice; document?: ClientDocument; thread?: MessageThread; ticket?: SupportTicket }) {
@@ -2774,8 +3137,35 @@ function ClientTicketsPortal({ tickets, selectedTicket }: { tickets: SupportTick
   return <TicketsPanel tickets={tickets} selectedTicket={selectedTicket} isClient />;
 }
 
-function ChartPanel({ title, bars, labels }: { title: string; bars: number[]; labels: string[] }) {
-  return <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]"><p className="text-sm font-semibold text-primary dark:text-secondary">{title}</p><div className="mt-6 flex h-48 items-end gap-3">{bars.map((bar, index) => <div key={labels[index]} className="flex flex-1 flex-col items-center gap-2"><div className="w-full rounded-t-sm bg-secondary" style={{ height: `${Math.max(12, bar)}%` }} /><span className="text-xs text-muted-foreground dark:text-white/62">{labels[index]}</span></div>)}</div></section>;
+function DashboardQueuePanel({ title, summary, items, onOpen }: { title: string; summary: string; items: Array<{ label: string; value: string; detail: string; barValue: number; tone: string; page: PortalPage }>; onOpen: (page: PortalPage) => void }) {
+  const max = Math.max(...items.map((item) => item.barValue), 1);
+  return (
+    <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-primary dark:text-secondary">{title}</p>
+          <p className="mt-1 text-xs font-semibold text-muted-foreground dark:text-white/52">{summary}</p>
+        </div>
+        <span className="rounded-sm border border-border px-2 py-1 text-xs font-bold text-primary dark:border-white/10 dark:text-secondary">{items.length}</span>
+      </div>
+      <div className="mt-5 grid gap-3">
+        {items.map((item) => (
+          <button key={item.label} onClick={() => onOpen(item.page)} className="rounded-sm border border-border bg-white p-3 text-left transition hover:border-secondary/55 hover:bg-secondary/20 dark:border-white/10 dark:bg-[#0f1a14] dark:hover:border-secondary/45 dark:hover:bg-[#15231a]">
+            <div className="flex items-start justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold capitalize text-ink dark:text-cream">{item.label}</span>
+                <span className="mt-1 block truncate text-xs font-medium text-muted-foreground dark:text-white/60">{item.detail}</span>
+              </span>
+              <span className="text-right text-lg font-black text-primary tabular-nums dark:text-white">{item.value}</span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/8 dark:bg-white/16">
+              <span className={`block h-full rounded-full ${item.tone} transition-all duration-700 ease-out`} style={{ width: `${Math.max(8, Math.round((item.barValue / max) * 100))}%` }} />
+            </div>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function RolePanel({ eyebrow, title, icon: Icon, children }: { eyebrow: string; title: string; icon: typeof LayoutDashboard; children: React.ReactNode }) {
@@ -3140,16 +3530,16 @@ function TicketDetail({ ticket }: { ticket: SupportTicket }) {
           {canManage ? (
             <section className="grid gap-4 rounded-md border border-border bg-white/70 p-4 dark:border-white/10 dark:bg-[#0f1a14] lg:grid-cols-5">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Status
-                <select value={ticket.status} onChange={(event) => patchTicket({ status: event.target.value as SupportTicket["status"] })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream"><option value="open">Open</option><option value="waiting_on_staff">In progress</option><option value="waiting_on_client">Waiting on client</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
+                <select value={ticket.status} onChange={(event) => patchTicket({ status: event.target.value as SupportTicket["status"] })} style={selectArrowStyle} className={`${selectWithInsetArrow} h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream`}><option value="open">Open</option><option value="waiting_on_staff">In progress</option><option value="waiting_on_client">Waiting on client</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Technician
-                <select value={ticket.assigneeId} onChange={(event) => patchTicket({ assigneeId: event.target.value })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream">{store.employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select>
+                <select value={ticket.assigneeId} onChange={(event) => patchTicket({ assigneeId: event.target.value })} style={selectArrowStyle} className={`${selectWithInsetArrow} h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream`}>{store.employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}</select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Category
-                <select value={ticket.category} onChange={(event) => patchTicket({ category: event.target.value as TicketCategory })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream"><option>HVAC</option><option>Electrical</option><option>Facilities</option><option>Billing</option><option>Access</option><option>Other</option></select>
+                <select value={ticket.category} onChange={(event) => patchTicket({ category: event.target.value as TicketCategory })} style={selectArrowStyle} className={`${selectWithInsetArrow} h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream`}><option>HVAC</option><option>Electrical</option><option>Facilities</option><option>Billing</option><option>Access</option><option>Other</option></select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Priority
-                <select value={ticket.priority} onChange={(event) => patchTicket({ priority: event.target.value as SupportTicket["priority"] })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream"><option value="high">Critical</option><option value="normal">Normal</option><option value="low">Low</option></select>
+                <select value={ticket.priority} onChange={(event) => patchTicket({ priority: event.target.value as SupportTicket["priority"] })} style={selectArrowStyle} className={`${selectWithInsetArrow} h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream`}><option value="high">Critical</option><option value="normal">Normal</option><option value="low">Low</option></select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground dark:text-white/62">Due
                 <input type="date" value={ticket.dueDate ?? ""} onChange={(event) => patchTicket({ dueDate: event.target.value || undefined })} className="h-9 rounded-md border border-border bg-white px-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream" />
@@ -3165,7 +3555,7 @@ function TicketDetail({ ticket }: { ticket: SupportTicket }) {
             {!isClient ? <div className="flex w-fit rounded-md bg-cream p-1 dark:bg-white/8"><button onClick={() => setMode("public_reply")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "public_reply" ? "bg-white text-ink shadow-sm dark:bg-[#15231a] dark:text-cream" : "text-muted-foreground"}`}>Public reply</button><button onClick={() => setMode("internal_note")} className={`h-8 rounded-sm px-3 text-sm font-semibold ${mode === "internal_note" ? "bg-amber-500 text-white shadow-sm" : "text-muted-foreground"}`}>Internal note</button></div> : null}
             <textarea value={body} onChange={(event) => setBody(event.target.value)} className="min-h-24 rounded-md border border-border bg-white px-3 py-2 text-sm text-ink dark:border-white/10 dark:bg-[#15231a] dark:text-cream" placeholder={isClient ? "Reply to support" : mode === "internal_note" ? "Private staff note" : "Type your message here"} />
             <div className="grid gap-2 md:grid-cols-3">
-              {!isClient ? <select value={mentionId} onChange={(event) => setMentionId(event.target.value)} className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]"><option value="">Mention teammate</option>{store.employees.map((employee) => <option key={employee.id} value={employee.id}>@{employee.name}</option>)}</select> : null}
+              {!isClient ? <select value={mentionId} onChange={(event) => setMentionId(event.target.value)} style={selectArrowStyle} className={`${selectWithInsetArrow} h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]`}><option value="">Mention teammate</option>{store.employees.map((employee) => <option key={employee.id} value={employee.id}>@{employee.name}</option>)}</select> : null}
               <input value={attachmentName} onChange={(event) => setAttachmentName(event.target.value)} placeholder="Attachment name" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]" />
               <input value={attachmentUrl} onChange={(event) => setAttachmentUrl(event.target.value)} placeholder="Attachment URL" className="h-10 rounded-md border border-border bg-white px-2 text-sm dark:border-white/10 dark:bg-[#15231a]" />
             </div>

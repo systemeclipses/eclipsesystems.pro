@@ -1,7 +1,7 @@
 export const portalBrand = {
-  companyName: "Ridgeway Commercial Services",
-  logoText: "Ridgeway",
-  supportEmail: "dispatch@ridgeway.example",
+  companyName: "Eclipse",
+  logoText: "Eclipse",
+  supportEmail: "dispatch@eclipse.example",
   colors: {
     primary: "#2f4135",
     secondary: "#b4c292",

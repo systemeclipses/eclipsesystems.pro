@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { portalSeedData, type Announcement, type ClientDocument, type ClientInvoice, type ClientProject, type Contact, type CourseCatalogItem, type MessageThread, type OperationsPortalSeed, type PortalMessage, type PortalViewer, type StaffShift, type StaffTimeEntry, type SupportTicket, type TicketStatus, type TrainingAssignment } from "@/lib/operations-portal-data";
+import { portalSeedData, type Announcement, type ChatThread, type ClientDocument, type ClientInvoice, type ClientProject, type Contact, type CourseCatalogItem, type MessageThread, type OperationsPortalSeed, type PortalMessage, type PortalViewer, type StaffShift, type StaffTimeEntry, type SupportTicket, type TicketStatus, type TrainingAssignment } from "@/lib/operations-portal-data";
 import { defaultOperationsPage, pageAllowed, scopedEmployeeIds } from "@/lib/operations-permissions";
 
 export type PortalPage =
@@ -99,6 +99,8 @@ type PortalState = OperationsPortalSeed & {
   signDocument: (documentId: string) => void;
   updateProjectStatus: (projectId: string, status: ClientProject["status"]) => void;
   sendMessage: (threadId: string, body: string, actor?: PortalViewer) => void;
+  createChatThread: (type: ChatThread["type"], memberIds: string[], name?: string, employeeId?: string) => string;
+  addChatMembers: (threadId: string, memberIds: string[]) => void;
   sendChatMessage: (threadId: string, body: string, employeeId?: string) => void;
   openTicket: (subject: string, actor?: PortalViewer) => void;
   replyToTicket: (ticketId: string, body: string, actor?: PortalViewer, kind?: "internal_note" | "public_reply", mentions?: string[]) => void;
@@ -166,6 +168,13 @@ function actorLabel(viewer: PortalViewer, contacts: Contact[]) {
   return authorFor(viewer, contacts).authorName;
 }
 
+function currentEmployeeIdForViewer(viewer: PortalViewer) {
+  if (viewer.role === "manager") return "employee-marcus";
+  if (viewer.role === "owner") return "employee-dale";
+  if (viewer.role === "admin") return "employee-carol";
+  return "employee-jamal";
+}
+
 function stamp(action: "Approved" | "Denied" | "Updated" | "Assigned" | "Removed" | "Posted", viewer: PortalViewer, contacts: Contact[]) {
   return `${action} by ${actorLabel(viewer, contacts)}, Just now`;
 }
@@ -221,7 +230,7 @@ export function getActionCounts(state: Pick<PortalState, "employees" | "ptoReque
   return { actionCenter: hr + timekeeping + scheduling + ticketing + lms + billing + clientBackOffice, hr, timekeeping, scheduling, ticketing, lms, billing, clientBackOffice };
 }
 
-export const useOperationsPortalStore = create<PortalState>((set) => ({
+export const useOperationsPortalStore = create<PortalState>((set, get) => ({
   ...seed,
   viewer: { role: "admin" },
   demoMode: false,
@@ -516,6 +525,33 @@ export const useOperationsPortalStore = create<PortalState>((set) => ({
   sendMessage: (threadId, body, actor) =>
     set((state) => ({
       threads: state.threads.map((thread) => (thread.id === threadId ? { ...thread, messages: [...thread.messages, messageFrom(actor ?? state.viewer, state.contacts, body)] } : thread))
+    })),
+  createChatThread: (type, memberIds, name, employeeId) => {
+    const threadId = makeId("chat");
+    const uniqueMemberIds = Array.from(new Set([employeeId ?? currentEmployeeIdForViewer(get().viewer), ...memberIds])).filter(Boolean);
+    const employeeNames = uniqueMemberIds.map((memberId) => get().employees.find((employee) => employee.id === memberId)?.name).filter(Boolean);
+    const threadName = type === "channel" ? name?.trim() || "#new-channel" : employeeNames.join(" / ");
+    set((state) => ({
+      chatThreads: [
+        {
+          id: threadId,
+          type,
+          name: threadName,
+          memberIds: uniqueMemberIds,
+          messages: []
+        },
+        ...state.chatThreads
+      ]
+    }));
+    return threadId;
+  },
+  addChatMembers: (threadId, memberIds) =>
+    set((state) => ({
+      chatThreads: state.chatThreads.map((thread) => (
+        thread.id === threadId
+          ? { ...thread, memberIds: Array.from(new Set([...thread.memberIds, ...memberIds])) }
+          : thread
+      ))
     })),
   sendChatMessage: (threadId, body, employeeId) =>
     set((state) => {
