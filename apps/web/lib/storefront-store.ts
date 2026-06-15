@@ -19,6 +19,7 @@ import {
 export type StorefrontCartItem = {
   productId: string;
   qty: number;
+  size?: string;
 };
 
 type CheckoutInput = {
@@ -46,9 +47,9 @@ export type StorefrontState = {
   restockProduct: (productId: string) => void;
   transitionOrder: (orderId: string, status: StorefrontOrderStatus) => void;
   regenerateReceipt: (orderId: string) => void;
-  addToCart: (productId: string, qty?: number) => void;
-  updateCartQty: (productId: string, qty: number) => void;
-  removeFromCart: (productId: string) => void;
+  addToCart: (productId: string, qty?: number, size?: string) => void;
+  updateCartQty: (productId: string, qty: number, size?: string) => void;
+  removeFromCart: (productId: string, size?: string) => void;
   clearCart: () => void;
   placeOrder: (input: CheckoutInput) => StorefrontOrder | null;
 };
@@ -198,23 +199,25 @@ export const useStorefrontStore = create<StorefrontState>((set, get) => ({
       const nextReceipt = { id: id("receipt"), orgId: storefrontOrgId, orderId, pdfUrl, number, issuedAt: new Date().toISOString() };
       return { receipts: [nextReceipt, ...state.receipts.filter((receipt) => receipt.orderId !== orderId)] };
     }),
-  addToCart: (productId, qty = 1) =>
+  addToCart: (productId, qty = 1, size) =>
     set((state) => {
       const product = state.products.find((item) => item.id === productId);
       if (!product || product.status !== "active") return state;
-      const existing = state.cart.find((item) => item.productId === productId);
+      const existing = state.cart.find((item) => item.productId === productId && item.size === size);
       const nextQty = Math.min((existing?.qty ?? 0) + qty, product.trackInventory ? Math.max(product.stockQty, 0) : 99);
       return {
         cart: existing
-          ? state.cart.map((item) => (item.productId === productId ? { ...item, qty: nextQty } : item))
-          : [...state.cart, { productId, qty: Math.max(1, nextQty) }]
+          ? state.cart.map((item) => (item.productId === productId && item.size === size ? { ...item, qty: nextQty } : item))
+          : [...state.cart, { productId, qty: Math.max(1, nextQty), size }]
       };
     }),
-  updateCartQty: (productId, qty) =>
+  updateCartQty: (productId, qty, size) =>
     set((state) => ({
-      cart: qty <= 0 ? state.cart.filter((item) => item.productId !== productId) : state.cart.map((item) => (item.productId === productId ? { ...item, qty } : item))
+      cart: qty <= 0
+        ? state.cart.filter((item) => !(item.productId === productId && item.size === size))
+        : state.cart.map((item) => (item.productId === productId && item.size === size ? { ...item, qty } : item))
     })),
-  removeFromCart: (productId) => set((state) => ({ cart: state.cart.filter((item) => item.productId !== productId) })),
+  removeFromCart: (productId, size) => set((state) => ({ cart: state.cart.filter((item) => !(item.productId === productId && item.size === size)) })),
   clearCart: () => set({ cart: [] }),
   placeOrder: (input) => {
     const state = get();
@@ -242,7 +245,7 @@ export const useStorefrontStore = create<StorefrontState>((set, get) => ({
       orgId: storefrontOrgId,
       orderId: order.id,
       productId: product.id,
-      nameSnapshot: product.name,
+      nameSnapshot: cartItem.size ? `${product.name} / ${cartItem.size}` : product.name,
       qty: cartItem.qty,
       unitPriceCents: product.priceCents
     }));

@@ -42,6 +42,8 @@ const adminNav: Array<{ id: AdminView; label: string; section: "WORKSPACE" | "PA
 ];
 
 const categories = ["All", "Men's", "Women's", "Youth / Kids", "Headwear", "Accessories", "Stickers & Decals", "Drinkware", "Prints"] as const;
+const apparelSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+const youthSizes = ["YXS", "YS", "YM", "YL", "YXL"];
 
 function titleFor(view: AdminView) {
   if (view === "packages") return "All Packages";
@@ -62,6 +64,13 @@ function lowStock(product: StorefrontProduct) {
 
 function shoppable(product: StorefrontProduct) {
   return product.status === "active" && (product.isService || !product.trackInventory || product.stockQty > 0);
+}
+
+function productSizes(product: StorefrontProduct) {
+  if (product.category === "Youth / Kids") return youthSizes;
+  if (product.category === "Men's" || product.category === "Women's") return apparelSizes;
+  if (product.name.toLowerCase().includes("socks")) return ["S/M", "L/XL"];
+  return [];
 }
 
 function seededStoreSnapshot(store: StorefrontState, initialSeed?: StorefrontSeed): StorefrontState {
@@ -124,6 +133,55 @@ function ShopProductCard({ product, saved, onOpen, onAdd, onSave }: { product: S
         <button onClick={onAdd} aria-label="Add to cart" className="grid h-8 w-8 place-items-center rounded-full bg-[#aebd84] text-[#0c1410] shadow-sm"><ShoppingCart className="h-4 w-4" /></button>
       </div>
     </article>
+  );
+}
+
+function ShopFooter() {
+  const columns = [
+    { title: "Help", links: ["Contact", "Order status", "Returns", "Size guide"] },
+    { title: "Shop", links: ["Men's", "Women's", "Youth / Kids", "Drinkware"] },
+    { title: "Company", links: ["About Eclipse", "Materials", "Wholesale", "Journal"] }
+  ];
+  return (
+    <footer className="mt-12 bg-[#0c1410] px-6 py-12 text-[#f4eadb] md:py-16">
+      <div className="mx-auto grid max-w-[1760px] gap-12 lg:grid-cols-[1.2fr_1.8fr]">
+        <div className="max-w-md">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-[#aebd84]">Subscribe to our emails</p>
+          <form className="mt-6 flex overflow-hidden rounded-full bg-[#f4eadb] text-[#0c1410]">
+            <input className="min-w-0 flex-1 bg-transparent px-5 py-3 text-sm font-semibold outline-none placeholder:text-[#6b705f]" placeholder="Email address" />
+            <button type="button" className="px-5 text-xs font-black uppercase">Sign up</button>
+          </form>
+          <p className="mt-10 text-xs font-black uppercase tracking-[0.16em] text-[#aebd84]">Follow Eclipse</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {["IG", "P", "F", "X", "YT"].map((item) => (
+              <button key={item} className="grid h-10 w-10 place-items-center rounded-full border border-[#f4eadb]/70 text-xs font-black text-[#f4eadb] transition hover:border-[#aebd84] hover:text-[#aebd84]">
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-8 sm:grid-cols-3">
+          {columns.map((column) => (
+            <div key={column.title}>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#aebd84]">{column.title}</p>
+              <div className="mt-6 grid gap-3 text-sm font-semibold text-[#e9e6d8]">
+                {column.links.map((link) => (
+                  <button key={link} type="button" className="text-left transition hover:text-[#aebd84]">{link}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mx-auto mt-12 flex max-w-[1760px] flex-wrap items-center justify-between gap-4 border-t border-[#f4eadb]/20 pt-6 text-xs font-semibold text-[#cfd4c2]">
+        <p>© 2026 Eclipse Systems. All rights reserved.</p>
+        <div className="flex flex-wrap gap-5">
+          <button type="button" className="hover:text-[#aebd84]">Refund policy</button>
+          <button type="button" className="hover:text-[#aebd84]">Privacy policy</button>
+          <button type="button" className="hover:text-[#aebd84]">Terms of service</button>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -374,10 +432,11 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
   const [favoriteShelf, setFavoriteShelf] = useState<"Everyday" | "Travel" | "Collectibles">("Everyday");
   const [hoverMenu, setHoverMenu] = useState<"new" | "shop" | "men" | "women" | null>(null);
   const [heroSlide, setHeroSlide] = useState(0);
+  const [selectedSizeByProduct, setSelectedSizeByProduct] = useState<Record<string, string>>({});
   const products = store.products.filter(shoppable).filter((product) => category === "All" || product.category === category).filter((product) => `${product.name} ${product.description}`.toLowerCase().includes(query.toLowerCase()));
   const activeProducts = store.products.filter(shoppable);
   const savedProducts = store.products.filter((product) => savedProductIds.includes(product.id));
-  const cartProducts = store.cart.map((item) => ({ item, product: store.products.find((product) => product.id === item.productId) })).filter((entry): entry is { item: { productId: string; qty: number }; product: StorefrontProduct } => Boolean(entry.product));
+  const cartProducts = store.cart.map((item) => ({ item, product: store.products.find((product) => product.id === item.productId) })).filter((entry): entry is { item: { productId: string; qty: number; size?: string }; product: StorefrontProduct } => Boolean(entry.product));
   const totals = selectCartTotals(store);
   const selectedProduct = store.products.find((product) => product.id === selectedProductId) ?? products[0];
   const lastOrder = store.orders.find((order) => order.id === store.lastOrderId);
@@ -469,6 +528,14 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
   }, [selectedProductId, store.products]);
 
   useEffect(() => {
+    if (!selectedProduct) return;
+    const sizes = productSizes(selectedProduct);
+    if (sizes.length && !selectedSizeByProduct[selectedProduct.id]) {
+      setSelectedSizeByProduct((current) => ({ ...current, [selectedProduct.id]: sizes[0] }));
+    }
+  }, [selectedProduct, selectedSizeByProduct]);
+
+  useEffect(() => {
     const timer = window.setInterval(() => {
       setHeroSlide((current) => (current + 1) % heroSlides.length);
     }, 8500);
@@ -490,7 +557,9 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
   }
 
   function addProductAndOpenCart(productId: string) {
-    store.addToCart(productId);
+    const product = store.products.find((item) => item.id === productId);
+    const sizes = product ? productSizes(product) : [];
+    store.addToCart(productId, 1, sizes.length ? selectedSizeByProduct[productId] ?? sizes[0] : undefined);
     setView("cart");
   }
 
@@ -642,7 +711,41 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
           </div>
         ) : null}
 
-        {view === "product" && selectedProduct ? <section className="grid gap-6 lg:grid-cols-[1fr_420px]"><ProductArt product={selectedProduct} /><div className="rounded-md bg-[#16241c] p-6"><p className="text-sm font-black text-[#aebd84]">{selectedProduct.category}</p><h1 className="mt-2 text-4xl font-semibold leading-tight text-[#f4eadb]">{selectedProduct.name}</h1><p className="mt-4 text-[#cfd4c2]">{selectedProduct.description}</p><p className="mt-5 text-3xl font-black text-[#aebd84]">{money(selectedProduct.priceCents, selectedProduct.currency)}</p><p className="mt-2 text-sm text-[#9aa896]">{selectedProduct.isService ? "Service" : `${selectedProduct.stockQty} in stock`}</p><div className="mt-6 grid gap-3 sm:grid-cols-2"><button onClick={() => addProductAndOpenCart(selectedProduct.id)} className="h-12 rounded-md bg-[#aebd84] text-sm font-black text-[#0c1410]">Add to cart</button><button onClick={() => toggleSaved(selectedProduct.id)} className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-[#2a3a2f] text-sm font-black text-[#aebd84]"><Heart className={`h-4 w-4 ${savedProductIds.includes(selectedProduct.id) ? "fill-current" : ""}`} /> {savedProductIds.includes(selectedProduct.id) ? "Saved" : "Save"}</button></div></div></section> : null}
+        {view === "product" && selectedProduct ? (
+          <section className="grid gap-6 lg:grid-cols-[1fr_420px]">
+            <ProductArt product={selectedProduct} />
+            <div className="rounded-md bg-[#16241c] p-6">
+              <p className="text-sm font-black text-[#aebd84]">{selectedProduct.category}</p>
+              <h1 className="mt-2 text-4xl font-semibold leading-tight text-[#f4eadb]">{selectedProduct.name}</h1>
+              <p className="mt-4 text-[#cfd4c2]">{selectedProduct.description}</p>
+              <p className="mt-5 text-3xl font-black text-[#aebd84]">{money(selectedProduct.priceCents, selectedProduct.currency)}</p>
+              <p className="mt-2 text-sm text-[#9aa896]">{selectedProduct.isService ? "Service" : `${selectedProduct.stockQty} in stock`}</p>
+              {productSizes(selectedProduct).length ? (
+                <div className="mt-6">
+                  <p className="text-xs font-black uppercase tracking-[0.12em] text-[#aebd84]">Size</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6 lg:grid-cols-3">
+                    {productSizes(selectedProduct).map((size) => {
+                      const selected = (selectedSizeByProduct[selectedProduct.id] ?? productSizes(selectedProduct)[0]) === size;
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSizeByProduct((current) => ({ ...current, [selectedProduct.id]: size }))}
+                          className={`h-10 rounded-md border text-sm font-bold ${selected ? "border-[#aebd84] bg-[#aebd84] text-[#0c1410]" : "border-[#2a3a2f] text-[#e9e6d8] hover:border-[#aebd84]"}`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <button onClick={() => addProductAndOpenCart(selectedProduct.id)} className="h-12 rounded-md bg-[#aebd84] text-sm font-black text-[#0c1410]">Add to cart</button>
+                <button onClick={() => toggleSaved(selectedProduct.id)} className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-[#2a3a2f] text-sm font-black text-[#aebd84]"><Heart className={`h-4 w-4 ${savedProductIds.includes(selectedProduct.id) ? "fill-current" : ""}`} /> {savedProductIds.includes(selectedProduct.id) ? "Saved" : "Save"}</button>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {view === "cart" ? <CartView cartProducts={cartProducts} totals={totals} onCheckout={() => setView("checkout")} /> : null}
         {view === "checkout" ? <section className="grid gap-5 lg:grid-cols-[1fr_360px]"><Panel title="Checkout"><div className="grid gap-3"><input value={customer.name} onChange={(event) => setCustomer({ ...customer, name: event.target.value })} className={fieldClass()} placeholder="Name" /><input value={customer.email} onChange={(event) => setCustomer({ ...customer, email: event.target.value })} className={fieldClass()} placeholder="Email" /><input value={customer.shipping} onChange={(event) => setCustomer({ ...customer, shipping: event.target.value })} className={fieldClass()} placeholder="Shipping address" /><div className="grid gap-2 sm:grid-cols-3">{["Mock card", "Invoice me", "Pay in store"].map((method) => <button key={method} onClick={() => setPaymentMethod(method)} className={`h-10 rounded-md text-sm font-black ${paymentMethod === method ? "bg-[#aebd84] text-[#0c1410]" : "border border-[#2a3a2f] text-[#aebd84]"}`}>{method}</button>)}</div><div className="rounded-sm bg-[#0c1410] p-3 text-sm text-[#9aa896]">{paymentMethod} selected. Real payment providers can plug into this step later; today it runs the order transaction and receipt flow.</div><button disabled={!customer.name || !customer.email || !store.cart.length} onClick={placeOrder} className="h-11 rounded-md bg-[#aebd84] text-sm font-black text-[#0c1410] disabled:opacity-45">Place order</button></div></Panel><OrderSummary totals={totals} /></section> : null}
@@ -650,13 +753,14 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
         {view === "account" ? <Panel title="Customer account"><div className="grid gap-3">{store.orders.map((order) => { const receipt = store.receipts.find((item) => item.orderId === order.id); return <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 rounded-sm bg-[#0c1410] p-3"><span><span className="block font-bold">{order.id}</span><span className="text-sm text-[#9aa896]">{order.status} · {money(order.totalCents, order.currency)}</span></span>{receipt ? <a href={receipt.pdfUrl} download={`${receipt.number}.pdf`} className="text-sm font-black text-[#aebd84]">Receipt</a> : null}</div>; })}</div></Panel> : null}
         {view === "wishlist" ? <Panel title="Saved items"><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{savedProducts.length ? savedProducts.map((product) => <ShopProductCard key={product.id} product={product} saved onOpen={() => openProduct(product.id)} onSave={() => toggleSaved(product.id)} onAdd={() => addProductAndOpenCart(product.id)} />) : <p className="text-[#9aa896]">No saved products yet. Tap the heart on any product card.</p>}</div></Panel> : null}
       </main>
+      <ShopFooter />
     </section>
   );
 }
 
-function CartView({ cartProducts, totals, onCheckout }: { cartProducts: Array<{ item: { productId: string; qty: number }; product: StorefrontProduct }>; totals: { subtotalCents: number; taxCents: number; totalCents: number }; onCheckout: () => void }) {
+function CartView({ cartProducts, totals, onCheckout }: { cartProducts: Array<{ item: { productId: string; qty: number; size?: string }; product: StorefrontProduct }>; totals: { subtotalCents: number; taxCents: number; totalCents: number }; onCheckout: () => void }) {
   const store = useStorefrontStore();
-  return <section className="grid gap-5 lg:grid-cols-[1fr_360px]"><Panel title="Cart"><div className="grid gap-3">{cartProducts.map(({ item, product }) => <div key={product.id} className="grid gap-3 rounded-sm bg-[#0c1410] p-3 md:grid-cols-[1fr_120px_100px] md:items-center"><div><p className="font-bold">{product.name}</p><p className="text-sm text-[#9aa896]">{money(product.priceCents, product.currency)}</p></div><input type="number" min={1} value={item.qty} onChange={(event) => store.updateCartQty(product.id, Number(event.target.value))} className={fieldClass()} /><button onClick={() => store.removeFromCart(product.id)} className="h-10 rounded-md border border-[#2a3a2f] text-sm font-bold text-[#aebd84]">Remove</button></div>)}</div></Panel><OrderSummary totals={totals} action={<button disabled={!cartProducts.length} onClick={onCheckout} className="mt-4 h-11 w-full rounded-md bg-[#aebd84] text-sm font-black text-[#0c1410] disabled:opacity-45">Checkout</button>} /></section>;
+  return <section className="grid gap-5 lg:grid-cols-[1fr_360px]"><Panel title="Cart"><div className="grid gap-3">{cartProducts.map(({ item, product }) => <div key={`${product.id}-${item.size ?? "one-size"}`} className="grid gap-3 rounded-sm bg-[#0c1410] p-3 md:grid-cols-[1fr_120px_100px] md:items-center"><div><p className="font-bold">{product.name}</p><p className="text-sm text-[#9aa896]">{[item.size ? `Size ${item.size}` : null, money(product.priceCents, product.currency)].filter(Boolean).join(" · ")}</p></div><input type="number" min={1} value={item.qty} onChange={(event) => store.updateCartQty(product.id, Number(event.target.value), item.size)} className={fieldClass()} /><button onClick={() => store.removeFromCart(product.id, item.size)} className="h-10 rounded-md border border-[#2a3a2f] text-sm font-bold text-[#aebd84]">Remove</button></div>)}</div></Panel><OrderSummary totals={totals} action={<button disabled={!cartProducts.length} onClick={onCheckout} className="mt-4 h-11 w-full rounded-md bg-[#aebd84] text-sm font-black text-[#0c1410] disabled:opacity-45">Checkout</button>} /></section>;
 }
 
 function OrderSummary({ totals, action }: { totals: { subtotalCents: number; taxCents: number; totalCents: number }; action?: React.ReactNode }) {

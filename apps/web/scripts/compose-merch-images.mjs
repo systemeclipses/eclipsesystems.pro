@@ -94,9 +94,9 @@ const logoOverrides = new Map([
   ["mens-pocket-tee", { logo: "mark", placement: "pocket" }],
   ["mens-workbench-tank", { logo: "wordmark", placement: "tank-chest" }],
   ["womens-ribbed-tank", { logo: "wordmark", placement: "tank-chest" }],
-  ["womens-performance-legging", { logo: "mark", placement: "leg" }],
-  ["womens-studio-jogger", { logo: "mark", placement: "leg" }],
-  ["mens-fleece-jogger", { logo: "mark", placement: "leg" }],
+  ["womens-performance-legging", { logo: "mark", placement: "legging-lower-right" }],
+  ["womens-studio-jogger", { logo: "mark", placement: "jogger-upper-left" }],
+  ["mens-fleece-jogger", { logo: "mark", placement: "jogger-upper-left" }],
   ["headwear-classic-snapback", { logo: "mark", placement: "cap" }],
   ["headwear-dad-cap", { logo: "mark", placement: "cap" }],
   ["headwear-five-panel", { logo: "mark", placement: "cap" }],
@@ -152,6 +152,8 @@ async function htmlFor(product, index) {
   const placement = logoPlacement(product);
   const sheetUrl = await dataUrl(path.join(sheetDir, sheet));
   const logoUrl = await dataUrl(logo.src);
+  const hasHoodieStrings = /hoodie/.test(product.type) && !/zip/.test(product.type);
+  const stringColor = "rgba(84, 88, 68, .62)";
   return `<!doctype html>
 <html>
 <head>
@@ -163,18 +165,20 @@ body { margin: 0; background: white; }
 .source { position: absolute; width: 2000px; height: 2000px; left: ${col ? "-1000px" : "0"}; top: ${row ? "-1000px" : "0"}; object-fit: cover; }
 .logo { position: absolute; object-fit: contain; opacity: .92; filter: ${logo.filter}; mix-blend-mode: multiply; }
 .logo.light { mix-blend-mode: screen; }
-.wordmark { width: 150px; height: auto; }
-.mark { width: 72px; height: 72px; }
-.chest.wordmark { left: 425px; top: 405px; }
-.chest.mark { left: 464px; top: 392px; }
-.tank-chest.wordmark { left: 425px; top: 465px; width: 150px; }
-.tank-chest.mark { left: 466px; top: 448px; width: 68px; height: 68px; }
+.wordmark { width: 220px; height: auto; }
+.mark { width: 92px; height: 92px; }
+.chest.wordmark { left: 390px; top: 390px; }
+.chest.mark { left: 454px; top: 372px; }
+.tank-chest.wordmark { left: 400px; top: 455px; width: 200px; }
+.tank-chest.mark { left: 456px; top: 435px; width: 88px; height: 88px; }
 .pocket.mark { left: 655px; top: 386px; width: 38px; height: 38px; }
 .pocket.wordmark { left: 625px; top: 402px; width: 82px; }
 .left-chest.wordmark { left: 545px; top: 390px; width: 92px; }
 .left-chest.mark { left: 578px; top: 375px; width: 48px; height: 48px; }
 .leg.mark { left: 565px; top: 640px; width: 46px; height: 46px; }
 .leg.wordmark { left: 530px; top: 650px; width: 105px; }
+.legging-lower-right.mark { left: 548px; top: 680px; width: 48px; height: 48px; }
+.jogger-upper-left.mark { left: 372px; top: 365px; width: 46px; height: 46px; }
 .cap.mark { left: 466px; top: 455px; width: 62px; height: 62px; }
 .cap.wordmark { left: 425px; top: 467px; width: 145px; }
 .beanie.mark { left: 465px; top: 530px; width: 58px; height: 58px; }
@@ -191,12 +195,39 @@ body { margin: 0; background: white; }
 .print.mark { left: 440px; top: 420px; width: 120px; height: 120px; }
 .bag.wordmark { left: 395px; top: 462px; width: 205px; }
 .bag.mark { left: 455px; top: 430px; width: 90px; height: 90px; }
+.hoodie-strings { position: absolute; inset: 0; pointer-events: none; }
+.hoodie-strings:before,
+.hoodie-strings:after {
+  content: "";
+  position: absolute;
+  top: 360px;
+  width: 5px;
+  height: 106px;
+  border-radius: 999px;
+  background: ${stringColor};
+  box-shadow: 0 1px 1px rgba(255,255,255,.14), inset 0 0 1px rgba(0,0,0,.15);
+}
+.hoodie-strings:before { left: 420px; transform: rotate(-2deg); }
+.hoodie-strings:after { left: 502px; transform: rotate(2deg); }
+.hoodie-strings span:before,
+.hoodie-strings span:after {
+  content: "";
+  position: absolute;
+  top: 450px;
+  width: 12px;
+  height: 22px;
+  border-radius: 999px;
+  background: ${stringColor};
+}
+.hoodie-strings span:before { left: 416px; }
+.hoodie-strings span:after { left: 498px; }
 </style>
 </head>
 <body>
   <div class="frame">
     <img class="source" src="${sheetUrl}" alt="">
     <img class="logo ${logo.className} ${placement} ${logo.filter.includes("invert(93") ? "light" : ""}" src="${logoUrl}" alt="">
+    ${hasHoodieStrings ? `<div class="hoodie-strings"><span></span></div>` : ""}
   </div>
 </body>
 </html>`;
