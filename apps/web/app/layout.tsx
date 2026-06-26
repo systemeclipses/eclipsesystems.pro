@@ -24,11 +24,12 @@ const helvena = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://eclipsesystems.pro"),
   title: {
-    default: "Eclipse Timekeeping by Eclipse Systems - Time Tracking, Invoicing & Shift Management for Modern Teams",
-    template: "%s | Eclipse Timekeeping by Eclipse Systems"
+    default: "Eclipse Systems - Custom Software Consulting for Business Workflows",
+    template: "%s | Eclipse Systems"
   },
-  description: "Timekeeping, invoicing, shift management, team chat, and legal billing add-ons. From $10/seat/month. Built for U.S. small businesses, law firms, and shift teams.",
-  applicationName: "Eclipse Timekeeping",
+  description:
+    "Custom software consulting for businesses that need portals, operations hubs, CRM pipelines, storefronts, billing workflows, dashboards, automations, and integrations.",
+  applicationName: "Eclipse Systems",
   authors: [{ name: "Eclipse Systems", url: "https://eclipsesystems.pro" }],
   generator: "Next.js",
   keywords: [],
@@ -40,16 +41,17 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://eclipsesystems.pro",
     siteName: "Eclipse Systems",
-    title: "Eclipse Timekeeping by Eclipse Systems",
-    description: "Eclipse Suite bundles timekeeping, project billing, shift management, and chat. Eclipse Legal is available as a law-firm add-on.",
-    images: [{ url: "/api/og/default", width: 1200, height: 630, alt: "Eclipse Timekeeping by Eclipse Systems" }]
+    title: "Eclipse Systems - Custom Software Consulting",
+    description:
+      "Eclipse Systems builds custom business software and demonstrates real environments for operations, client portals, CRM, and storefront workflows.",
+    images: [{ url: "/api/og/default", width: 1200, height: 630, alt: "Eclipse Systems custom software consulting" }]
   },
   twitter: {
     card: "summary_large_image",
     site: "@eclipsesystems",
     creator: "@eclipsesystems",
-    title: "Eclipse Timekeeping by Eclipse Systems",
-    description: "Time tracking, invoicing, shift management, chat, and legal billing add-ons from $10/seat/month.",
+    title: "Eclipse Systems - Custom Software Consulting",
+    description: "Custom portals, operations hubs, CRM pipelines, storefronts, billing workflows, dashboards, automations, and integrations.",
     images: ["/api/og/default"]
   },
   alternates: { canonical: "https://eclipsesystems.pro" },
@@ -81,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Eclipse Systems",
-    alternateName: ["Eclipse Timekeeping", "Eclipse Systems Timekeeping"],
+    alternateName: ["Eclipse Custom Software", "Eclipse Systems Consulting"],
     url: "https://eclipsesystems.pro",
     potentialAction: {
       "@type": "SearchAction",
@@ -90,21 +92,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     } as never
   };
 
-  const software = {
+  const service = {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Eclipse Timekeeping by Eclipse Systems",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web, iOS, Android",
+    "@type": "ProfessionalService",
+    name: "Eclipse Systems Custom Software Consulting",
+    description:
+      "Custom software design and development for operations hubs, client portals, CRM pipelines, storefronts, billing workflows, dashboards, automations, and integrations.",
     url: "https://eclipsesystems.pro",
-    offers: [
-      { "@type": "Offer", name: "Eclipse Timekeeping", price: "10", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Mission Command by Eclipse", price: "18", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Eclipse", price: "22", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Eclipse Suite", price: "38", priceCurrency: "USD", unitText: "seat per month" },
-      { "@type": "Offer", name: "Eclipse Legal Add-on", price: "20", priceCurrency: "USD", unitText: "seat per month" }
-    ],
-    publisher: { "@type": "Organization", name: "Eclipse Systems", url: "https://eclipsesystems.pro" }
+    areaServed: "United States",
+    provider: { "@type": "Organization", name: "Eclipse Systems", url: "https://eclipsesystems.pro" },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Eclipse Systems demo environments",
+      itemListElement: [
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Operations Hub custom software" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Client Portal custom software" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "CRM and sales pipeline custom software" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Storefront and commerce custom software" } }
+      ]
+    }
   };
 
   return (
@@ -117,7 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <StructuredData schema={organization} />
         <StructuredData schema={website} />
-        <StructuredData schema={software} />
+        <StructuredData schema={service} />
         {children}
         <Analytics />
       </body>

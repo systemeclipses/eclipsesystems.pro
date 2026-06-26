@@ -15,7 +15,9 @@ const demoPoints = [
   "Leave with a clearer next step before a proposal"
 ];
 
-export default function ScheduleDemoPage() {
+export default function ScheduleDemoPage({ searchParams }: { searchParams?: { demo?: string } }) {
+  const selectedDemo = searchParams?.demo ?? "";
+
   return (
     <main className="min-h-screen bg-cream text-ink">
       <section className="px-3 pt-3">
@@ -63,7 +65,7 @@ export default function ScheduleDemoPage() {
           </div>
         </div>
 
-        <ScheduleDemoForm />
+        <ScheduleDemoForm selectedDemo={selectedDemo} />
       </section>
     </main>
   );

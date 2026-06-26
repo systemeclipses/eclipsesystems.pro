@@ -6,9 +6,17 @@ import { Button } from "@/components/ui/button";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export function ScheduleDemoForm() {
+const demoLabels: Record<string, string> = {
+  "operations-hub": "Operations Hub",
+  "client-portal": "Client Portal",
+  "crm-sales-pipeline": "CRM & Sales Pipeline",
+  storefront: "Storefront"
+};
+
+export function ScheduleDemoForm({ selectedDemo = "" }: { selectedDemo?: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const selectedDemoLabel = demoLabels[selectedDemo] ?? "";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,7 +34,7 @@ export function ScheduleDemoForm() {
         email: data.get("email"),
         businessName: data.get("businessName"),
         employeeCount: data.get("employeeCount"),
-        needs: data.get("needs")
+        needs: selectedDemoLabel ? `Demo interest: ${selectedDemoLabel}\n\n${data.get("needs")}` : data.get("needs")
       })
     });
 
@@ -45,6 +53,12 @@ export function ScheduleDemoForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 rounded-md border border-border bg-white/75 p-5 shadow-sm md:p-7">
+      {selectedDemoLabel ? (
+        <div className="rounded-md border border-border bg-cream px-3 py-2 text-sm font-semibold text-primary">
+          Demo selected: {selectedDemoLabel}
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold">
           Your name

@@ -1,11 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Mail } from "lucide-react";
 
 const productLinks = [
-  ["Features", "/features"],
-  ["Pricing", "/pricing"],
+  ["Capabilities", "/features"],
+  ["Engagements", "/pricing"],
   ["Industries", "/industries"],
-  ["Resources", "/guides"]
+  ["Demo environments", "/#demos"]
 ] as const;
 
 const resourceLinks = [
@@ -25,12 +26,14 @@ const companyLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-primary text-white">
+    <footer className="bg-[#18231c] text-white">
       <div className="mx-auto grid max-w-[104rem] gap-10 px-5 py-12 md:grid-cols-[1.2fr_2fr]">
         <div>
-          <Link href="/" className="font-title text-4xl leading-none text-cream">Eclipse Systems</Link>
+          <Link href="/" className="inline-flex">
+            <Image src="/brand/wordmark-white.png" alt="Eclipse Systems" width={176} height={74} className="h-14 w-auto object-contain" />
+          </Link>
           <p className="mt-5 max-w-md text-sm leading-6 text-white/72">
-            Custom business software, packaged systems, and proven modules for teams that need tools built around how they work.
+            Custom software consulting for businesses that need portals, operations systems, CRM workflows, storefronts, dashboards, automations, and integrations built around how they actually work.
           </p>
           <a href="mailto:help@eclipsesystems.pro" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-white">
             <Mail className="h-4 w-4" />

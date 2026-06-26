@@ -1,5 +1,6 @@
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/site-footer";
+import { QuickActionMenu } from "@/components/marketing/quick-action-menu";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       />
       <SiteHeader />
       {children}
+      <QuickActionMenu />
       <SiteFooter />
     </>
   );

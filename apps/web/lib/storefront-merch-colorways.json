@@ -1,0 +1,9 @@
+[
+  { "name": "Black", "slug": "black", "hex": "#1a1a1a" },
+  { "name": "Forest", "slug": "forest", "hex": "#2f3d34" },
+  { "name": "Terracotta", "slug": "terracotta", "hex": "#b46a4a" },
+  { "name": "Oxblood", "slug": "oxblood", "hex": "#6f2f2f" },
+  { "name": "Olive/Army", "slug": "olive-army", "hex": "#6d6a4a" },
+  { "name": "Sage", "slug": "sage", "hex": "#9aa86a" },
+  { "name": "Bone/Cream", "slug": "bone-cream", "hex": "#e6dfce" }
+]

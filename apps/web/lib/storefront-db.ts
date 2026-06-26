@@ -22,6 +22,22 @@ function toNumber(value: unknown) {
 
 function preferredProductImageUrl(product: { sku: string; image_url: string | null }) {
   const slug = product.sku.toLowerCase();
+  const deterministicPlacements = [
+    "center_chest",
+    "left_chest_pocket",
+    "left_chest",
+    "jogger_upper_left",
+    "legging_lower_right",
+    "cap",
+    "beanie",
+    "socks",
+    "bag",
+    "lanyard"
+  ];
+  for (const placement of deterministicPlacements) {
+    const jpgPath = path.join(publicProductsDir, `${slug}-black-${placement}.jpg`);
+    if (existsSync(jpgPath)) return `/products/${slug}-black-${placement}.jpg`;
+  }
   const pngPath = path.join(publicProductsDir, `${slug}.png`);
   if (existsSync(pngPath)) return `/products/${slug}.png`;
   return product.image_url ?? undefined;

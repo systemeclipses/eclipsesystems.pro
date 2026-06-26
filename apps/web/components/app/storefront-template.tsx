@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { formatStoreMoney, type StorefrontOrderStatus, type StorefrontProduct, type StorefrontSeed } from "@/lib/storefront-data";
 import { selectCartTotals, useStorefrontStore, type StorefrontState } from "@/lib/storefront-store";
+import { productImageUrl, storefrontColorways } from "@/lib/storefront-taxonomy";
 
 type AdminView = "dashboard" | "catalog" | "checkout" | "orders" | "customers" | "inventory" | "receipts" | "admin" | "packages" | "account";
 type ShopView = "home" | "product" | "cart" | "checkout" | "confirmation" | "account" | "wishlist";
@@ -79,10 +80,11 @@ function seededStoreSnapshot(store: StorefrontState, initialSeed?: StorefrontSee
 }
 
 function ProductArt({ product }: { product: StorefrontProduct }) {
+  const imageUrl = productImageUrl(product);
   return (
     <div className="grid aspect-square place-items-center overflow-hidden rounded-md bg-white text-[#46674b]">
-      {product.imageUrl ? (
-        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain" />
+      {imageUrl ? (
+        <img src={imageUrl} alt={product.name} className="h-full w-full object-contain" />
       ) : product.isService ? (
         <CheckCircle2 className="h-10 w-10" />
       ) : (
@@ -107,32 +109,92 @@ function ShopCategoryIcon({ category }: { category: string }) {
 }
 
 function ShopProductCard({ product, saved, onOpen, onAdd, onSave }: { product: StorefrontProduct; saved: boolean; onOpen: () => void; onAdd: () => void; onSave: () => void }) {
+  const comparePriceCents = Math.ceil(product.priceCents * 1.18 / 100) * 100;
+  const imageUrl = productImageUrl(product);
   return (
-    <article className="group overflow-hidden rounded-sm border border-[#d9d2bd] bg-[#f4eadb] text-[#0c1410] shadow-sm transition hover:border-[#aebd84] hover:shadow-lg hover:shadow-black/20">
-      <button onClick={onOpen} className="block w-full p-4 text-left">
-        <div className="grid aspect-[4/3] place-items-center overflow-hidden rounded-sm bg-[#e9e6d8] text-[#46674b]">
-          {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
+    <article style={{ backgroundColor: "#ffffff" }} className="group overflow-hidden rounded-[18px] border border-[#d9d2bd] bg-white p-3 text-[#0c1410] shadow-sm transition hover:-translate-y-0.5 hover:border-[#aebd84] hover:shadow-xl hover:shadow-[#0c1410]/10">
+      <div style={{ backgroundColor: "#ffffff" }} className="relative overflow-hidden rounded-[16px] bg-white">
+        <button type="button" onClick={onSave} aria-label="Save product" className={`absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full transition ${saved ? "bg-[#0c1410] text-[#aebd84]" : "text-[#7f3f2f] hover:bg-white"}`}>
+          <Heart className={`h-4 w-4 ${saved ? "fill-current" : "fill-current"}`} />
+        </button>
+        <button type="button" onClick={onOpen} style={{ backgroundColor: "#ffffff" }} className="grid aspect-[1.24] w-full place-items-center overflow-hidden rounded-[16px] bg-white px-5 py-5 text-[#46674b]">
+          {imageUrl ? (
+            <img src={imageUrl} alt={product.name} className="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
           ) : product.isService ? (
             <CheckCircle2 className="h-14 w-14" />
           ) : (
             <Box className="h-14 w-14" />
           )}
+        </button>
+      </div>
+      <div className="pt-3">
+        <div className="mb-4 flex items-center gap-2">
+          <button type="button" onClick={onOpen} className="grid h-10 w-12 place-items-center overflow-hidden rounded-md border border-[#7f3f2f] bg-white p-1 shadow-sm">
+            {imageUrl ? <img src={imageUrl} alt="" className="h-full w-full object-contain" /> : <ShopCategoryIcon category={product.category} />}
+          </button>
+          {storefrontColorways.map((colorway) => (
+            <button key={colorway.slug} type="button" onClick={onOpen} aria-label={`${colorway.name} colorway`} className="grid h-9 w-8 place-items-center rounded-md border border-[#e1dccd] bg-[#fbfaf6] shadow-sm">
+              <span className="h-3 w-4 rounded-full" style={{ backgroundColor: colorway.hex }} />
+            </button>
+          ))}
         </div>
-        <div className="border-t border-[#d9d2bd] pt-3 text-center">
-          <div className="flex justify-center gap-0.5 text-[#aebd84]">
-            {Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-3 w-3 fill-current" />)}
-          </div>
-          <p className="mt-1 min-h-10 text-sm font-semibold leading-5">{product.name}</p>
-          <p className="text-xs text-[#6b705f]">{product.category}</p>
-          <p className="mt-1 text-sm font-black text-[#46674b]">{money(product.priceCents, product.currency)}</p>
+        <button type="button" onClick={onOpen} className="block w-full text-left">
+          <p className="text-base font-semibold leading-5 text-[#0c1410]">{product.name}</p>
+          <p className="mt-1 text-[10px] font-black uppercase tracking-[0.08em] text-[#7f3f2f]">{product.category}</p>
+        </button>
+        <div className="mt-6 flex items-end justify-between gap-3">
+          <p className="text-sm font-semibold text-[#0c1410]">
+            {money(product.priceCents, product.currency)}
+            <span className="ml-2 text-sm font-semibold text-[#9aa896] line-through">{money(comparePriceCents, product.currency)}</span>
+          </p>
         </div>
-      </button>
-      <div className="flex items-center justify-center gap-2 pb-4">
-        <button onClick={onSave} aria-label="Save product" className={`grid h-8 w-8 place-items-center rounded-full shadow-sm ${saved ? "bg-[#46674b] text-[#f4eadb]" : "bg-white text-[#0c1410]"}`}><Heart className={`h-4 w-4 ${saved ? "fill-current" : ""}`} /></button>
-        <button onClick={onAdd} aria-label="Add to cart" className="grid h-8 w-8 place-items-center rounded-full bg-[#aebd84] text-[#0c1410] shadow-sm"><ShoppingCart className="h-4 w-4" /></button>
+      </div>
+      <div className="pt-5">
+        <button type="button" onClick={onAdd} className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-md bg-[#0c1410] px-3 text-sm font-black uppercase text-[#f4eadb] transition hover:bg-[#16241c]">
+          <ShoppingCart className="h-4 w-4" />
+          Add to cart
+        </button>
       </div>
     </article>
+  );
+}
+
+function SocialLogo({ name }: { name: "Instagram" | "Pinterest" | "Facebook" | "X" | "YouTube" }) {
+  const className = "h-4 w-4";
+  if (name === "Instagram") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (name === "Pinterest") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="currentColor">
+        <path d="M12.02 0C5.4 0 .03 5.37.03 11.99c0 5.08 3.16 9.42 7.62 11.17-.11-.95-.2-2.4.04-3.44.22-.94 1.41-5.96 1.41-5.96s-.36-.72-.36-1.78c0-1.67.97-2.91 2.17-2.91 1.02 0 1.52.77 1.52 1.69 0 1.03-.66 2.57-.99 4-.28 1.19.6 2.17 1.78 2.17 2.13 0 3.77-2.25 3.77-5.5 0-2.87-2.06-4.88-5.01-4.88-3.41 0-5.42 2.56-5.42 5.21 0 1.03.4 2.14.89 2.74.1.12.11.23.08.35l-.33 1.36c-.05.22-.17.27-.4.16-1.5-.7-2.44-2.89-2.44-4.65 0-3.78 2.75-7.26 7.93-7.26 4.16 0 7.4 2.97 7.4 6.93 0 4.14-2.61 7.46-6.23 7.46-1.22 0-2.36-.63-2.75-1.38l-.75 2.84c-.28 1.08-1.04 2.43-1.55 3.25 1.17.36 2.41.55 3.69.55C18.63 24 24 18.63 24 12.02 24 5.37 18.63 0 12.02 0Z" />
+      </svg>
+    );
+  }
+  if (name === "Facebook") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="currentColor">
+        <path d="M14.25 8.25V6.7c0-.74.49-.91.83-.91h2.13V2.12L14.27 2.1c-3.27 0-4.01 2.45-4.01 4.02v2.13H8v3.78h2.26V22h4.1v-9.97h2.75l.36-3.78h-3.22Z" />
+      </svg>
+    );
+  }
+  if (name === "X") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="currentColor">
+        <path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93Zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="currentColor">
+      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.55 3.6 12 3.6 12 3.6s-7.55 0-9.4.5A3 3 0 0 0 .5 6.2 31.2 31.2 0 0 0 0 12a31.2 31.2 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.85.5 9.4.5 9.4.5s7.55 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.85.5-5.8.5-5.8s0-3.95-.5-5.8ZM9.6 15.55v-7.1L15.85 12 9.6 15.55Z" />
+    </svg>
   );
 }
 
@@ -142,6 +204,7 @@ function ShopFooter() {
     { title: "Shop", links: ["Men's", "Women's", "Youth / Kids", "Drinkware"] },
     { title: "Company", links: ["About Eclipse", "Materials", "Wholesale", "Journal"] }
   ];
+  const socialLinks = ["Instagram", "Pinterest", "Facebook", "X", "YouTube"] as const;
   return (
     <footer className="mt-12 bg-[#0c1410] px-6 py-12 text-[#f4eadb] md:py-16">
       <div className="mx-auto grid max-w-[1760px] gap-12 lg:grid-cols-[1.2fr_1.8fr]">
@@ -153,9 +216,9 @@ function ShopFooter() {
           </form>
           <p className="mt-10 text-xs font-black uppercase tracking-[0.16em] text-[#aebd84]">Follow Eclipse</p>
           <div className="mt-5 flex flex-wrap gap-3">
-            {["IG", "P", "F", "X", "YT"].map((item) => (
-              <button key={item} className="grid h-10 w-10 place-items-center rounded-full border border-[#f4eadb]/70 text-xs font-black text-[#f4eadb] transition hover:border-[#aebd84] hover:text-[#aebd84]">
-                {item}
+            {socialLinks.map((item) => (
+              <button key={item} type="button" aria-label={item} className="grid h-10 w-10 place-items-center rounded-full border border-[#f4eadb]/70 text-[#f4eadb] transition hover:border-[#aebd84] hover:text-[#aebd84]">
+                <SocialLogo name={item} />
               </button>
             ))}
           </div>
@@ -451,6 +514,17 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
     { image: "/storefront/hero-merch-2.png", alt: "Person wearing Eclipse sage crop tee and dark hoodie", category: "Women's" as const, eyebrow: "New layers", title: "Soft goods for long days.", copy: "Crops, hoodies, and relaxed layers that move from shop floor to weekend." },
     { image: "/storefront/hero-merch-3.png", alt: "People wearing Eclipse crewneck, hoodie, beanie, tote, and bottle", category: "Accessories" as const, eyebrow: "Crew favorites", title: "Built for the whole kit.", copy: "Drinkware, totes, beanies, and prints that make the merch line feel complete." }
   ];
+  const categoryHero = {
+    "Men's": { ...heroSlides[0], eyebrow: "Men's merch", title: "Men's Eclipse layers.", copy: "Tees, hoodies, joggers, and headwear in the darker side of the Eclipse palette." },
+    "Women's": { ...heroSlides[1], eyebrow: "Women's merch", title: "Women's Eclipse essentials.", copy: "Crops, tanks, hoodies, leggings, and soft layers with clean logo placement." },
+    "Youth / Kids": { ...heroSlides[2], eyebrow: "Youth merch", title: "Smaller sizes, same Eclipse feel.", copy: "Youth tees and hoodies made to match the rest of the shop drop." },
+    Headwear: { ...heroSlides[0], eyebrow: "Headwear", title: "Caps and beanies up front.", copy: "Structured caps, easy beanies, and everyday headwear with a clean Eclipse mark." },
+    Accessories: { ...heroSlides[2], eyebrow: "Accessories", title: "The whole everyday kit.", copy: "Totes, lanyards, pins, and small goods that round out the Eclipse merch wall." },
+    "Stickers & Decals": { ...heroSlides[2], eyebrow: "Stickers & decals", title: "Small pieces, sharp mark.", copy: "Sticker packs and decals for laptops, windows, bottles, and shop counters." },
+    Drinkware: { ...heroSlides[2], eyebrow: "Drinkware", title: "Mugs, bottles, and daily carry.", copy: "Clean Eclipse drinkware for the desk, shop floor, and commute." },
+    Prints: { ...heroSlides[2], eyebrow: "Prints", title: "Eclipse wall pieces.", copy: "Mini prints and counter cards with the same quiet storefront look." }
+  } satisfies Partial<Record<(typeof categories)[number], (typeof heroSlides)[number]>>;
+  const activeHero = category === "All" ? heroSlides[heroSlide] : categoryHero[category] ?? heroSlides[heroSlide];
   const collectionCards: Array<{ label: string; action: string; category: (typeof categories)[number]; product?: StorefrontProduct; className: string; imageClassName?: string }> = [
     {
       label: "New Arrivals",
@@ -550,6 +624,10 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
   function openCategory(next: (typeof categories)[number]) {
     setCategory(next);
     setView("home");
+    setHoverMenu(null);
+    if (next === "Men's") setHeroSlide(0);
+    if (next === "Women's") setHeroSlide(1);
+    if (!["All", "Men's", "Women's"].includes(next)) setHeroSlide(2);
   }
 
   function toggleSaved(productId: string) {
@@ -570,7 +648,7 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
 
   return (
     <section className="min-h-screen bg-[#f4eadb] text-[#0c1410]">
-      <header className="border-b border-[#d9d2bd] bg-[#f4eadb] text-[#0c1410]">
+      <header className="sticky top-0 z-50 border-b border-[#d9d2bd] bg-[#f4eadb]/95 text-[#0c1410] shadow-sm backdrop-blur">
         <div className="bg-[#16241c] text-[#e9e6d8]">
           <button onClick={() => openCategory("Men's")} className="mx-auto flex h-9 w-full max-w-[1760px] items-center justify-center gap-3 px-6 text-center text-xs font-black">
             New merch drop is live. Fresh tees, caps, drinkware, and decals for the Eclipse crew.
@@ -639,25 +717,25 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
                   <button onClick={() => openCategory("Headwear")} className="text-left hover:text-[#46674b]">New Headwear</button>
                 </div>
               </div>
-              {heroSlides.map((slide, index) => (
+              {(category === "All" ? heroSlides : [activeHero]).map((slide, index) => (
                 <img
                   key={slide.image}
                   src={slide.image}
                   alt={slide.alt}
-                  className={`absolute inset-0 h-full w-full object-cover transition duration-700 ${heroSlide === index ? "opacity-100" : "opacity-0"}`}
+                  className={`absolute inset-0 h-full w-full object-cover transition duration-700 ${category !== "All" || heroSlide === index ? "opacity-100" : "opacity-0"}`}
                 />
               ))}
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(12,20,16,0.82),rgba(12,20,16,0.28)_48%,rgba(12,20,16,0.72)),linear-gradient(0deg,rgba(12,20,16,0.44),rgba(12,20,16,0.08)_45%,rgba(12,20,16,0.28))]" />
               <div className="relative z-10 ml-auto flex min-h-[560px] max-w-2xl flex-col justify-center px-6 py-12 text-right md:px-12">
-                <p className="text-sm font-black uppercase tracking-[0.18em] text-[#aebd84]">{heroSlides[heroSlide].eyebrow}</p>
-                <h1 className="mt-4 font-title text-5xl font-black leading-[0.9] md:text-7xl">{heroSlides[heroSlide].title}</h1>
-                <p className="mt-4 text-sm font-black md:text-base">{heroSlides[heroSlide].copy}</p>
+                <p className="text-sm font-black uppercase tracking-[0.18em] text-[#aebd84]">{activeHero.eyebrow}</p>
+                <h1 className="mt-4 font-title text-5xl font-black leading-[0.9] md:text-7xl">{activeHero.title}</h1>
+                <p className="mt-4 text-sm font-black md:text-base">{activeHero.copy}</p>
                 <div className="mt-7 flex justify-end gap-3">
-                  <button onClick={() => openCategory(heroSlides[heroSlide].category)} className="h-11 bg-[#aebd84] px-6 text-xs font-black uppercase text-[#0c1410]">Shop Now</button>
+                  <button onClick={() => openCategory(activeHero.category)} className="h-11 bg-[#aebd84] px-6 text-xs font-black uppercase text-[#0c1410]">Shop Now</button>
                   <button onClick={() => openCategory("All")} className="h-11 border border-[#aebd84] bg-[#0c1410]/35 px-6 text-xs font-black uppercase text-[#f4eadb]">Shop All</button>
                 </div>
               </div>
-              <div className="absolute bottom-6 right-8 z-10 hidden gap-2 md:flex">
+              <div className={`absolute bottom-6 right-8 z-10 hidden gap-2 md:flex ${category === "All" ? "" : "opacity-0"}`}>
                 {heroSlides.map((slide, index) => (
                   <button
                     key={slide.image}
@@ -678,7 +756,7 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
                   <div className="absolute inset-x-8 top-1/2 h-px bg-[#f4eadb]/20" />
                   {card.product ? (
                     <img
-                      src={card.product.imageUrl}
+                      src={productImageUrl(card.product)}
                       alt={card.product.name}
                       className={`absolute left-1/2 top-1/2 h-[68%] w-[82%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-2xl transition duration-500 group-hover:scale-105 ${card.imageClassName ?? ""}`}
                     />

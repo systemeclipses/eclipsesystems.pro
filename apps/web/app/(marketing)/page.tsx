@@ -1,282 +1,545 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  ArrowRight,
-  BriefcaseBusiness,
-  Building2,
-  Check,
-  ClipboardList,
-  LayoutDashboard,
-  PackageCheck,
-  Rocket,
-  Settings2,
-  ShieldCheck,
-  ShoppingBag,
-  UsersRound
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { packageDefinitions, type PackageSlug } from "@/lib/packages";
+import { ArrowRight, Check, ClipboardList, Hammer, Presentation, Wrench } from "lucide-react";
+import { HomePillHeader } from "@/components/marketing/home-pill-header";
+import { MuteOnlyVideo } from "@/components/marketing/mute-only-video";
 
 export const metadata: Metadata = {
-  title: "Eclipse Systems | Custom Software Solutions",
-  description: "Custom business software, packaged systems, and production-ready modules for teams that need software built around how they actually work.",
+  title: "Eclipse Systems | Custom Software Consulting",
+  description:
+    "Eclipse Systems designs custom business software for operations, client portals, CRM, storefronts, billing workflows, dashboards, automations, and integrations.",
   alternates: { canonical: "/" }
 };
 
-const packageIcons: Record<PackageSlug, typeof Building2> = {
-  "operations-hub": Building2,
-  "client-portal": UsersRound,
-  "crm-sales-pipeline": BriefcaseBusiness,
-  storefront: ShoppingBag
-};
-
-const paths = [
+const featureCards = [
   {
-    title: "Buy a proven package",
-    text: "Use an existing Eclipse system as-is when the workflow already fits. Good for teams that want a fast, lower-risk starting point.",
-    icon: PackageCheck
+    eyebrow: "Live demo",
+    title: "See working software before you commit.",
+    text: "The first conversation gets concrete fast. We can walk through operations, client portals, CRM, storefronts, billing, and reporting as working environments.",
+    cta: "Schedule a demo",
+    href: "/schedule-demo",
+    video: "/media/eclipse-systems-demo-showcase.webm",
+    poster: "/media/eclipse-systems-demo-showcase-poster.png"
   },
   {
-    title: "Customize a package",
-    text: "Start with working software, then adapt the screens, rules, roles, and integrations around your business.",
-    icon: Settings2
+    eyebrow: "Workflow",
+    title: "Map the business before writing the system.",
+    text: "We start with the real handoffs: who owns the work, what customers need to see, where approvals stall, and what should become automatic.",
+    cta: "Explore the approach",
+    href: "#about",
+    image: "/media/generated/eclipse-operations-glass.png",
+    imageAlt: "Floating glass operations software modules"
   },
   {
-    title: "Commission a bespoke build",
-    text: "When your workflow is specific, we design and build the right system from the ground up using our proven foundation.",
-    icon: Rocket
+    eyebrow: "Custom build",
+    title: "Launch the layer your team actually needs.",
+    text: "Your system can connect portals, operations, sales, commerce, invoices, dashboards, permissions, and automations into one coherent product.",
+    cta: "Talk through the build",
+    href: "/schedule-demo",
+    image: "/media/generated/eclipse-commerce-glass.png",
+    imageAlt: "Floating glass CRM and commerce software modules"
   }
-];
+] as const;
 
-const proofModules = [
-  "Auth, roles, and permissions",
-  "Timekeeping and approvals",
-  "Invoicing and billing workflows",
-  "Training and onboarding portals",
-  "Storefront foundations",
-  "Dashboards and reporting",
-  "Admin panels and settings",
-  "Third-party integrations"
-];
+const industries = [
+  "Manufacturing.",
+  "Construction.",
+  "Healthcare.",
+  "Field Service.",
+  "Real Estate.",
+  "Retail.",
+  "Hospitality.",
+  "Education.",
+  "Logistics.",
+  "Nonprofits.",
+  "Fitness.",
+  "Legal.",
+  "Finance.",
+  "Insurance.",
+  "Your Business.",
+  "Automotive.",
+  "Home Services.",
+  "Agriculture.",
+  "Your Team.",
+  "Events.",
+  "Franchises.",
+  "Your Business.",
+  "Pro Services.",
+  "Property Teams.",
+  "Food Service.",
+  "Your Team.",
+  "Medical Offices.",
+  "Trade Teams.",
+  "Your Business."
+] as const;
 
-const demoHref = "/schedule-demo";
-
-function ProductMockup() {
-  return (
-    <div className="relative mx-auto w-full overflow-hidden rounded-md border border-white/20 bg-[#f8f3eb] text-ink shadow-2xl shadow-black/30">
-      <div className="flex h-11 items-center justify-between border-b border-[#e4d7c6] bg-white px-4">
-        <div className="flex items-center gap-3">
-          <div className="grid h-7 w-7 place-items-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">E</div>
-          <span className="text-sm font-semibold">Eclipse Systems</span>
-        </div>
-        <div className="hidden items-center gap-6 text-xs text-muted-foreground md:flex">
-          <span>Portal</span>
-          <span>Billing</span>
-          <span>Training</span>
-          <span>Dashboard</span>
-        </div>
-        <div className="h-7 w-24 rounded-sm border border-[#ded2c2] bg-[#faf7f2]" />
-      </div>
-
-      <div className="grid min-h-[440px] grid-cols-1 md:grid-cols-[56px_1fr_260px]">
-        <aside className="hidden border-r border-[#e4d7c6] bg-[#f4ebde] px-3 py-5 md:block">
-          <div className="grid gap-4">
-            {[LayoutDashboard, UsersRound, ClipboardList, ShoppingBag, ShieldCheck].map((Icon, index) => (
-              <div key={index} className={`grid h-8 w-8 place-items-center rounded-sm ${index === 0 ? "bg-primary text-white" : "text-muted-foreground"}`}>
-                <Icon className="h-4 w-4" />
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        <section className="p-4 md:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase text-muted-foreground">Custom operating system</p>
-              <h2 className="mt-2 font-title text-3xl leading-none text-ink md:text-5xl">
-                <span className="block">Built around</span>
-                <span className="block">your workflow</span>
-              </h2>
-            </div>
-            <Button asChild className="h-8 bg-primary px-3 text-xs">
-              <Link href={demoHref}>Schedule a demo</Link>
-            </Button>
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {[
-              ["Start point", "Package", "Ready modules"],
-              ["Build path", "Custom", "Scoped to fit"],
-              ["Handoff", "Working", "Real software"]
-            ].map(([label, value, note]) => (
-              <div key={label} className="rounded-md border border-[#e1d5c5] bg-white p-4">
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="mt-3 text-3xl font-semibold">{value}</p>
-                <p className="mt-2 text-xs text-primary">{note}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.72fr]">
-            <div className="rounded-md border border-[#e1d5c5] bg-white p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">Example build plan</p>
-                <span className="rounded-sm bg-secondary/60 px-2 py-1 text-xs text-ink">In scope</span>
-              </div>
-              <div className="mt-5 grid gap-2">
-                {["Discovery and workflow map", "Module selection", "Custom screens and rules", "Launch and support"].map((item, index) => (
-                  <div key={item} className="flex items-center gap-3 rounded-sm bg-[#f4ebde] p-3">
-                    <span className="grid h-7 w-7 place-items-center rounded-sm bg-white text-xs font-semibold text-primary">0{index + 1}</span>
-                    <span className="text-sm font-semibold">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-md border border-[#e1d5c5] bg-[#2f4135] p-4 text-white">
-              <p className="text-sm font-semibold">Module library</p>
-              <div className="mt-5 space-y-3">
-                {["Auth and permissions", "Billing workflow", "Training portal"].map((item) => (
-                  <div key={item} className="flex items-center gap-3 rounded-sm bg-white/10 p-3">
-                    <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-xs">{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 rounded-sm bg-cream p-3 text-ink">
-                <p className="text-xs text-muted-foreground">Engagement model</p>
-                <p className="mt-2 text-3xl font-semibold">Package to custom</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <aside className="border-t border-[#e4d7c6] bg-white p-4 md:border-l md:border-t-0">
-          <p className="text-sm font-semibold">Common builds</p>
-          <div className="mt-4 space-y-3">
-            {["Client Portal", "Operations Hub", "CRM pipeline", "Storefront"].map((item, index) => (
-              <div key={item} className="rounded-md border border-[#e1d5c5] p-3">
-                <p className="text-xs text-muted-foreground">0{index + 1}</p>
-                <p className="mt-1 text-sm font-semibold">{item}</p>
-              </div>
-            ))}
-          </div>
-        </aside>
-      </div>
-    </div>
-  );
-}
+const processSteps = [
+  {
+    number: "01",
+    title: "Discovery",
+    summary: "Meet with you and your key people to uncover the workflow, goals, blockers, and right build path.",
+    detail: "Bring us the messy process. We will map what matters, define success, and shape a clear timeline your team can trust.",
+    icon: ClipboardList
+  },
+  {
+    number: "02",
+    title: "Creation",
+    summary: "Turn the plan into working software while you review, refine, and keep the build aligned with real operations.",
+    detail: "Your screens, permissions, automations, reports, data, and integrations come together in a system built around your team.",
+    icon: Hammer
+  },
+  {
+    number: "03",
+    title: "Implementation",
+    summary: "Launch with training, admin handoff, and the rollout plan created during discovery.",
+    detail: "Your staff gets the walkthroughs, controls, and confidence they need before the new system becomes daily workflow.",
+    icon: Presentation
+  },
+  {
+    number: "04",
+    title: "Maintenance",
+    summary: "Keep improving the system as your team grows, shifts, and finds better ways to work.",
+    detail: "Stay supported after launch with workflow help, updates, adjustments, and the steady backup to keep momentum.",
+    icon: Wrench
+  }
+] as const;
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="overflow-hidden rounded-md bg-primary text-white">
-          <div className="mx-auto max-w-[104rem] px-5 pb-7 pt-8 md:pb-12 md:pt-16">
-            <div className="grid gap-12 lg:grid-cols-[0.62fr_1.38fr] lg:items-start">
-              <div className="max-w-2xl">
-                <p className="text-sm font-semibold text-secondary">Custom software, without starting from zero</p>
-                <h1 className="mt-5 font-title text-6xl leading-[0.86] text-cream md:text-8xl lg:text-9xl">
-                  Software built around your business.
+    <main className="home-redesign min-h-screen overflow-hidden bg-[#111913] text-[#f9e8d2]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            body > header {
+              display: none !important;
+            }
+
+            .home-redesign {
+              --ease-out-soft: cubic-bezier(.16, 1, .3, 1);
+            }
+
+            .home-redesign .motion-rise {
+              animation: home-rise 900ms var(--ease-out-soft) both;
+            }
+
+            .home-redesign .motion-rise-delay {
+              animation: home-rise 1100ms var(--ease-out-soft) 120ms both;
+            }
+
+            .home-redesign .hero-art {
+              animation: dashboard-float var(--float-duration, 9200ms) ease-in-out infinite;
+              will-change: transform;
+              transform: translate3d(0, 0, 0);
+            }
+
+            .home-redesign .glass-card {
+              transition: transform 520ms var(--ease-out-soft), border-color 520ms var(--ease-out-soft), background-color 520ms var(--ease-out-soft), box-shadow 520ms var(--ease-out-soft);
+            }
+
+            .home-redesign .glass-card:hover {
+              transform: translateY(-8px);
+              border-color: rgba(249, 232, 210, .34);
+              background-color: rgba(255, 255, 255, .085);
+              box-shadow: 0 26px 70px rgba(0, 0, 0, .24);
+            }
+
+            .home-redesign .feature-card {
+              animation: home-rise 900ms var(--ease-out-soft) both;
+              transition: transform 620ms var(--ease-out-soft), box-shadow 620ms var(--ease-out-soft), border-color 620ms var(--ease-out-soft);
+            }
+
+            .home-redesign .feature-card:hover {
+              transform: translateY(-6px);
+              border-color: rgba(180, 194, 146, .42);
+            }
+
+            .home-redesign .feature-media {
+              transition: transform 900ms var(--ease-out-soft), filter 900ms var(--ease-out-soft);
+            }
+
+            .home-redesign .feature-card:hover .feature-media {
+              transform: scale(1.035);
+              filter: saturate(1.08) contrast(1.05);
+            }
+
+            .home-redesign .soft-band {
+              position: relative;
+              overflow: hidden;
+            }
+
+            .home-redesign .soft-band::before {
+              content: "";
+              position: absolute;
+              inset: -40% -10% auto;
+              height: 70%;
+              background: radial-gradient(circle at 50% 0%, rgba(249,232,210,.16), transparent 58%);
+              pointer-events: none;
+            }
+
+            .home-redesign .industry-flip {
+              position: relative;
+              height: clamp(2.85rem, 4.85vw, 5.4rem);
+              width: min(100%, 48rem);
+              overflow: hidden;
+              perspective: 900px;
+            }
+
+            .home-redesign .industry-flip-word {
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              opacity: 0;
+              transform: translateY(42%) rotateX(62deg);
+              transform-origin: 50% 100%;
+              animation: industry-flip var(--industry-cycle-duration, 87s) cubic-bezier(.16, 1, .3, 1) infinite;
+              will-change: opacity, transform;
+            }
+
+            .home-redesign .industry-flip-label {
+              position: relative;
+              display: inline-block;
+              padding-bottom: .08em;
+            }
+
+            .home-redesign .industry-flip-label::after {
+              content: "";
+              position: absolute;
+              left: 3%;
+              right: 2%;
+              bottom: .045em;
+              height: .12em;
+              border-radius: 999px;
+              background: rgba(249, 232, 210, .88);
+              clip-path: polygon(0 48%, 7% 35%, 15% 52%, 24% 42%, 34% 58%, 45% 39%, 56% 51%, 68% 45%, 79% 60%, 90% 41%, 100% 55%, 100% 82%, 88% 73%, 75% 84%, 62% 70%, 49% 82%, 37% 72%, 25% 86%, 13% 70%, 0 78%);
+              transform: rotate(-1.4deg) translateY(.02em);
+              transform-origin: left center;
+              filter: drop-shadow(0 .035em 0 rgba(23, 34, 25, .16));
+            }
+
+            @media (min-width: 1024px) {
+              .home-redesign .industry-flip-word {
+                justify-content: flex-start;
+              }
+            }
+
+            @keyframes home-rise {
+              from {
+                opacity: 0;
+                transform: translateY(28px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+
+            @keyframes industry-flip {
+              0% {
+                opacity: 0;
+                transform: translateY(42%) rotateX(62deg);
+              }
+              .45%, 2.65% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg);
+              }
+              3.2%, 100% {
+                opacity: 0;
+                transform: translateY(-42%) rotateX(-62deg);
+              }
+            }
+
+            .home-redesign .hero-scene {
+              width: max(100%, calc((100vh - 1.5rem) * 1.777));
+              height: max(100%, calc(100vw / 1.777));
+              left: 50%;
+              top: 50%;
+              transform: translate(-50%, -50%);
+            }
+
+            @keyframes dashboard-float {
+              0%, 100% {
+                transform: translate3d(0, calc(var(--float-distance, 10px) * -0.5), 0);
+              }
+              50% {
+                transform: translate3d(0, calc(var(--float-distance, 10px) * 0.5), 0);
+              }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .home-redesign .motion-rise,
+              .home-redesign .motion-rise-delay,
+              .home-redesign .hero-art,
+              .home-redesign .industry-flip-word {
+                animation: none;
+              }
+
+              .home-redesign .industry-flip-word:first-child {
+                opacity: 1;
+                transform: none;
+              }
+
+              .home-redesign .glass-card,
+              .home-redesign .glass-card:hover,
+              .home-redesign .feature-card,
+              .home-redesign .feature-card:hover,
+              .home-redesign .feature-media,
+              .home-redesign .feature-card:hover .feature-media {
+                transition: none;
+                transform: none;
+              }
+            }
+          `
+        }}
+      />
+
+      <section className="relative px-3 py-3">
+        <div className="relative min-h-[calc(100vh-1.5rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-[#18231c] shadow-2xl shadow-black/40">
+          <div className="hero-scene absolute" aria-label="A hand holding floating glass software dashboards in Eclipse brand colors">
+            <Image
+              src="/media/generated/hero-layers/hero-base.png"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <Image
+              src="/media/generated/hero-layers/left-dashboard.png"
+              alt=""
+              width={275}
+              height={285}
+              priority
+              className="hero-art absolute h-auto w-[16.45%]"
+              style={{ left: "35.89%", top: "30.29%", "--float-distance": "12px", "--float-duration": "10200ms" } as React.CSSProperties}
+            />
+            <Image
+              src="/media/generated/hero-layers/middle-dashboard.png"
+              alt=""
+              width={250}
+              height={210}
+              priority
+              className="hero-art absolute h-auto w-[14.95%]"
+              style={{ left: "49.94%", top: "45.91%", "--float-distance": "8px", "--float-duration": "9200ms", animationDelay: "-2400ms" } as React.CSSProperties}
+            />
+            <Image
+              src="/media/generated/hero-layers/right-dashboard.png"
+              alt=""
+              width={435}
+              height={360}
+              priority
+              className="hero-art absolute h-auto w-[26.02%]"
+              style={{ left: "54.43%", top: "15.41%", "--float-distance": "14px", "--float-duration": "11200ms", animationDelay: "-5200ms" } as React.CSSProperties}
+            />
+          </div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(249,232,210,.18),transparent_34%),linear-gradient(180deg,rgba(17,25,19,.08),rgba(17,25,19,.56)_72%,rgba(17,25,19,.82))]" />
+          <div className="absolute inset-x-0 top-[58%] h-px bg-white/12" />
+          <div className="absolute inset-y-0 left-[3.2%] w-px bg-white/12" />
+          <div className="absolute inset-y-0 right-[3.2%] w-px bg-white/12" />
+
+          <div className="relative z-10 mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[112rem] flex-col px-5 py-7 md:px-10">
+            <HomePillHeader />
+
+            <div className="motion-rise-delay grid flex-1 place-items-center pb-20 pt-16 text-center md:pb-28">
+              <div className="w-full max-w-[104rem]">
+                <h1 className="text-[clamp(2.65rem,5vw,6.65rem)] leading-[0.96] text-[#f9e8d2] drop-shadow-[0_16px_34px_rgba(0,0,0,.36)]">
+                  <span className="block md:whitespace-nowrap font-title">Transform your workflow.</span>
+                  <span className="block md:whitespace-nowrap font-sans font-normal">Elevate your operations.</span>
                 </h1>
-                <p className="mt-8 max-w-xl text-base leading-7 text-white/78 md:text-lg">
-                  Eclipse Systems designs and builds bespoke systems for small and midsize teams: portals, dashboards, storefronts, training hubs, timekeeping, invoicing, and the workflows off-the-shelf software keeps missing.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button asChild className="h-11 bg-cream px-5 text-primary hover:bg-white">
-                    <Link href={demoHref}>Schedule a demo <ArrowRight className="h-4 w-4" /></Link>
-                  </Button>
-                  <Button asChild variant="outline" className="h-11 border-white/30 bg-transparent px-5 text-white hover:bg-white/10">
-                    <Link href="/pricing">See engagement options</Link>
-                  </Button>
+              </div>
+            </div>
+
+            <div className="motion-rise-delay mx-auto mb-14 grid w-full max-w-[35rem] justify-items-center text-center">
+              <p className="text-base font-semibold leading-7 text-white/78 md:text-lg">
+                Eclipse builds custom software that adapts to the rhythm of your business: portals, operations hubs, sales pipelines, storefronts, billing, reporting, and automation.
+              </p>
+              <Link href="/schedule-demo" className="mt-6 rounded-full bg-[#b4c292] px-7 py-3 text-sm font-bold text-[#18231c] shadow-xl shadow-black/20 transition hover:bg-[#f9e8d2]">
+                Schedule a demo
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <section id="product" className="px-3 pb-3">
+        <div className="rounded-[2rem] border border-white/10 bg-[#f5f2eb] px-5 pb-14 pt-6 text-[#172219] md:px-10 md:pb-24 md:pt-10">
+          <div className="mx-auto grid max-w-[92rem] gap-7 md:gap-10">
+            <section className="feature-card relative rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-2xl shadow-[#172219]/10 md:p-10 lg:p-14">
+              <span className="absolute right-7 top-7 inline-flex rounded-full border border-[#b4c292]/60 bg-[#eef1e5] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[#314839] md:right-10 md:top-10 lg:right-14 lg:top-14">
+                Process
+              </span>
+              <div className="flex flex-wrap items-start justify-between gap-8 pr-0 pt-10 md:pr-32 md:pt-0">
+                <div>
+                  <h2 className="max-w-4xl font-title text-[clamp(3.1rem,5.4vw,6.4rem)] leading-[0.88] text-[#172219]">
+                    From first fit to ongoing support.
+                  </h2>
+                </div>
+                <div className="grid justify-items-start gap-6">
+                  <p className="max-w-xl text-base font-semibold leading-7 text-[#314839]/78 md:text-lg">
+                    A clean build starts with clarity, then moves through creation, rollout, and maintenance without losing the people who actually use the system.
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <ProductMockup />
+              <div className="mt-12 grid gap-5 lg:grid-cols-4 lg:gap-14">
+                {processSteps.map((step, index) => {
+                  const Icon = step.icon;
+
+                  return (
+                  <article key={step.number} className="group relative rounded-[1.7rem] bg-[#314839] p-5 text-[#f9e8d2] transition duration-500 hover:-translate-y-1 hover:bg-[#172219] md:p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="grid h-16 w-16 place-items-center rounded-[1.15rem] bg-[#b4c292] text-[#172219] shadow-[0_14px_34px_rgba(23,34,25,.2)]">
+                        <Icon className="h-8 w-8 stroke-[1.85]" />
+                      </div>
+                      <span className="rounded-full bg-[#f9e8d2] px-3 py-1 text-xs font-bold text-[#314839]">
+                        {step.number}
+                      </span>
+                    </div>
+                    <h3 className="mt-12 text-3xl font-bold leading-none">{step.title}</h3>
+                    <p className="mt-3 text-base font-semibold leading-6 text-[#f9e8d2]">{step.summary}</p>
+                    <p className="mt-4 text-sm font-semibold leading-6 text-[#f9e8d2]/72">{step.detail}</p>
+                    {index < processSteps.length - 1 ? (
+                      <ArrowRight className="absolute -right-11 top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 rounded-full border border-[#314839]/20 bg-[#f9e8d2] p-1.5 text-[#314839] shadow-[0_14px_30px_rgba(23,34,25,.18)] lg:block" />
+                    ) : null}
+                  </article>
+                  );
+                })}
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            </section>
 
-      <section className="mx-auto grid max-w-[92rem] gap-8 px-5 py-16 lg:grid-cols-[0.55fr_1fr]">
-        <div>
-          <p className="text-sm font-semibold text-primary">Packages</p>
-          <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Four starting points, shaped around the way the work actually happens.</h2>
-          <p className="mt-5 max-w-md leading-7 text-muted-foreground">
-            We consult first, then build from a proven template when it fits. Each package can be bought as-is, customized, or used as the foundation for a bespoke system.
-          </p>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {packageDefinitions.map((pkg) => {
-            const Icon = packageIcons[pkg.slug];
-            return (
-              <article key={pkg.slug} className="rounded-md border border-border bg-white/55 p-6">
-                <Icon className="h-6 w-6 text-primary" />
-                <h3 className="mt-8 text-2xl font-semibold leading-tight">{pkg.name}</h3>
-                <p className="mt-3 text-sm font-semibold leading-6 text-primary">{pkg.tagline}</p>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{pkg.description}</p>
-                {pkg.moduleNote ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{pkg.moduleNote}</p> : null}
-                {pkg.worksWith ? <p className="mt-4 rounded-sm bg-secondary/25 px-3 py-2 text-xs font-semibold leading-5 text-primary">Works with {pkg.worksWith.packageName}</p> : null}
-              </article>
-            );
-          })}
-        </div>
-      </section>
+            {featureCards.map((card, index) => {
+              const isDark = index === 0;
+              const isSage = index === 2;
 
-      <section className="px-3">
-        <div className="mx-auto grid max-w-[92rem] overflow-hidden rounded-md bg-[#26352b] text-white lg:grid-cols-[0.7fr_1fr]">
-          <div className="relative min-h-[440px] p-8 md:p-12">
-            <div className="absolute inset-0 opacity-60 [background:linear-gradient(135deg,transparent_0_33%,rgba(249,232,210,.16)_34%_35%,transparent_36%_58%,rgba(180,194,146,.2)_59%_60%,transparent_61%),repeating-linear-gradient(0deg,rgba(249,232,210,.06)_0_1px,transparent_1px_42px),repeating-linear-gradient(90deg,rgba(249,232,210,.06)_0_1px,transparent_1px_42px)]" />
-            <div className="relative max-w-xl">
-              <p className="text-sm font-semibold text-secondary">How We Engage</p>
-              <h2 className="mt-5 font-title text-6xl leading-none text-cream md:text-8xl">Buy it. Shape it. Build it.</h2>
-              <p className="mt-6 leading-7 text-white/72">
-                Eclipse is not one product. It is a software company with working systems already on the shelf, ready to use as proof, a package, or the starting point for a custom build.
-              </p>
-            </div>
-          </div>
-          <div className="grid border-t border-white/15 lg:border-l lg:border-t-0">
-            {paths.map((path) => {
-              const Icon = path.icon;
+              if (isDark) {
+                return (
+                  <article
+                    key={card.title}
+                    className="feature-card overflow-hidden rounded-[2rem] border border-[#314839] bg-[#314839] text-[#f9e8d2] shadow-2xl shadow-[#172219]/10 xl:-mx-32 2xl:-mx-44"
+                  >
+                    <div className="grid gap-8 px-7 py-12 md:px-12 md:py-16 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:gap-14 lg:px-16">
+                      <div className="relative grid justify-items-center text-center lg:justify-items-start lg:text-left">
+                        <h2 className="relative z-10 max-w-xl font-title text-[clamp(2.35rem,3.9vw,4.85rem)] leading-[0.94] text-[#f9e8d2]">
+                          Software built for
+                        </h2>
+                        <div className="relative z-10 mt-3 flex w-full justify-center lg:justify-start">
+                          <div className="industry-flip font-title text-[clamp(2.05rem,4.15vw,4.95rem)] leading-none text-[#b4c292]">
+                            {industries.map((industry, industryIndex) => (
+                              <span
+                                key={industry}
+                                className="industry-flip-word whitespace-nowrap"
+                                style={
+                                  {
+                                    "--industry-cycle-duration": `${industries.length * 3}s`,
+                                    animationDelay: `${industryIndex * 3}s`
+                                  } as React.CSSProperties
+                                }
+                              >
+                                <span className="industry-flip-label">{industry}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="relative z-10 mt-7 max-w-md text-base font-semibold leading-7 text-[#f9e8d2]/78 md:text-lg">
+                          Walk through operations, portals, CRM, storefronts, billing, reporting, and automation as real working environments.
+                        </p>
+                        <Link
+                          href={card.href}
+                          className="relative z-10 mt-9 inline-flex rounded-full bg-[#f9e8d2] px-7 py-3 text-sm font-bold text-[#314839] transition hover:bg-white"
+                        >
+                          Schedule a demo
+                        </Link>
+                        <div className="relative z-10 mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm font-semibold text-[#f9e8d2]/72 lg:justify-start">
+                          {["No pressure walkthrough", "Real product screens", "Built around your workflow"].map((item) => (
+                            <span key={item} className="inline-flex items-center gap-2">
+                              <Check className="h-4 w-4 text-[#b4c292]" />
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="relative overflow-hidden rounded-[1.6rem] border border-[#f9e8d2]/20 bg-[#172219] shadow-[0_28px_70px_rgba(0,0,0,.24)]">
+                        {"video" in card ? (
+                          <MuteOnlyVideo
+                            className="aspect-video w-full origin-top scale-[1.13] object-cover"
+                            src={card.video}
+                            poster={card.poster}
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+                  </article>
+                );
+              }
+
               return (
-                <article key={path.title} className="border-b border-white/15 bg-cream/12 p-8 last:border-b-0">
-                  <Icon className="h-7 w-7 text-secondary" />
-                  <h3 className="mt-6 text-3xl font-semibold leading-tight text-cream">{path.title}</h3>
-                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70">{path.text}</p>
-                </article>
+              <article
+                key={card.title}
+                id={index === 1 ? "about" : index === 2 ? "systems" : undefined}
+                className={`feature-card grid overflow-hidden rounded-[2rem] shadow-2xl shadow-[#172219]/10 lg:grid-cols-2 lg:items-center ${
+                  isSage
+                      ? "border border-[#cbd3b0] bg-[#eef1e5] text-[#172219]"
+                      : "border border-[#d8d0c1] bg-[#fbfaf6] text-[#172219]"
+                }`}
+              >
+                <div className={`relative min-h-[340px] overflow-hidden bg-[#172219] md:min-h-[460px] ${index % 2 === 1 ? "lg:order-2" : ""}`}>
+                  {"video" in card ? (
+                    <MuteOnlyVideo
+                      className="feature-media h-full min-h-[340px] w-full object-cover md:min-h-[460px]"
+                      src={card.video}
+                      poster={card.poster}
+                    />
+                  ) : (
+                    <Image
+                      src={card.image}
+                      alt={card.imageAlt}
+                      fill
+                      sizes="(min-width: 1024px) 43vw, 94vw"
+                      className="feature-media object-cover"
+                    />
+                  )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#172219]/36 via-transparent to-transparent" />
+                </div>
+
+                <div className="p-7 md:p-12 lg:p-16">
+                  <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] ${
+                    "border border-[#b4c292]/60 bg-[#fbfaf6] text-[#314839]"
+                  }`}>
+                    {card.eyebrow}
+                  </span>
+                  <h2 className="mt-7 max-w-xl font-title text-[clamp(3.1rem,5.4vw,6.4rem)] leading-[0.88]">
+                    {card.title}
+                  </h2>
+                  <p className="mt-7 max-w-lg text-base font-semibold leading-7 text-[#314839]/82 md:text-lg">
+                    {card.text}
+                  </p>
+                  <Link
+                    href={card.href}
+                    className="mt-8 inline-flex rounded-full bg-[#172219] px-6 py-3 text-sm font-bold text-[#f9e8d2] transition hover:bg-[#314839]"
+                  >
+                    {card.cta}
+                  </Link>
+                </div>
+              </article>
               );
             })}
-          </div>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-[92rem] px-5 py-16">
-        <div className="grid gap-10 lg:grid-cols-[0.7fr_1fr]">
-          <div>
-            <p className="text-sm font-semibold text-primary">Why It Is Faster</p>
-            <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">A custom build with production parts already proven.</h2>
-            <p className="mt-5 leading-7 text-muted-foreground">
-              We keep a library of modules built on a modern stack. That gives clients a better starting point: real examples to react to, tested foundations to build from, and a clearer path from idea to launch.
-            </p>
-            <Button asChild className="mt-8 bg-primary text-primary-foreground hover:bg-[#314839]">
-              <Link href={demoHref}>Schedule a demo <ArrowRight className="h-4 w-4" /></Link>
-            </Button>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {proofModules.map((module) => (
-              <div key={module} className="flex items-center gap-3 rounded-md border border-border bg-white/70 p-4">
-                <Check className="h-5 w-5 shrink-0 text-primary" />
-                <span className="text-sm font-semibold">{module}</span>
+            <div className="feature-card rounded-[2rem] border border-[#d8d0c1] bg-[#172219] p-7 text-[#f9e8d2] shadow-2xl shadow-[#172219]/10 md:p-10">
+              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#b4c292]">Ready</p>
+                  <h2 className="mt-4 max-w-4xl font-title text-[clamp(3rem,5vw,6rem)] leading-[0.88]">
+                    Bring the workflow. We will bring the working model.
+                  </h2>
+                </div>
+                <Link href="/schedule-demo" className="inline-flex rounded-full bg-[#f9e8d2] px-7 py-3 text-sm font-bold text-[#314839] transition hover:bg-white">
+                  Schedule a demo
+                </Link>
               </div>
-            ))}
-            <div className="rounded-md bg-primary p-5 text-white sm:col-span-2">
-              <Building2 className="h-6 w-6 text-secondary" />
-              <p className="mt-6 text-2xl font-semibold leading-tight text-cream">Built for business owners and operations leaders who have outgrown generic tools.</p>
-              <p className="mt-3 text-sm leading-6 text-white/70">
-                If the process is important enough to run the company, the software should fit the process.
-              </p>
             </div>
           </div>
         </div>
