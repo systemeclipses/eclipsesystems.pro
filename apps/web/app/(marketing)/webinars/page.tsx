@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, MonitorPlay, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Webinars",
@@ -17,28 +18,17 @@ const sessions = [
 export default function WebinarsPage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="rounded-md bg-primary text-white">
-          <div className="mx-auto grid max-w-[104rem] gap-8 px-5 py-12 md:py-16 lg:grid-cols-[0.75fr_1fr] lg:items-center">
-            <div>
-              <p className="text-sm font-semibold text-secondary">Live sessions and replays.</p>
-              <h1 className="mt-4 font-title text-6xl leading-[0.88] text-cream md:text-8xl">Webinars for operators.</h1>
-            </div>
-            <p className="max-w-3xl text-base leading-7 text-white/78 md:text-lg">
-              Short, practical sessions for managers, billers, firm admins, and owners who want cleaner records without making work feel heavier.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero eyebrow="Live sessions and replays" title="Webinars for People Who Run the Work." description="Short, practical sessions for managers, administrators, and owners who want cleaner workflows without making the work feel heavier." image="/media/generated/heroes/webinars.jpg" imageAlt="A small team taking part in a practical software workshop" points={["30-minute sessions", "Practical examples", "Live questions"]} />
 
-      <section className="mx-auto max-w-[104rem] px-5 py-12">
-        <div className="grid gap-5 md:grid-cols-3">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="Sessions" title="Learn it. See it. Use it." />
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
           {sessions.map((session) => {
             const Icon = session.icon;
             return (
-              <article key={session.title} className="rounded-md border border-border bg-white/70 p-6 shadow-sm transition hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-primary/20">
+              <article key={session.title} className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="grid h-11 w-11 place-items-center rounded-sm bg-secondary text-primary">
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
                   <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
@@ -56,6 +46,7 @@ export default function WebinarsPage() {
           })}
         </div>
       </section>
+      <PublicCta eyebrow="Want the workflow, not just the webinar?" title="See how Eclipse fits your team." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }

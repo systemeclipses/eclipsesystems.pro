@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ArrowRight, Check, ClipboardList, PackageCheck, Rocket, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { packageDefinitions } from "@/lib/packages";
+import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Pricing | Eclipse Systems",
@@ -54,48 +55,29 @@ const demoHref = "/schedule-demo";
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="grid min-h-[360px] overflow-hidden rounded-md bg-primary text-white">
-          <div className="mx-auto grid w-full max-w-[104rem] content-center px-5 py-10 md:py-12">
-            <div className="grid gap-8 lg:grid-cols-[0.72fr_1fr] lg:items-center">
-              <div>
-                <p className="text-sm font-semibold text-secondary">Pricing depends on the system you need</p>
-                <h1 className="font-title text-6xl leading-[0.88] text-cream md:text-8xl">Start from a package or build custom.</h1>
-              </div>
-              <div>
-                <p className="max-w-4xl text-base leading-7 text-white/78 md:text-lg">
-                  Eclipse Systems is a custom software company. Some clients buy a proven package. Some customize one. Some commission a fully bespoke system. We price after we understand the workflow, reuse opportunities, integrations, and launch path.
-                </p>
-                <div className="mt-6 grid gap-3 md:grid-cols-3">
-                  {[
-                    ["1", "Discovery call to understand the workflow and business goal."],
-                    ["2", "Recommendation: package, customization, or bespoke build."],
-                    ["3", "Scoped proposal with timeline, responsibilities, and price."]
-                  ].map(([value, label]) => (
-                    <div key={value} className="flex min-h-40 flex-col justify-between rounded-md border border-white/15 bg-white/10 p-5">
-                      <p className="font-title text-5xl leading-none text-cream">{value}</p>
-                      <p className="mt-6 text-sm leading-6 text-white/72">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero
+        eyebrow="Engagements and pricing"
+        title="Start Proven. Customize What Matters."
+        description="Use an existing Eclipse system, adapt a working foundation, or commission a bespoke build. We price after understanding the workflow, reuse opportunities, integrations, and launch path."
+        image="/media/generated/heroes/engagements.jpg"
+        imageAlt="Connected Eclipse commerce and operations modules"
+        points={["Proven packages", "Custom adaptations", "Bespoke systems"]}
+        actions={<Link href="/schedule-demo" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Start Discovery</Link>}
+      />
 
-      <section className="mx-auto max-w-[104rem] px-5 py-12">
-        <div className="grid gap-5 lg:grid-cols-3">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="Choose the right path" title="The quote follows the work." description="Every engagement starts with fit, then moves into a clear scope, timeline, and price." />
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
           {engagementOptions.map((option) => {
             const Icon = option.icon;
 
             return (
               <section
                 key={option.title}
-                className="flex min-h-[520px] flex-col rounded-md border border-border bg-white/70 p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-primary/20"
+                className="flex min-h-[540px] flex-col rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-xl shadow-[#172219]/5 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="inline-flex items-center gap-2 rounded-sm bg-secondary px-2.5 py-1.5 text-xs font-semibold uppercase text-white">
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-semibold uppercase text-white">
                     <Icon className="h-4 w-4" />
                     {option.label}
                   </div>
@@ -134,7 +116,7 @@ export default function PricingPage() {
           })}
         </div>
 
-        <section className="my-12 grid overflow-hidden rounded-md bg-primary text-white lg:grid-cols-[0.74fr_1fr]">
+        <section className="my-16 grid overflow-hidden rounded-[2rem] bg-primary text-white lg:grid-cols-[0.74fr_1fr]">
           <div className="p-6 md:p-8">
             <p className="text-sm font-semibold text-secondary">What affects price</p>
             <h2 className="mt-3 font-title text-5xl leading-none text-cream md:text-6xl">The quote follows the work.</h2>
@@ -152,8 +134,8 @@ export default function PricingPage() {
           </div>
         </section>
 
-        <section className="grid gap-8 lg:grid-cols-[0.65fr_1fr]">
-          <div>
+        <section className="grid gap-8 lg:grid-cols-[1fr_0.65fr] lg:gap-12">
+          <div className="lg:order-2 lg:sticky lg:top-32 lg:self-start">
             <p className="text-sm font-semibold text-primary">Packages</p>
             <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Start from one of four templates.</h2>
             <p className="mt-5 leading-7 text-muted-foreground">
@@ -164,9 +146,9 @@ export default function PricingPage() {
             </Button>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-3 lg:order-1">
             {packageDefinitions.map((pkg) => (
-              <article key={pkg.slug} className="rounded-md border border-border bg-white/70 p-5">
+              <article key={pkg.slug} className="rounded-[1.25rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6">
                 <div className="flex items-start gap-4">
                   <ClipboardList className="mt-1 h-5 w-5 shrink-0 text-primary" />
                   <div>
@@ -190,7 +172,7 @@ export default function PricingPage() {
           </div>
         </section>
 
-        <section className="mt-12 rounded-md border border-border bg-white/70 p-6 md:p-8">
+        <section className="mt-16 rounded-[2rem] border border-[#cbd3b0] bg-[#eef1e5] p-7 md:p-10">
           <div className="grid gap-6 md:grid-cols-[0.75fr_1fr] md:items-center">
             <div>
               <p className="text-sm font-semibold text-primary">Not sure which path fits?</p>

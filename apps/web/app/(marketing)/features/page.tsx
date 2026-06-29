@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loadFeatures, type FeatureContent } from "@/lib/seo/content";
+import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Features | Eclipse Systems",
@@ -64,32 +65,24 @@ export default async function FeaturesPage() {
 
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="overflow-hidden rounded-md bg-primary text-white">
-          <div className="mx-auto grid max-w-[104rem] gap-10 px-5 py-12 md:py-16 lg:grid-cols-[0.72fr_1fr] lg:items-center">
-            <div>
-              <p className="text-sm font-semibold text-secondary">Custom software, customer payments, and the workflows around them.</p>
-              <h1 className="mt-4 font-title text-6xl leading-[0.88] text-cream md:text-8xl">Features for the business you actually run.</h1>
-            </div>
-            <div>
-              <p className="max-w-3xl text-base leading-7 text-white/78 md:text-lg">
-                Eclipse Systems builds the practical layer between your team and your customers: invoice payment access, PayPal billing, client portals, internal operations tools, storefronts, CRM handoffs, and custom dashboards.
-              </p>
-              <div className="mt-6 grid gap-3 md:grid-cols-3">
-                {workflows.map(([title, text]) => (
-                  <div key={title} className="flex min-h-40 flex-col justify-between rounded-md border border-white/15 bg-white/10 p-5">
-                    <p className="font-title text-3xl leading-none text-cream">{title}</p>
-                    <p className="mt-5 text-sm leading-6 text-white/72">{text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero
+        eyebrow="Custom software capabilities"
+        title="Features Built Around Real Work."
+        description="Eclipse builds the practical layer between your team and your customers: payments, portals, operations tools, storefronts, CRM handoffs, reporting, and automation designed around how the business actually runs."
+        image="/media/generated/heroes/capabilities.jpg"
+        imageAlt="Connected Eclipse operations dashboards"
+        points={workflows.map(([title]) => title)}
+        actions={
+          <>
+            <Link href="/demos" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Explore Our Systems</Link>
+            <Link href="/schedule-demo" className="rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white">Schedule a Demo</Link>
+          </>
+        }
+      />
 
-      <section className="mx-auto max-w-[104rem] px-5 py-12">
-        <div className="grid gap-5 lg:grid-cols-4">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="What we build" title="The useful parts, connected." description="Choose the capabilities your workflow needs now, then connect the rest as your team grows." />
+        <div className="mt-12 grid gap-5 lg:grid-cols-4">
           {features.map((feature) => {
             const design = getDesign(feature);
             const Icon = design.icon;
@@ -97,10 +90,10 @@ export default async function FeaturesPage() {
               <Link
                 key={feature.slug}
                 href={`/features/${feature.slug}`}
-                className="group flex min-h-[360px] flex-col rounded-md border border-border bg-white/70 p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-primary/20"
+                className="group flex min-h-[400px] flex-col rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className={`inline-flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs font-semibold uppercase ${design.accent}`}>
+                  <div className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold uppercase ${design.accent}`}>
                     <Icon className="h-4 w-4" />
                     {design.label}
                   </div>
@@ -131,9 +124,9 @@ export default async function FeaturesPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[104rem] gap-5 px-5 pb-12 lg:grid-cols-3">
+      <section className="mx-auto grid max-w-[100rem] gap-5 px-5 pb-16 lg:grid-cols-3">
         {capabilityGroups.map((group) => (
-          <section key={group.title} className="rounded-md border border-border bg-white/70 p-6">
+          <section key={group.title} className="rounded-[1.5rem] border border-[#cbd3b0] bg-[#eef1e5] p-7">
             <FileText className="h-5 w-5 text-primary" />
             <h2 className="mt-6 font-title text-4xl leading-none">{group.title}</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">{group.text}</p>
@@ -142,7 +135,7 @@ export default async function FeaturesPage() {
       </section>
 
       <section className="px-3 pb-16">
-        <div className="mx-auto grid max-w-[104rem] gap-8 rounded-md bg-primary p-8 text-white md:grid-cols-[0.75fr_1fr] md:p-10">
+        <div className="mx-auto grid max-w-[100rem] gap-8 rounded-[2rem] bg-primary p-8 text-white md:grid-cols-[0.75fr_1fr] md:p-12">
           <div>
             <p className="text-sm font-semibold text-secondary">Customer payments are now public.</p>
             <h2 className="mt-4 font-title text-5xl leading-none text-cream md:text-6xl">Customers should not need an admin login to pay you.</h2>

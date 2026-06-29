@@ -3,7 +3,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, Check, ClipboardList, Hammer, Presentation, Wrench } from "lucide-react";
 import { HomePillHeader } from "@/components/marketing/home-pill-header";
+import { HomeScrollMotion } from "@/components/marketing/home-scroll-motion";
 import { MuteOnlyVideo } from "@/components/marketing/mute-only-video";
+import { ConnectedSystems } from "@/components/marketing/connected-systems";
+import { HomeBlogCarousel } from "@/components/marketing/home-blog-carousel";
 
 export const metadata: Metadata = {
   title: "Eclipse Systems | Custom Software Consulting",
@@ -17,28 +20,19 @@ const featureCards = [
     eyebrow: "Live demo",
     title: "See working software before you commit.",
     text: "The first conversation gets concrete fast. We can walk through operations, client portals, CRM, storefronts, billing, and reporting as working environments.",
-    cta: "Schedule a demo",
-    href: "/schedule-demo",
+    cta: "Find Your Starting Point",
+    href: "/demos",
     video: "/media/eclipse-systems-demo-showcase.webm",
     poster: "/media/eclipse-systems-demo-showcase-poster.png"
   },
   {
-    eyebrow: "Workflow",
-    title: "Map the business before writing the system.",
-    text: "We start with the real handoffs: who owns the work, what customers need to see, where approvals stall, and what should become automatic.",
-    cta: "Explore the approach",
-    href: "#about",
-    image: "/media/generated/eclipse-operations-glass.png",
-    imageAlt: "Floating glass operations software modules"
-  },
-  {
-    eyebrow: "Custom build",
-    title: "Launch the layer your team actually needs.",
-    text: "Your system can connect portals, operations, sales, commerce, invoices, dashboards, permissions, and automations into one coherent product.",
-    cta: "Talk through the build",
+    eyebrow: "",
+    title: "One system that works for everyone.",
+    text: "We build around the people who use it every day, then stay beside your team through training, rollout, support, and every improvement that comes next.",
+    cta: "Work with Eclipse",
     href: "/schedule-demo",
-    image: "/media/generated/eclipse-commerce-glass.png",
-    imageAlt: "Floating glass CRM and commerce software modules"
+    image: "/media/generated/eclipse-team-collaboration.jpg",
+    imageAlt: "A business team collaborating with a software consultant around a shared workflow"
   }
 ] as const;
 
@@ -107,7 +101,7 @@ const processSteps = [
 
 export default function LandingPage() {
   return (
-    <main className="home-redesign min-h-screen overflow-hidden bg-[#111913] text-[#f9e8d2]">
+    <main className="home-redesign min-h-screen overflow-hidden bg-[#18231c] text-[#f9e8d2]">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -145,8 +139,43 @@ export default function LandingPage() {
             }
 
             .home-redesign .feature-card {
-              animation: home-rise 900ms var(--ease-out-soft) both;
               transition: transform 620ms var(--ease-out-soft), box-shadow 620ms var(--ease-out-soft), border-color 620ms var(--ease-out-soft);
+            }
+
+            .home-redesign.motion-ready [data-reveal] {
+              opacity: 0;
+              transform: translate3d(0, 34px, 0);
+              transition:
+                opacity 900ms var(--ease-out-soft),
+                transform 1100ms var(--ease-out-soft);
+              transition-delay: var(--reveal-delay, 0ms);
+              will-change: opacity, transform;
+            }
+
+            .home-redesign.motion-ready [data-reveal="left"] {
+              transform: translate3d(-38px, 18px, 0);
+            }
+
+            .home-redesign.motion-ready [data-reveal="right"] {
+              transform: translate3d(38px, 18px, 0);
+            }
+
+            .home-redesign.motion-ready [data-reveal="scale"] {
+              transform: translate3d(0, 22px, 0) scale(.975);
+            }
+
+            .home-redesign.motion-ready [data-reveal].is-visible {
+              opacity: 1;
+              transform: translate3d(0, 0, 0) scale(1);
+            }
+
+            .home-redesign.motion-ready [data-reveal="scale"] .feature-media {
+              transform: scale(1.045);
+              transition: transform 1500ms var(--ease-out-soft);
+            }
+
+            .home-redesign.motion-ready [data-reveal="scale"].is-visible .feature-media {
+              transform: scale(1);
             }
 
             .home-redesign .feature-card:hover {
@@ -290,13 +319,23 @@ export default function LandingPage() {
                 transition: none;
                 transform: none;
               }
+
+              .home-redesign.motion-ready [data-reveal],
+              .home-redesign.motion-ready [data-reveal="left"],
+              .home-redesign.motion-ready [data-reveal="right"],
+              .home-redesign.motion-ready [data-reveal="scale"] {
+                opacity: 1;
+                transform: none;
+                transition: none;
+              }
             }
           `
         }}
       />
+      <HomeScrollMotion />
 
       <section className="relative px-3 py-3">
-        <div className="relative min-h-[calc(100vh-1.5rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-[#18231c] shadow-2xl shadow-black/40">
+        <div id="home-hero-card" className="relative min-h-[calc(100vh-1.5rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-[#18231c] shadow-2xl shadow-black/40">
           <div className="hero-scene absolute" aria-label="A hand holding floating glass software dashboards in Eclipse brand colors">
             <Image
               src="/media/generated/hero-layers/hero-base.png"
@@ -368,10 +407,10 @@ export default function LandingPage() {
         <div className="rounded-[2rem] border border-white/10 bg-[#f5f2eb] px-5 pb-14 pt-6 text-[#172219] md:px-10 md:pb-24 md:pt-10">
           <div className="mx-auto grid max-w-[92rem] gap-7 md:gap-10">
             <section className="feature-card relative rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-2xl shadow-[#172219]/10 md:p-10 lg:p-14">
-              <span className="absolute right-7 top-7 inline-flex rounded-full border border-[#b4c292]/60 bg-[#eef1e5] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[#314839] md:right-10 md:top-10 lg:right-14 lg:top-14">
+              <span data-reveal className="absolute right-7 top-7 inline-flex rounded-full border border-[#b4c292]/60 bg-[#eef1e5] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[#314839] md:right-10 md:top-10 lg:right-14 lg:top-14">
                 Process
               </span>
-              <div className="flex flex-wrap items-start justify-between gap-8 pr-0 pt-10 md:pr-32 md:pt-0">
+              <div data-reveal className="flex flex-wrap items-start justify-between gap-8 pr-0 pt-10 md:pr-32 md:pt-0">
                 <div>
                   <h2 className="max-w-4xl font-title text-[clamp(3.1rem,5.4vw,6.4rem)] leading-[0.88] text-[#172219]">
                     From first fit to ongoing support.
@@ -389,7 +428,12 @@ export default function LandingPage() {
                   const Icon = step.icon;
 
                   return (
-                  <article key={step.number} className="group relative rounded-[1.7rem] bg-[#314839] p-5 text-[#f9e8d2] transition duration-500 hover:-translate-y-1 hover:bg-[#172219] md:p-6">
+                  <article
+                    key={step.number}
+                    data-reveal
+                    className="group relative rounded-[1.7rem] bg-[#314839] p-5 text-[#f9e8d2] transition duration-500 hover:-translate-y-1 hover:bg-[#172219] md:p-6"
+                    style={{ "--reveal-delay": `${index * 90}ms` } as React.CSSProperties}
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div className="grid h-16 w-16 place-items-center rounded-[1.15rem] bg-[#b4c292] text-[#172219] shadow-[0_14px_34px_rgba(23,34,25,.2)]">
                         <Icon className="h-8 w-8 stroke-[1.85]" />
@@ -418,6 +462,7 @@ export default function LandingPage() {
                 return (
                   <article
                     key={card.title}
+                    data-reveal="scale"
                     className="feature-card overflow-hidden rounded-[2rem] border border-[#314839] bg-[#314839] text-[#f9e8d2] shadow-2xl shadow-[#172219]/10 xl:-mx-32 2xl:-mx-44"
                   >
                     <div className="grid gap-8 px-7 py-12 md:px-12 md:py-16 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:gap-14 lg:px-16">
@@ -450,7 +495,7 @@ export default function LandingPage() {
                           href={card.href}
                           className="relative z-10 mt-9 inline-flex rounded-full bg-[#f9e8d2] px-7 py-3 text-sm font-bold text-[#314839] transition hover:bg-white"
                         >
-                          Schedule a demo
+                          Find Your Starting Point
                         </Link>
                         <div className="relative z-10 mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm font-semibold text-[#f9e8d2]/72 lg:justify-start">
                           {["No pressure walkthrough", "Real product screens", "Built around your workflow"].map((item) => (
@@ -480,13 +525,14 @@ export default function LandingPage() {
               <article
                 key={card.title}
                 id={index === 1 ? "about" : index === 2 ? "systems" : undefined}
+                data-reveal={index % 2 === 0 ? "right" : "left"}
                 className={`feature-card grid overflow-hidden rounded-[2rem] shadow-2xl shadow-[#172219]/10 lg:grid-cols-2 lg:items-center ${
                   isSage
                       ? "border border-[#cbd3b0] bg-[#eef1e5] text-[#172219]"
                       : "border border-[#d8d0c1] bg-[#fbfaf6] text-[#172219]"
                 }`}
               >
-                <div className={`relative min-h-[340px] overflow-hidden bg-[#172219] md:min-h-[460px] ${index % 2 === 1 ? "lg:order-2" : ""}`}>
+                <div className="relative m-5 min-h-[340px] overflow-hidden rounded-[1.5rem] bg-[#172219] md:m-6 md:min-h-[460px] lg:ml-10 lg:mr-2">
                   {"video" in card ? (
                     <MuteOnlyVideo
                       className="feature-media h-full min-h-[340px] w-full object-cover md:min-h-[460px]"
@@ -506,11 +552,11 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-7 md:p-12 lg:p-16">
-                  <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] ${
-                    "border border-[#b4c292]/60 bg-[#fbfaf6] text-[#314839]"
-                  }`}>
-                    {card.eyebrow}
-                  </span>
+                  {card.eyebrow ? (
+                    <span className="inline-flex rounded-full border border-[#b4c292]/60 bg-[#fbfaf6] px-3 py-1 text-[11px] font-bold uppercase text-[#314839]">
+                      {card.eyebrow}
+                    </span>
+                  ) : null}
                   <h2 className="mt-7 max-w-xl font-title text-[clamp(3.1rem,5.4vw,6.4rem)] leading-[0.88]">
                     {card.title}
                   </h2>
@@ -528,18 +574,16 @@ export default function LandingPage() {
               );
             })}
 
-            <div className="feature-card rounded-[2rem] border border-[#d8d0c1] bg-[#172219] p-7 text-[#f9e8d2] shadow-2xl shadow-[#172219]/10 md:p-10">
-              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#b4c292]">Ready</p>
-                  <h2 className="mt-4 max-w-4xl font-title text-[clamp(3rem,5vw,6rem)] leading-[0.88]">
-                    Bring the workflow. We will bring the working model.
-                  </h2>
-                </div>
-                <Link href="/schedule-demo" className="inline-flex rounded-full bg-[#f9e8d2] px-7 py-3 text-sm font-bold text-[#314839] transition hover:bg-white">
-                  Schedule a demo
-                </Link>
-              </div>
+            <div data-reveal aria-hidden="true" className="mx-auto flex w-full max-w-5xl items-center gap-3 py-4">
+              <span className="h-1 w-full bg-[linear-gradient(90deg,transparent_0%,#314839_16%,#314839_84%,transparent_100%)]" />
+            </div>
+
+            <div data-reveal="scale">
+              <ConnectedSystems />
+            </div>
+
+            <div data-reveal className="min-w-0">
+              <HomeBlogCarousel />
             </div>
           </div>
         </div>

@@ -18,12 +18,12 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
 
   return (
     <>
-      <nav aria-label="Breadcrumb" className="mb-5 text-sm text-muted-foreground">
+      <nav aria-label="Breadcrumb" className="mb-6 text-sm font-semibold text-[#314839]/58">
         <ol className="flex flex-wrap gap-2">
           {items.map((item, index) => (
             <li key={item.href} className="flex gap-2">
-              {index > 0 ? <span>/</span> : null}
-              <Link className="hover:text-foreground" href={item.href}>{item.name}</Link>
+              {index > 0 ? <span className="text-[#b4c292]">/</span> : null}
+              <Link className="hover:text-[#172219]" href={item.href}>{item.name}</Link>
             </li>
           ))}
         </ol>

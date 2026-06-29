@@ -11,7 +11,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         }}
       />
       <SiteHeader />
-      {children}
+      <div className="marketing-page-backdrop">{children}</div>
       <QuickActionMenu />
       <SiteFooter />
     </>

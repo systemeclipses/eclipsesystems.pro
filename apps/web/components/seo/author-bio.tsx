@@ -11,9 +11,9 @@ export function AuthorBio({ name, role, expertise, links = [] }: { name: string;
   };
 
   return (
-    <section className="mt-12 rounded-lg border border-border p-5">
+    <section className="mt-12 rounded-[1.25rem] border border-[#cbd3b0] bg-[#eef1e5] p-6">
       <p className="text-sm font-semibold">Reviewed by {name}</p>
-      <p className="mt-2 text-sm text-muted-foreground">{role}. {expertise}</p>
+      <p className="mt-2 text-sm font-semibold text-[#314839]/68">{role}. {expertise}</p>
       <StructuredData schema={schema} />
     </section>
   );

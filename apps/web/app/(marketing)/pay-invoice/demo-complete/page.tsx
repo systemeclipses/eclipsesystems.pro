@@ -11,8 +11,8 @@ export default function DemoPaymentCompletePage({ searchParams }: { searchParams
   const invoice = searchParams.invoice ?? "test invoice";
 
   return (
-    <main className="min-h-screen bg-cream px-5 py-12 text-ink">
-      <section className="mx-auto grid max-w-2xl place-items-center rounded-md border border-border bg-white/80 p-8 text-center shadow-xl shadow-primary/10">
+    <main className="min-h-screen bg-cream px-5 pb-12 pt-32 text-ink">
+      <section className="mx-auto grid max-w-2xl place-items-center rounded-[2rem] border border-[#cbd3b0] bg-[#eef1e5] p-8 text-center shadow-2xl shadow-primary/10 md:p-12">
         <div className="grid h-16 w-16 place-items-center rounded-full bg-primary text-cream">
           <CheckCircle2 className="h-8 w-8" />
         </div>
@@ -22,10 +22,10 @@ export default function DemoPaymentCompletePage({ searchParams }: { searchParams
           This confirms the public invoice lookup and payment handoff path for {invoice}. No real PayPal payment was processed.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <Link href="/pay-invoice" className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+          <Link href="/pay-invoice" className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
             Try another invoice
           </Link>
-          <Link href="/" className="inline-flex h-10 items-center rounded-md border border-border px-4 text-sm font-semibold text-primary">
+          <Link href="/" className="inline-flex h-11 items-center rounded-full border border-border px-5 text-sm font-semibold text-primary">
             Main site
           </Link>
         </div>

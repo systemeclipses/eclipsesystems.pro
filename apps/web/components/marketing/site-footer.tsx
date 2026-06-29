@@ -6,7 +6,7 @@ const productLinks = [
   ["Capabilities", "/features"],
   ["Engagements", "/pricing"],
   ["Industries", "/industries"],
-  ["Demo environments", "/#demos"]
+  ["Demo environments", "/demos"]
 ] as const;
 
 const resourceLinks = [

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CircleHelp, FileText, ShieldCheck, TimerReset, UsersRound } from "lucide-react";
+import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Help Center",
@@ -17,25 +18,16 @@ const topics = [
 export default function HelpCenterPage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="rounded-md bg-primary text-white">
-          <div className="mx-auto max-w-[104rem] px-5 py-12 md:py-16">
-            <p className="text-sm font-semibold text-secondary">Answers without the maze.</p>
-            <h1 className="mt-4 font-title text-6xl leading-[0.88] text-cream md:text-8xl">Help Center</h1>
-            <p className="mt-6 max-w-3xl text-base leading-7 text-white/78 md:text-lg">
-              Find the workflow, fix the snag, and get back to the work. The good kind of boring support.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero eyebrow="Answers without the maze" title="Eclipse Help Center." description="Find the workflow, fix the snag, and get back to the work. Clear guidance for the people using the system every day." image="/media/generated/heroes/support.jpg" imageAlt="A support specialist helping an operations manager resolve a workflow" points={["Workflow help", "Access guidance", "Human support"]} />
 
-      <section className="mx-auto max-w-[104rem] px-5 py-12">
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="Browse support" title="Start with the part that is stuck." />
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {topics.map((topic) => {
             const Icon = topic.icon;
             return (
-              <Link key={topic.title} href="/guides" className="group rounded-md border border-border bg-white/70 p-6 shadow-sm transition hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-primary/20">
-                <div className="grid h-11 w-11 place-items-center rounded-sm bg-secondary text-primary">
+              <Link key={topic.title} href="/guides" className="group rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h2 className="mt-8 font-title text-4xl leading-none">{topic.title}</h2>
@@ -48,7 +40,7 @@ export default function HelpCenterPage() {
           })}
         </div>
 
-        <div className="mt-8 rounded-md bg-primary p-6 text-white">
+        <div className="mt-10 rounded-[2rem] bg-primary p-7 text-white md:p-10">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
               <CircleHelp className="mt-1 h-5 w-5 text-secondary" />

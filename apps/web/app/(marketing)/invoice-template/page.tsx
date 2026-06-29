@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Invoice Template",
@@ -19,24 +20,14 @@ const checklist = [
 export default function InvoiceTemplatePage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="rounded-md bg-primary text-white">
-          <div className="mx-auto grid max-w-[104rem] gap-8 px-5 py-12 md:py-16 lg:grid-cols-[0.74fr_1fr] lg:items-center">
-            <div>
-              <p className="text-sm font-semibold text-secondary">Template for billing from real work.</p>
-              <h1 className="mt-4 font-title text-6xl leading-[0.88] text-cream md:text-8xl">Invoice Template</h1>
-            </div>
-            <p className="max-w-3xl text-base leading-7 text-white/78 md:text-lg">
-              A simple structure for turning approved time into invoices that are easier to review, explain, and collect.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero eyebrow="Billing from real work" title="A Cleaner Invoice Template." description="A practical structure for turning approved work into invoices that are easier to review, explain, send, and collect." image="/media/generated/heroes/billing-legal.jpg" imageAlt="A billing professional reviewing structured invoices and reporting" points={["Approved work", "Clear line items", "Faster review"]} />
 
-      <section className="mx-auto grid max-w-[104rem] gap-6 px-5 py-12 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-md border border-border bg-white/70 p-6 shadow-sm">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="Invoice workflow" title="Review first. Send with confidence." />
+        <div className="mt-12 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-[1.5rem] border border-[#cbd3b0] bg-[#eef1e5] p-7 shadow-xl shadow-[#172219]/5">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-sm bg-secondary text-primary">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary">
               <FileText className="h-5 w-5" />
             </div>
             <h2 className="font-title text-4xl leading-none">Review checklist</h2>
@@ -54,7 +45,7 @@ export default function InvoiceTemplatePage() {
           </Button>
         </div>
 
-        <div className="rounded-md border border-border bg-white p-6 shadow-2xl shadow-primary/10">
+        <div className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-2xl shadow-primary/10">
           <div className="flex justify-between border-b border-border pb-5">
             <div>
               <p className="font-title text-4xl leading-none">Invoice</p>
@@ -68,7 +59,7 @@ export default function InvoiceTemplatePage() {
               ["Client review meeting", "1.0h", "$150"],
               ["Implementation work", "12.0h", "$1,800"]
             ].map(([task, hours, amount]) => (
-              <div key={task} className="grid grid-cols-[1fr_70px_80px] gap-3 rounded-sm bg-cream/70 p-3">
+              <div key={task} className="grid grid-cols-[1fr_70px_80px] gap-3 rounded-lg bg-cream/70 p-3">
                 <span>{task}</span>
                 <span>{hours}</span>
                 <span className="text-right font-semibold">{amount}</span>
@@ -76,13 +67,15 @@ export default function InvoiceTemplatePage() {
             ))}
           </div>
           <div className="mt-6 flex justify-end">
-            <div className="w-48 rounded-sm bg-primary p-4 text-cream">
+            <div className="w-48 rounded-xl bg-primary p-4 text-cream">
               <p className="text-sm">Total</p>
               <p className="font-title text-4xl leading-none">$2,625</p>
             </div>
           </div>
         </div>
+        </div>
       </section>
+      <PublicCta eyebrow="Ready to connect billing to the work?" title="Build the invoice flow into your system." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" />
     </main>
   );
 }

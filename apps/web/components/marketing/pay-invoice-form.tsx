@@ -48,7 +48,7 @@ export function PayInvoiceForm() {
   }
 
   return (
-    <section className="rounded-md border border-border bg-white/80 p-5 shadow-xl shadow-primary/10 md:p-6">
+    <section className="rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-2xl shadow-primary/10 md:p-8">
       <div className="flex items-start gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-sm bg-primary text-cream">
           <ReceiptText className="h-5 w-5" />
@@ -65,7 +65,7 @@ export function PayInvoiceForm() {
           <input
             name="number"
             required
-            className="h-11 rounded-md border border-border bg-white px-3 font-normal uppercase outline-none focus:border-primary"
+            className="h-11 rounded-lg border border-border bg-white px-3 font-normal uppercase outline-none focus:border-primary"
             placeholder="INV-..."
           />
         </label>
@@ -75,7 +75,7 @@ export function PayInvoiceForm() {
             name="recipientEmail"
             type="email"
             required
-            className="h-11 rounded-md border border-border bg-white px-3 font-normal outline-none focus:border-primary"
+            className="h-11 rounded-lg border border-border bg-white px-3 font-normal outline-none focus:border-primary"
             placeholder="billing@example.com"
           />
         </label>

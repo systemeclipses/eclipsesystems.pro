@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FAQ } from "@/components/seo/faq";
 import { loadFeatures } from "@/lib/seo/content";
+import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export async function generateStaticParams() {
   return (await loadFeatures()).map((feature) => ({ slug: feature.slug }));
@@ -27,17 +28,14 @@ export default async function FeaturePage({ params }: { params: { slug: string }
 
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="mx-auto max-w-5xl px-6 py-12">
+      <PublicPageHero eyebrow="Eclipse capability" title={feature.name} description={feature.summary} image="/media/generated/heroes/capabilities.jpg" imageAlt="Connected custom software dashboards arranged in a modular system" points={["Customer-facing clarity", "Internal controls", "Connected reporting"]} />
+      <section className="mx-auto max-w-[90rem] px-5 py-16 md:py-24">
         <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Features", href: "/features" }, { name: feature.name, href: `/features/${feature.slug}` }]} />
-        <div className="rounded-md bg-primary p-6 text-white md:p-8">
-          <p className="text-sm font-semibold text-secondary">Eclipse Systems capability</p>
-          <h1 className="mt-4 font-title text-5xl leading-none text-cream md:text-7xl">{feature.name}</h1>
-          <p className="mt-5 max-w-3xl text-base leading-7 text-white/78">{feature.summary}</p>
-        </div>
+        <div className="mt-10"><PublicSectionHeading eyebrow="Questions this capability answers" title="Built around the real process." /></div>
 
-        <section className="mt-8 grid gap-4">
+        <section className="mt-10 grid gap-4 md:grid-cols-2">
           {feature.questions.map((question) => (
-            <div key={question} className="rounded-md border border-border bg-white/70 p-5">
+            <div key={question} className="rounded-[1.25rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-lg shadow-[#172219]/5">
               <div className="flex gap-3">
                 <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
                 <div>
@@ -51,7 +49,7 @@ export default async function FeaturePage({ params }: { params: { slug: string }
           ))}
         </section>
 
-        <section className="mt-8 rounded-md border border-border bg-white/70 p-6">
+        <section className="mt-10 rounded-[2rem] border border-[#cbd3b0] bg-[#eef1e5] p-7 md:p-10">
           <h2 className="font-title text-4xl leading-none">Built around the real process.</h2>
           <p className="mt-4 leading-7 text-muted-foreground">
             This can be delivered as a focused workflow, connected to an existing Eclipse system, or built as part of a larger custom software project. The goal is not to force your business into a generic template; it is to make the customer-facing and internal steps work together cleanly.
@@ -70,6 +68,7 @@ export default async function FeaturePage({ params }: { params: { slug: string }
 
         <FAQ items={feature.questions.map((question) => ({ question, answer: "Yes. Eclipse Systems scopes this around your workflow, customer access needs, internal controls, integrations, and launch path." }))} />
       </section>
+      <PublicCta eyebrow="Build this around your team" title="Start with the workflow that needs to work better." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }

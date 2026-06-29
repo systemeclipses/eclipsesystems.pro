@@ -52,7 +52,7 @@ export function ScheduleDemoForm({ selectedDemo = "" }: { selectedDemo?: string 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-5 rounded-md border border-border bg-white/75 p-5 shadow-sm md:p-7">
+    <form onSubmit={handleSubmit} className="grid gap-5 rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-2xl shadow-[#172219]/10 md:p-8">
       {selectedDemoLabel ? (
         <div className="rounded-md border border-border bg-cream px-3 py-2 text-sm font-semibold text-primary">
           Demo selected: {selectedDemoLabel}

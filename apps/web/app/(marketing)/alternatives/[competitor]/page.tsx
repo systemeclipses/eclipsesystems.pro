@@ -5,6 +5,7 @@ import { ComparisonTable } from "@/components/seo/comparison-table";
 import { FAQ } from "@/components/seo/faq";
 import { buildComparisonRows } from "@/lib/seo/comparison";
 import { loadCompetitor, loadCompetitors } from "@/lib/seo/content";
+import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 const alternatives = ["Eclipse Timekeeping", "Toggl Track", "Clockify", "Harvest", "Clio", "Bill4Time", "Deputy", "Homebase"];
 
@@ -22,14 +23,15 @@ export default async function AlternativesPage({ params }: { params: { competito
   const competitor = await loadCompetitor(params.competitor);
   if (!competitor) notFound();
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
+    <main className="min-h-screen bg-cream text-ink">
+      <PublicPageHero eyebrow="Software alternatives" title={"Alternatives to " + competitor.name + "."} description={"Compare systems for teams whose workflow has grown beyond a single tracker, billing tool, practice platform, or scheduling app."} image="/media/generated/heroes/engagements.jpg" imageAlt="Modular software foundations arranged for comparison" points={["Workflow fit", "Connected tools", "Clear migration questions"]} />
+      <section className="mx-auto max-w-[90rem] px-5 py-16 md:py-24">
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Alternatives", href: "/alternatives" }, { name: competitor.name, href: `/alternatives/${competitor.slug}` }]} />
-      <h1 className="text-3xl font-semibold">Best {competitor.name} Alternatives in 2026</h1>
-      <p className="mt-4 text-lg leading-8 text-muted-foreground">Teams usually search for {competitor.name} alternatives when their workflow has grown beyond a single time tracker, billing tool, practice-management platform, or scheduling app.</p>
+      <div className="mt-10"><PublicSectionHeading eyebrow="What to compare" title={"The best " + competitor.name + " alternative depends on the work."} /></div>
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Which {competitor.name} alternatives should you compare?</h2>
         <ol className="mt-4 grid gap-3">
-          {alternatives.map((name, index) => <li key={name} className="rounded-md border border-border p-4"><strong>{index + 1}. {name}</strong><p className="mt-1 text-sm text-muted-foreground">{name === "Eclipse Timekeeping" ? "Best when you want time tracking, invoicing, shifts, reporting, and legal billing under one product family." : "Worth comparing when its category focus matches your primary workflow."}</p></li>)}
+          {alternatives.map((name, index) => <li key={name} className="rounded-[1rem] border border-[#d8d0c1] bg-[#fbfaf6] p-5"><strong>{index + 1}. {name}</strong><p className="mt-2 text-sm font-semibold leading-6 text-[#314839]/70">{name === "Eclipse Timekeeping" ? "Best when you want time tracking, invoicing, shifts, reporting, and legal billing under one product family." : "Worth comparing when its category focus matches your primary workflow."}</p></li>)}
         </ol>
       </section>
       <section className="mt-10">
@@ -42,6 +44,8 @@ export default async function AlternativesPage({ params }: { params: { competito
         { question: `Is there a legal billing alternative to ${competitor.name}?`, answer: "Eclipse Timekeeping Legal includes UTBMS codes, LEDES 1998B export, matters, conflict checks, trust accounting, and custom rates." },
         { question: "Should a team switch immediately?", answer: "No. Teams should compare current workflows, integrations, migration needs, and billing requirements before switching." }
       ]} />
+      </section>
+      <PublicCta eyebrow="Make the comparison real" title="See which starting point fits your team." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }

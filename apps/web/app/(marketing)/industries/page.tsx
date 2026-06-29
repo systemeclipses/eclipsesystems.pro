@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeDollarSign, ChefHat, DraftingCompass, FileCheck2, Scale, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loadIndustries, type IndustryContent } from "@/lib/seo/content";
+import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Industries",
@@ -49,44 +50,27 @@ export default async function IndustriesPage() {
 
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="overflow-hidden rounded-md bg-primary text-white">
-          <div className="mx-auto grid max-w-[104rem] gap-10 px-5 py-12 md:py-16 lg:grid-cols-[0.78fr_1fr] lg:items-end">
-            <div>
-              <p className="text-sm font-semibold text-secondary">Built for teams with real operating complexity.</p>
-              <h1 className="mt-4 font-title text-6xl leading-[0.88] text-cream md:text-8xl">Industries that run on Eclipse.</h1>
-            </div>
-            <div>
-              <p className="max-w-3xl text-base leading-7 text-white/78 md:text-lg">
-                Eclipse gives service firms and shift teams one place to capture work, review it, bill it, schedule it, and understand what is actually happening across the business.
-              </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {[
-                  ["Billable", "Time, rates, invoices, and client work."],
-                  ["Operational", "Schedules, coverage, chat, and approvals."],
-                  ["Auditable", "Clear records for review and reporting."]
-                ].map(([title, text]) => (
-                  <div key={title} className="rounded-md border border-white/15 bg-white/10 p-4">
-                    <p className="font-title text-3xl leading-none text-cream">{title}</p>
-                    <p className="mt-3 text-xs leading-5 text-white/70">{text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero
+        eyebrow="Built for operating complexity"
+        title="Systems for Teams That Keep Things Moving."
+        description="Eclipse gives service firms, professional teams, and shift-based businesses one place to capture work, review it, bill it, schedule it, and understand what is actually happening."
+        image="/media/generated/heroes/industries.jpg"
+        imageAlt="A team collaborating around an Eclipse workflow"
+        points={["Billable work", "Operational clarity", "Auditable records"]}
+        actions={<Link href="/schedule-demo" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Find Your Starting Point</Link>}
+      />
 
-      <section className="mx-auto max-w-[104rem] px-5 py-12">
-        <div className="grid gap-5 lg:grid-cols-4">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="Priority industries" title="Different work. The same need for clarity." description="Start with the workflow pressure your team feels most, then shape the system around the rest." />
+        <div className="mt-12 grid gap-5 lg:grid-cols-4">
           {priority.map(({ industry, label, eyebrow, icon: Icon }) => (
             <Link
               key={industry.slug}
               href={`/industries/${industry.slug}`}
-              className="group flex min-h-[420px] flex-col rounded-md border border-border bg-white/70 p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-primary/20"
+              className="group flex min-h-[440px] flex-col rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="grid h-11 w-11 place-items-center rounded-sm bg-secondary text-primary">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary">
                   <Icon className="h-5 w-5" />
                 </div>
                 <span className="text-xs font-semibold uppercase text-muted-foreground">{eyebrow}</span>
@@ -105,8 +89,8 @@ export default async function IndustriesPage() {
         </div>
       </section>
 
-      <section className="px-3 pb-12">
-        <div className="mx-auto grid max-w-[104rem] gap-8 rounded-md bg-primary p-8 text-white lg:grid-cols-[0.65fr_1fr] lg:p-10">
+      <section className="px-3 pb-16">
+        <div className="mx-auto grid max-w-[100rem] gap-8 rounded-[2rem] bg-primary p-8 text-white lg:grid-cols-[0.65fr_1fr] lg:p-12">
           <div>
             <p className="text-sm font-semibold text-secondary">One platform, different operating shapes.</p>
             <h2 className="mt-4 font-title text-5xl leading-none text-cream md:text-6xl">Match the workflow to the work.</h2>
@@ -119,7 +103,7 @@ export default async function IndustriesPage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="rounded-md border border-white/15 bg-white/10 p-5">
+                <div key={item.title} className="rounded-[1.25rem] border border-white/15 bg-white/10 p-5">
                   <Icon className="h-5 w-5 text-secondary" />
                   <p className="mt-6 text-lg font-semibold text-cream">{item.title}</p>
                   <p className="mt-3 text-sm leading-6 text-white/72">{item.text}</p>
@@ -130,7 +114,7 @@ export default async function IndustriesPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[104rem] px-5 pb-16">
+      <section className="mx-auto max-w-[100rem] px-5 pb-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-primary">And more</p>
@@ -143,7 +127,7 @@ export default async function IndustriesPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {moreIndustries.map((industry) => (
-            <Link key={industry.slug} href={`/industries/${industry.slug}`} className="group rounded-md border border-border bg-white/60 p-5 transition hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-primary/10">
+            <Link key={industry.slug} href={`/industries/${industry.slug}`} className="group rounded-[1.25rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
               <h3 className="font-title text-4xl leading-none">{industry.name}</h3>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{industry.description}</p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary">

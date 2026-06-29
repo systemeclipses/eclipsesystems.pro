@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ClipboardList, FileText, Landmark, Scale } from "lucide-react";
+import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Guides & Templates",
@@ -17,28 +18,17 @@ const guides = [
 export default function GuidesPage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <section className="px-3 pt-3">
-        <div className="rounded-md bg-primary text-white">
-          <div className="mx-auto grid max-w-[104rem] gap-8 px-5 py-12 md:py-16 lg:grid-cols-[0.75fr_1fr] lg:items-center">
-            <div>
-              <p className="text-sm font-semibold text-secondary">Guides, templates, and operating playbooks.</p>
-              <h1 className="mt-4 font-title text-6xl leading-[0.88] text-cream md:text-8xl">Resources that do work.</h1>
-            </div>
-            <p className="max-w-3xl text-base leading-7 text-white/78 md:text-lg">
-              Use these as starting points for cleaner timesheets, better invoice review, legal billing setup, and shift policies your team can actually follow.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero eyebrow="Guides and operating playbooks" title="Resources That Do Real Work." description="Practical starting points for cleaner records, better reviews, stronger billing controls, and workflows your team can actually follow." image="/media/generated/heroes/resources.jpg" imageAlt="An operations leader organizing a practical workflow playbook" points={["Practical templates", "Clear checklists", "Built for operators"]} />
 
-      <section className="mx-auto max-w-[104rem] px-5 py-12">
-        <div className="grid gap-5 md:grid-cols-2">
+      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
+        <PublicSectionHeading eyebrow="Resource library" title="Start with something useful." description="Open a guide, adapt the framework, and make the process your own." />
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
           {guides.map((guide) => {
             const Icon = guide.icon;
             return (
-              <Link key={guide.title} href={guide.href} className="group rounded-md border border-border bg-white/70 p-6 shadow-sm transition hover:-translate-y-1 hover:bg-white hover:shadow-2xl hover:shadow-primary/20">
+              <Link key={guide.title} href={guide.href} className="group rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12">
                 <div className="flex items-start gap-5">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-sm bg-secondary text-primary">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
@@ -54,6 +44,7 @@ export default function GuidesPage() {
           })}
         </div>
       </section>
+      <PublicCta eyebrow="Need a system, not another document?" title="Turn the playbook into the workflow." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }

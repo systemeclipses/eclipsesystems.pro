@@ -36,6 +36,32 @@ body {
   transition: background-color 220ms ease, color 220ms ease;
 }
 
+.marketing-page-backdrop {
+  overflow: hidden;
+  background: #18231c;
+  padding-bottom: 0.75rem;
+}
+
+.marketing-page-backdrop > main:not(.home-redesign) {
+  width: calc(100% - 1.5rem);
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 2rem;
+  background: #f5f2eb;
+  box-shadow: 0 28px 80px rgba(17, 25, 19, 0.2);
+}
+
+.marketing-page-backdrop > main:not(.home-redesign) > [data-public-hero-shell] {
+  padding: 0;
+}
+
+@media (max-width: 639px) {
+  .marketing-page-backdrop > main:not(.home-redesign) {
+    width: calc(100% - 0.75rem);
+    border-radius: 1.5rem;
+  }
+}
+
 ::selection {
   background: hsl(var(--secondary));
   color: hsl(var(--ink));
@@ -189,6 +215,123 @@ body {
   .crm-demo-stage-row,
   .crm-demo-bar {
     animation: none;
+  }
+}
+
+.connected-marquee {
+  animation: connected-marquee 22s linear infinite;
+  will-change: transform;
+}
+
+.connected-anchor {
+  animation: connected-anchor-float 6.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.connected-portal-track {
+  animation: connected-portal-track 14s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.connected-portal-cycle {
+  opacity: 0;
+  animation: connected-portal-cycle 12s cubic-bezier(.22,.8,.3,1) infinite;
+  will-change: transform, opacity;
+}
+
+.connected-fan-item {
+  transform: translate(-50%, -50%);
+  animation: connected-fan-drift 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.connected-fan-left {
+  z-index: 1;
+  margin-left: -7rem;
+  margin-top: .8rem;
+  rotate: -18deg;
+}
+
+.connected-fan-mid-left {
+  z-index: 2;
+  margin-left: -3.7rem;
+  margin-top: -.6rem;
+  rotate: -9deg;
+}
+
+.connected-fan-center {
+  z-index: 5;
+  margin-top: -1.4rem;
+}
+
+.connected-fan-mid-right {
+  z-index: 2;
+  margin-left: 3.7rem;
+  margin-top: -.6rem;
+  rotate: 9deg;
+}
+
+.connected-fan-right {
+  z-index: 1;
+  margin-left: 7rem;
+  margin-top: .8rem;
+  rotate: 18deg;
+}
+
+.connected-order-card {
+  animation: connected-order-card 6s ease-in-out -1.4s infinite;
+  will-change: transform;
+}
+
+@keyframes connected-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - .375rem)); }
+}
+
+@keyframes connected-anchor-float {
+  0%, 100% { transform: translate(-50%, -54%); }
+  50% { transform: translate(-50%, -46%); }
+}
+
+@keyframes connected-portal-track {
+  from { transform: translateX(-7%); }
+  to { transform: translateX(7%); }
+}
+
+@keyframes connected-portal-cycle {
+  0%, 28% { opacity: 1; transform: translateY(0) scale(1); }
+  35%, 93% { opacity: 0; transform: translateY(-10px) scale(1.03); }
+  100% { opacity: 1; transform: translateY(12px) scale(.9); }
+}
+
+@keyframes connected-fan-drift {
+  0%, 100% { transform: translate(-50%, -54%); }
+  50% { transform: translate(-50%, -45%); }
+}
+
+@keyframes connected-order-card {
+  0%, 100% { transform: translate(-50%, 2px); }
+  50% { transform: translate(-50%, -4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connected-marquee,
+  .connected-anchor,
+  .connected-portal-track,
+  .connected-portal-cycle,
+  .connected-fan-item,
+  .connected-order-card {
+    animation: none;
+  }
+
+  .connected-anchor,
+  .connected-fan-item,
+  .connected-order-card {
+    transform: translate(-50%, -50%);
+  }
+
+  .connected-portal-cycle:first-child {
+    opacity: 1;
   }
 }
 

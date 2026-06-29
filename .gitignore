@@ -3,3 +3,7 @@ node_modules/
 .env*.local
 .next/
 .next/cache/
+.DS_Store
+/Hero Card Video.mp4
+/Screen Recording *.mov
+/Stock Images/
