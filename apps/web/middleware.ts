@@ -22,6 +22,15 @@ const protectedPrefixes = [
   "/timesheet"
 ];
 
+const publicDemoPrefixes = [
+  "/dashboard",
+  "/templates",
+  "/operations",
+  "/client-portal",
+  "/crm",
+  "/storefront"
+];
+
 const sessionCookieNames = [
   "authjs.session-token",
   "__Secure-authjs.session-token",
@@ -34,7 +43,10 @@ function hasSessionCookie(request: NextRequest) {
 }
 
 export default function middleware(request: NextRequest) {
-  const isProtectedRoute = protectedPrefixes.some((path) => request.nextUrl.pathname.startsWith(path));
+  const isPublicDemo = publicDemoPrefixes.some(
+    (path) => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(`${path}/`)
+  );
+  const isProtectedRoute = !isPublicDemo && protectedPrefixes.some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (isProtectedRoute && !hasSessionCookie(request)) {
     const loginUrl = new URL("/login", request.nextUrl);

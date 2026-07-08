@@ -321,7 +321,7 @@ export function EmployeeOnboardingClient({ context }: { context: OnboardingConte
                 <p className="mt-2">Add the app to your home screen, use Face ID or Touch ID if your browser offers it, and check your hours tab after your first shift.</p>
               </div>
               <Button onClick={openApp} className="mt-6 h-12 w-full">Open the app</Button>
-              <Button onClick={() => router.push("/login")} variant="outline" className="mt-2 h-12 w-full">Sign out for now</Button>
+              <Button onClick={() => router.push("/")} variant="outline" className="mt-2 h-12 w-full">Back to site</Button>
             </div>
           ) : null}
         </section>

@@ -109,9 +109,9 @@ export function PackageDashboard({
                 <LayoutDashboard className="h-[18px] w-[18px] text-secondary" />
                 All Packages
               </Link>
-              <Link href="/settings/account" className="flex items-center gap-3 rounded-md px-3 py-2.5 text-[15px] text-white/75 transition hover:bg-white/10 hover:text-white">
+              <Link href="/demos" className="flex items-center gap-3 rounded-md px-3 py-2.5 text-[15px] text-white/75 transition hover:bg-white/10 hover:text-white">
                 <UserRound className="h-[18px] w-[18px] text-secondary" />
-                Account
+                All demos
               </Link>
             </nav>
           </div>

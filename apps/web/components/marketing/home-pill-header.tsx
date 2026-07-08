@@ -69,9 +69,6 @@ export function HomePillHeader() {
         <Link href="/schedule-demo" className="whitespace-nowrap rounded-full bg-[#f9e8d2] px-4 py-2 font-bold text-[#314839] transition hover:bg-white sm:px-5">
           Schedule a demo
         </Link>
-        <Link href="/login" aria-label="Login" className="hidden rounded-full border border-white/12 px-3 py-2 text-white/72 transition hover:text-white sm:inline-flex">
-          Login
-        </Link>
       </div>
     </header>
   );

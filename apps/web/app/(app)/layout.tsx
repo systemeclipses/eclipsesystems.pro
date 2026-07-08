@@ -397,17 +397,9 @@ function ProductSwitcher({ context, activeProduct, tone = "light" }: { context: 
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
-  const userName = session.user.name || session.user.email || "Account";
   const pathname = headers().get("x-pathname") ?? "";
   const standalonePackageRoutes = ["/templates", "/dashboard", "/operations", "/client-portal", "/crm", "/storefront"];
   const useStandalonePackageShell = standalonePackageRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
-  const subscriptionSetupRoutes = ["/settings/billing", "/settings/account", "/account"];
-  const canBypassSubscription = subscriptionSetupRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
-  const organizationId = session.user.id ? await getDefaultOrganizationForUser(session.user.id) : null;
-
-  if (!organizationId) redirect("/onboarding");
   if (useStandalonePackageShell) {
     return (
       <div className="min-h-screen bg-background">
@@ -416,6 +408,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
     );
   }
+
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  const userName = session.user.name || session.user.email || "Account";
+  const subscriptionSetupRoutes = ["/settings/billing", "/settings/account", "/account"];
+  const canBypassSubscription = subscriptionSetupRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const organizationId = session.user.id ? await getDefaultOrganizationForUser(session.user.id) : null;
+
+  if (!organizationId) redirect("/onboarding");
   const context = await getProductUiContext(session.user.id, organizationId);
   if (!canBypassSubscription && context.role !== "superuser" && !(await hasUsableSubscription(organizationId))) redirect("/settings/billing");
   const activeProduct = resolveActiveProduct(context, cookies().get("eclipse_active_product")?.value);

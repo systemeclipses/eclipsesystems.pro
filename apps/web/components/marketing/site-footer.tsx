@@ -18,7 +18,6 @@ const resourceLinks = [
 ] as const;
 
 const companyLinks = [
-  ["Login", "/login"],
   ["Schedule a Demo", "/schedule-demo"],
   ["Locations", "/locations"],
   ["Alternatives", "/alternatives"]

@@ -435,14 +435,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
                     </Button>
                   );
                 })}
-                {!isLogin ? (
-                  <div className="rounded-md border border-primary bg-primary p-4 text-sm leading-6 text-white" style={{ ...fallbackStyles.note, marginTop: 0 }}>
-                    <span style={{ color: "#fff" }}>Already have a workspace?</span>{" "}
-                    <Link href="/login" className="font-semibold text-white hover:underline">
-                      Sign in.
-                    </Link>
-                  </div>
-                ) : null}
               </div>
             </div>
 
