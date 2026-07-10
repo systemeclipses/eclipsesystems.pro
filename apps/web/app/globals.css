@@ -80,6 +80,55 @@ body {
     0 18px 60px rgba(0, 0, 0, 0.28);
 }
 
+.pricing-pulse-panel {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(180, 194, 146, 0), rgba(180, 194, 146, 0.08), rgba(249, 232, 210, 0.24), rgba(180, 194, 146, 0.08), rgba(180, 194, 146, 0)),
+    linear-gradient(135deg, #172219 0%, #314839 48%, #172219 100%);
+  background-size: 330% 330%, 100% 100%;
+  animation: pricing-pulse-drift 26s linear infinite;
+}
+
+.pricing-pulse-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: radial-gradient(circle at 0% 0%, transparent, rgba(180, 194, 146, 0.22), rgba(249, 232, 210, 0.68), rgba(180, 194, 146, 0.22), transparent);
+  background-size: 330% 330%;
+  animation: pricing-pulse-drift 26s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.pricing-pulse-panel::after {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(180, 194, 146, 0.2), transparent 62%);
+  filter: blur(38px);
+  opacity: 0.7;
+  animation: pricing-pulse-breathe 18s ease-in-out infinite;
+}
+
+@keyframes pricing-pulse-drift {
+  0% { background-position: 0% 0%, 0 0; }
+  50% { background-position: 100% 100%, 0 0; }
+  100% { background-position: 0% 0%, 0 0; }
+}
+
+@keyframes pricing-pulse-breathe {
+  0%, 100% { transform: scale(0.92); opacity: 0.52; }
+  50% { transform: scale(1.08); opacity: 0.82; }
+}
+
 .dark .hero-device,
 .dark .demo-screen {
   border-color: rgba(180, 194, 146, 0.2);
@@ -483,5 +532,11 @@ body {
   .theme-eclipse-overlay::before,
   .theme-eclipse-overlay::after {
     animation-duration: 1ms;
+  }
+
+  .pricing-pulse-panel,
+  .pricing-pulse-panel::before,
+  .pricing-pulse-panel::after {
+    animation: none;
   }
 }

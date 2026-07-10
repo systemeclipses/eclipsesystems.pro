@@ -22,7 +22,7 @@ export default function DemosPage() {
               Bring us the process. We will show you the right starting point.
             </h2>
           </div>
-          <Link href="/schedule-demo" className="inline-flex items-center gap-2 rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839] transition hover:bg-white">
+          <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839] transition hover:bg-white">
             Schedule a demo <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

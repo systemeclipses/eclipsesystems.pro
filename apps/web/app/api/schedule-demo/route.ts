@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          source: "eclipsesystems.pro/schedule-demo",
+          source: "eclipsesystems.pro/contact",
           submittedAt: new Date().toISOString(),
           ...parsed.data
         })
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
 
     if (!emailSent && !webhookUrl) {
       console.info("Schedule demo request", {
-        source: "eclipsesystems.pro/schedule-demo",
+        source: "eclipsesystems.pro/contact",
         submittedAt: new Date().toISOString(),
         ...parsed.data
       });

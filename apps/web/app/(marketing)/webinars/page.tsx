@@ -46,7 +46,7 @@ export default function WebinarsPage() {
           })}
         </div>
       </section>
-      <PublicCta eyebrow="Want the workflow, not just the webinar?" title="See how Eclipse fits your team." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
+      <PublicCta eyebrow="Want the workflow, not just the webinar?" title="See how Eclipse fits your team." primaryLabel="Schedule a Demo" primaryHref="/contact" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }

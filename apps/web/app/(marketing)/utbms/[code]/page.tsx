@@ -42,7 +42,7 @@ export default async function UtbmsCodePage({ params }: { params: { code: string
         { question: `What codes are related to ${entry.code}?`, answer: entry.related_codes.join(", ") }
       ]} />
       </section>
-      <PublicCta eyebrow="Legal billing without re-keying" title="Connect coded time directly to review and invoicing." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" />
+      <PublicCta eyebrow="Legal billing without re-keying" title="Connect coded time directly to review and invoicing." primaryLabel="Schedule a Demo" primaryHref="/contact" />
     </main>
   );
 }

@@ -52,7 +52,7 @@ export default async function CompetitorPage({ params }: { params: { competitor:
         { question: "Does Eclipse Timekeeping support shifts?", answer: "Yes. Mission Command by Eclipse and Eclipse Suite include shift management, shift swaps, marketplace workflows, and team chat." }
       ]} />
       </section>
-      <PublicCta eyebrow="Compare it to your real process" title="Choose the system that fits the workflow." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" />
+      <PublicCta eyebrow="Compare it to your real process" title="Choose the system that fits the workflow." primaryLabel="Schedule a Demo" primaryHref="/contact" />
     </main>
   );
 }

@@ -37,7 +37,7 @@ export default async function PlanPage({ params }: { params: { plan: string } })
         { question: `Can teams change from ${plan.name} later?`, answer: "Yes. Packages can expand through customization, additional modules, integrations, and custom workflows as needs change." }
       ]} />
       </section>
-      <PublicCta eyebrow="Make it yours" title={"Shape " + plan.name + " around your workflow."} primaryLabel="Start Discovery" primaryHref="/schedule-demo" secondaryLabel="Compare Engagements" secondaryHref="/pricing" />
+      <PublicCta eyebrow="Make it yours" title={"Shape " + plan.name + " around your workflow."} primaryLabel="Start Discovery" primaryHref="/contact" secondaryLabel="Compare Engagements" secondaryHref="/pricing" />
     </main>
   );
 }

@@ -11,7 +11,6 @@ const navLinks = [
   ["Demos", "/demos"],
   ["Industries", "/industries"],
   ["Pricing", "/pricing"],
-  ["Guides", "/guides"],
   ["Help Center", "/help-center"],
   ["Blog", "/blog"]
 ] as const;
@@ -94,8 +93,8 @@ export function SiteHeader() {
         >
           <Mail className="h-4 w-4" />
         </a>
-        <Link href="/schedule-demo" className="whitespace-nowrap rounded-full bg-[#f9e8d2] px-4 py-2 font-bold text-[#314839] transition hover:bg-white sm:px-5">
-          Schedule a demo
+        <Link href="/contact" className="whitespace-nowrap rounded-full bg-[#f9e8d2] px-4 py-2 font-bold text-[#314839] transition hover:bg-white sm:px-5">
+          Contact
         </Link>
       </div>
     </header>

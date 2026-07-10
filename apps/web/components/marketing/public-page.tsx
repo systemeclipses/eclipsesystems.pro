@@ -10,7 +10,10 @@ export function PublicPageHero({
   image,
   imageAlt,
   points = [],
-  actions
+  actions,
+  compact = false,
+  height = compact ? "compact" : "default",
+  titleTopClassName = "mt-4"
 }: {
   eyebrow: string;
   title: string;
@@ -19,15 +22,20 @@ export function PublicPageHero({
   imageAlt: string;
   points?: readonly string[];
   actions?: ReactNode;
+  compact?: boolean;
+  height?: "compact" | "medium" | "default";
+  titleTopClassName?: string;
 }) {
+  const heroHeight = height === "compact" ? "min-h-[min(58vh,34rem)]" : height === "medium" ? "min-h-[min(61vh,36.5rem)]" : "min-h-[min(74vh,46rem)]";
+
   return (
     <section data-public-hero-shell className="px-3 pt-3">
-      <div data-public-hero className="relative min-h-[min(74vh,46rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-[#172219] text-[#f9e8d2] shadow-2xl shadow-black/25">
+      <div data-public-hero className={`relative ${heroHeight} overflow-hidden rounded-[2rem] border border-white/10 bg-[#172219] text-[#f9e8d2] shadow-2xl shadow-black/25`}>
         <Image src={image} alt={imageAlt} fill priority sizes="100vw" className="object-cover object-[68%_center] md:object-center" />
         <div className="absolute inset-0 bg-[#0b140e]/86" />
-        <div className="relative z-10 mx-auto flex min-h-[min(74vh,46rem)] max-w-[100rem] flex-col justify-end px-6 py-12 md:px-10 md:py-16 lg:px-14">
-          <p className="text-sm font-bold text-[#c7d6a5] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{eyebrow}</p>
-          <h1 className="mt-4 max-w-6xl font-title text-5xl leading-[0.87] text-[#f9e8d2] drop-shadow-[0_6px_24px_rgba(0,0,0,0.72)] sm:text-6xl md:text-[5.1rem] md:leading-[0.84] lg:text-[5.8rem] xl:text-[6.55rem] 2xl:text-[7.2rem]">
+        <div className={`relative z-10 mx-auto flex ${heroHeight} max-w-[100rem] flex-col justify-end px-6 py-12 md:px-10 ${compact ? "md:py-12" : "md:py-16"} lg:px-14`}>
+          {eyebrow ? <p className="text-sm font-bold text-[#c7d6a5] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{eyebrow}</p> : null}
+          <h1 className={`${titleTopClassName} max-w-6xl font-title text-5xl leading-[0.87] text-[#f9e8d2] drop-shadow-[0_6px_24px_rgba(0,0,0,0.72)] sm:text-6xl md:text-[5.1rem] md:leading-[0.84] lg:text-[5.8rem] xl:text-[6.55rem] 2xl:text-[7.2rem]`}>
             {title}
           </h1>
           <div className="mt-8 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">

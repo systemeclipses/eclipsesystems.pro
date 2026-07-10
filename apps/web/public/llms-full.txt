@@ -23,7 +23,7 @@ Pricing is scoped after discovery. Eclipse Systems does not publish a generic se
 
 Core pages:
 - Home: https://eclipsesystems.pro/
-- Schedule a Demo: https://eclipsesystems.pro/schedule-demo
+- Contact: https://eclipsesystems.pro/contact
 - Pricing: https://eclipsesystems.pro/pricing
 - Features: https://eclipsesystems.pro/features
 - Industries: https://eclipsesystems.pro/industries

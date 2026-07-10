@@ -56,7 +56,7 @@ export default async function IndustryPage({ params }: { params: { industry: str
       ]} />
       <AuthorBio name="Eclipse Systems Operations Team" role="Product and SEO review" expertise="Small-business timekeeping, legal billing workflows, and workforce operations." />
       </section>
-      <PublicCta eyebrow="See the fit" title={"Build around how " + industry.name + " work actually moves."} primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" />
+      <PublicCta eyebrow="See the fit" title={"Build around how " + industry.name + " work actually moves."} primaryLabel="Schedule a Demo" primaryHref="/contact" />
     </main>
   );
 }

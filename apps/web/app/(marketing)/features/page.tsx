@@ -75,7 +75,7 @@ export default async function FeaturesPage() {
         actions={
           <>
             <Link href="/demos" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Explore Our Systems</Link>
-            <Link href="/schedule-demo" className="rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white">Schedule a Demo</Link>
+            <Link href="/contact" className="rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white">Schedule a Demo</Link>
           </>
         }
       />
@@ -158,7 +158,7 @@ export default async function FeaturesPage() {
               <Link href="/pay-invoice">Pay an Invoice <ArrowRight className="h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" className="border-white/25 bg-transparent text-white hover:bg-white/10">
-              <Link href="/schedule-demo">Build a Customer Flow <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/contact">Build a Customer Flow <ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </div>
         </div>

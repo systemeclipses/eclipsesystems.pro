@@ -45,7 +45,7 @@ export default async function AlternativesPage({ params }: { params: { competito
         { question: "Should a team switch immediately?", answer: "No. Teams should compare current workflows, integrations, migration needs, and billing requirements before switching." }
       ]} />
       </section>
-      <PublicCta eyebrow="Make the comparison real" title="See which starting point fits your team." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
+      <PublicCta eyebrow="Make the comparison real" title="See which starting point fits your team." primaryLabel="Schedule a Demo" primaryHref="/contact" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }

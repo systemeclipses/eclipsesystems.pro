@@ -1,9 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowRight, Check, ClipboardList, PackageCheck, Rocket, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { packageDefinitions } from "@/lib/packages";
-import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
+import { PublicPageHero } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Pricing | Eclipse Systems",
@@ -39,34 +40,52 @@ const engagementOptions = [
   }
 ];
 
-const pricingFactors = [
-  "How much of an existing Eclipse module can be reused",
-  "Number and complexity of custom workflows",
-  "Roles, permissions, and approval rules",
-  "Data migration from spreadsheets or existing systems",
-  "Third-party integrations and payment flows",
-  "Reporting, dashboards, and export requirements",
-  "Compliance, security, and audit needs",
-  "Timeline, launch support, and ongoing maintenance"
+const pricingSegments = [
+  {
+    label: "01",
+    title: "Starting point",
+    items: ["Existing package fit", "Reusable screens and data models", "Configuration before custom build"]
+  },
+  {
+    label: "02",
+    title: "Workflow shape",
+    items: ["Custom approvals and rules", "Roles, permissions, and handoffs", "Dashboards, exports, and reporting"]
+  },
+  {
+    label: "03",
+    title: "Connection work",
+    items: ["Data migration from current tools", "Third-party integrations", "Payment and billing flows"]
+  },
+  {
+    label: "04",
+    title: "Launch path",
+    items: ["Timeline and rollout support", "Security and compliance needs", "Ongoing maintenance expectations"]
+  }
 ];
 
-const demoHref = "/schedule-demo";
+const demoHref = "/contact";
 
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
       <PublicPageHero
-        eyebrow="Engagements and pricing"
-        title="Start Proven. Customize What Matters."
+        height="medium"
+        eyebrow=""
+        title={"Start Proven. Customize\u00A0What\u00A0Matters."}
+        titleTopClassName="mt-8"
         description="Use an existing Eclipse system, adapt a working foundation, or commission a bespoke build. We price after understanding the workflow, reuse opportunities, integrations, and launch path."
         image="/media/generated/heroes/engagements.jpg"
         imageAlt="Connected Eclipse commerce and operations modules"
         points={["Proven packages", "Custom adaptations", "Bespoke systems"]}
-        actions={<Link href="/schedule-demo" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Start Discovery</Link>}
       />
 
       <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
-        <PublicSectionHeading eyebrow="Choose the right path" title="The quote follows the work." description="Every engagement starts with fit, then moves into a clear scope, timeline, and price." />
+        <div>
+          <h2 className="font-title text-[clamp(3.6rem,6.3vw,6.7rem)] leading-[0.88] text-[#172219] lg:whitespace-nowrap">The price follows the project.</h2>
+          <p className="mt-6 max-w-5xl text-base font-semibold leading-7 text-[#314839]/72 md:text-lg">
+            Every engagement starts with fit, then moves into a clear scope, timeline, and price.
+          </p>
+        </div>
         <div className="mt-12 grid gap-5 lg:grid-cols-3">
           {engagementOptions.map((option) => {
             const Icon = option.icon;
@@ -116,34 +135,68 @@ export default function PricingPage() {
           })}
         </div>
 
-        <section className="my-16 grid overflow-hidden rounded-[2rem] bg-primary text-white lg:grid-cols-[0.74fr_1fr]">
-          <div className="p-6 md:p-8">
-            <p className="text-sm font-semibold text-secondary">What affects price</p>
-            <h2 className="mt-3 font-title text-5xl leading-none text-cream md:text-6xl">The quote follows the work.</h2>
-            <p className="mt-5 max-w-xl text-sm leading-6 text-white/72">
-              A package rollout, a customized operations portal, and a new system from scratch should not be priced the same way. We scope the work first so the project is clear before anyone commits.
-            </p>
+        <section className="pricing-pulse-panel my-16 grid overflow-hidden rounded-[2rem] border border-[#b4c292]/30 p-1 text-white shadow-2xl shadow-[#172219]/20 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="flex flex-col justify-between p-6 md:p-8 lg:p-10">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b4c292]">What shapes the scope</p>
+              <h2 className="mt-4 max-w-3xl font-title text-5xl leading-none text-[#f9e8d2] md:text-6xl">Clear scope before a clean number.</h2>
+              <p className="mt-6 max-w-2xl text-sm font-semibold leading-6 text-[#f9e8d2]/72">
+                We separate the parts we can reuse from the parts that need to be designed around your team. That keeps pricing tied to the real build, not a guess dressed up as a package.
+              </p>
+            </div>
+            <div className="mt-8 rounded-[1.25rem] border border-[#f9e8d2]/15 bg-[#172219]/42 p-5 backdrop-blur-md">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b4c292]">Discovery output</p>
+              <p className="mt-2 text-sm leading-6 text-[#f9e8d2]/76">
+                A recommended path, scoped phases, practical timeline, and the pricing logic behind the work.
+              </p>
+            </div>
           </div>
-          <div className="grid gap-px bg-white/15 p-px sm:grid-cols-2">
-            {pricingFactors.map((factor) => (
-              <div key={factor} className="flex gap-3 bg-primary/90 p-5">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-                <p className="text-sm leading-6 text-white/75">{factor}</p>
+          <div className="grid gap-3 p-3 md:grid-cols-2 md:p-4 lg:p-5">
+            {pricingSegments.map((segment) => (
+              <div key={segment.title} className="rounded-[1.35rem] border border-[#f9e8d2]/12 bg-[#172219]/58 p-5 backdrop-blur-md">
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="font-title text-3xl leading-none text-[#f9e8d2]">{segment.title}</h3>
+                  <span className="rounded-full bg-[#b4c292] px-3 py-1 text-xs font-black text-[#172219]">{segment.label}</span>
+                </div>
+                <ul className="mt-5 grid gap-3">
+                  {segment.items.map((item) => (
+                    <li key={item} className="flex gap-3 text-sm font-semibold leading-6 text-[#f9e8d2]/74">
+                      <Check className="mt-1 h-4 w-4 shrink-0 text-[#b4c292]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="grid gap-8 lg:grid-cols-[1fr_0.65fr] lg:gap-12">
-          <div className="lg:order-2 lg:sticky lg:top-32 lg:self-start">
-            <p className="text-sm font-semibold text-primary">Packages</p>
-            <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Start from one of four templates.</h2>
-            <p className="mt-5 leading-7 text-muted-foreground">
-              Existing Eclipse work can serve as a live demo, a ready-to-buy package, or the foundation for a custom system. Operations Hub, Client Portal, CRM & Sales Pipeline, and Storefront are the four package starting points.
-            </p>
-            <Button asChild className="mt-8 bg-primary text-primary-foreground hover:bg-[#314839]">
-              <Link href={demoHref}>Schedule a demo <ArrowRight className="h-4 w-4" /></Link>
-            </Button>
+        <section className="grid items-stretch gap-8 lg:grid-cols-[1fr_0.65fr] lg:gap-12">
+          <div className="flex h-full flex-col lg:order-2">
+            <div>
+              <p className="text-sm font-semibold text-primary">Packages</p>
+              <h2 className="mt-3 font-title text-5xl leading-none md:text-7xl">Start from one of four templates.</h2>
+              <p className="mt-5 leading-7 text-muted-foreground">
+                Existing Eclipse work can serve as a live demo, a ready-to-buy package, or the foundation for a custom system. Operations Hub, Client Portal, CRM & Sales Pipeline, and Storefront are the four package starting points.
+              </p>
+              <Button asChild className="mt-8 bg-primary text-primary-foreground hover:bg-[#314839]">
+                <Link href={demoHref}>Schedule a demo <ArrowRight className="h-4 w-4" /></Link>
+              </Button>
+            </div>
+            <div className="relative mt-8 min-h-[34rem] flex-1 overflow-hidden rounded-[2rem] border border-[#d8d0c1] bg-[#172219] shadow-2xl shadow-[#172219]/14">
+              <Image
+                src="/media/generated/pricing/templates-hero-card.png"
+                alt="Four modular Eclipse software templates connected in a polished operations workspace"
+                fill
+                sizes="(min-width: 1024px) 40vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#172219]/45 via-transparent to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5 rounded-[1.2rem] border border-[#f9e8d2]/16 bg-[#172219]/62 p-4 text-[#f9e8d2] backdrop-blur-md">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b4c292]">Template foundation</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#f9e8d2]/82">Pick the closest starting point, then shape the screens, rules, and handoffs around the way your team actually works.</p>
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-3 lg:order-1">

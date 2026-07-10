@@ -75,7 +75,7 @@ export default function InvoiceTemplatePage() {
         </div>
         </div>
       </section>
-      <PublicCta eyebrow="Ready to connect billing to the work?" title="Build the invoice flow into your system." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" />
+      <PublicCta eyebrow="Ready to connect billing to the work?" title="Build the invoice flow into your system." primaryLabel="Schedule a Demo" primaryHref="/contact" />
     </main>
   );
 }

@@ -57,7 +57,7 @@ export default async function IndustriesPage() {
         image="/media/generated/heroes/industries.jpg"
         imageAlt="A team collaborating around an Eclipse workflow"
         points={["Billable work", "Operational clarity", "Auditable records"]}
-        actions={<Link href="/schedule-demo" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Find Your Starting Point</Link>}
+        actions={<Link href="/contact" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Find Your Starting Point</Link>}
       />
 
       <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">

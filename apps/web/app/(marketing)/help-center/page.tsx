@@ -26,7 +26,7 @@ export default function HelpCenterPage() {
           {topics.map((topic) => {
             const Icon = topic.icon;
             return (
-              <Link key={topic.title} href="/guides" className="group rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12">
+              <Link key={topic.title} href="/blog" className="group rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12">
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary">
                   <Icon className="h-5 w-5" />
                 </div>

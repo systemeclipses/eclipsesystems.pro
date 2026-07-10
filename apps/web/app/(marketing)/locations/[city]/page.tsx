@@ -62,7 +62,7 @@ export default async function LocationPage({ params }: { params: { city: string 
         { question: `How much does Eclipse Timekeeping cost in ${location.state}?`, answer: "Pricing is national: Eclipse Timekeeping is $10, Mission Command is $18, Eclipse is $22, Eclipse Suite is $38, and Eclipse Legal Add-on is $20 per seat per month." }
       ]} />
       </section>
-      <PublicCta eyebrow="Work with a team that understands the context" title={"Build the right starting point for " + location.city + "."} primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" />
+      <PublicCta eyebrow="Work with a team that understands the context" title={"Build the right starting point for " + location.city + "."} primaryLabel="Schedule a Demo" primaryHref="/contact" />
     </main>
   );
 }

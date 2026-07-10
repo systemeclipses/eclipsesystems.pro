@@ -30,7 +30,7 @@ const featureCards = [
     title: "One system that works for everyone.",
     text: "We build around the people who use it every day, then stay beside your team through training, rollout, support, and every improvement that comes next.",
     cta: "Work with Eclipse",
-    href: "/schedule-demo",
+    href: "/contact",
     image: "/media/generated/eclipse-team-collaboration.jpg",
     imageAlt: "A business team collaborating with a software consultant around a shared workflow"
   }
@@ -394,7 +394,7 @@ export default function LandingPage() {
               <p className="text-base font-semibold leading-7 text-white/78 md:text-lg">
                 Eclipse builds custom software that adapts to the rhythm of your business: portals, operations hubs, sales pipelines, storefronts, billing, reporting, and automation.
               </p>
-              <Link href="/schedule-demo" className="mt-6 rounded-full bg-[#b4c292] px-7 py-3 text-sm font-bold text-[#18231c] shadow-xl shadow-black/20 transition hover:bg-[#f9e8d2]">
+              <Link href="/contact" className="mt-6 rounded-full bg-[#b4c292] px-7 py-3 text-sm font-bold text-[#18231c] shadow-xl shadow-black/20 transition hover:bg-[#f9e8d2]">
                 Schedule a demo
               </Link>
             </div>

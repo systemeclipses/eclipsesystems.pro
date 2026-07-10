@@ -46,7 +46,7 @@ export default function DeveloperDocumentationPage() {
 }`}
         </pre>
       </section>
-      <PublicCta eyebrow="Planning an integration?" title="Bring the systems that need to talk." primaryLabel="Talk With Eclipse" primaryHref="/schedule-demo" />
+      <PublicCta eyebrow="Planning an integration?" title="Bring the systems that need to talk." primaryLabel="Talk With Eclipse" primaryHref="/contact" />
     </main>
   );
 }

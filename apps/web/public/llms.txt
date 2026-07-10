@@ -4,7 +4,7 @@
 
 ## Company
 - [Home](https://eclipsesystems.pro/): Custom software, packaged systems, and production-ready modules for small and midsize teams.
-- [Schedule a Demo](https://eclipsesystems.pro/schedule-demo): Contact form for business name, employee count, contact details, and project needs.
+- [Contact](https://eclipsesystems.pro/contact): Contact form, direct emails, phone numbers, and social links for Eclipse Systems.
 - [Pricing](https://eclipsesystems.pro/pricing): Engagement options for proven packages, customized packages, and bespoke software builds.
 - [Features](https://eclipsesystems.pro/features): Examples of Eclipse modules and workflows that can be used as demos, packages, or custom build foundations.
 

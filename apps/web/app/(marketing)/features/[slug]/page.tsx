@@ -56,7 +56,7 @@ export default async function FeaturePage({ params }: { params: { slug: string }
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild className="bg-primary text-primary-foreground hover:bg-[#314839]">
-              <Link href="/schedule-demo">Schedule a Demo <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/contact">Schedule a Demo <ArrowRight className="h-4 w-4" /></Link>
             </Button>
             {feature.slug.includes("payment") || feature.slug.includes("invoicing") ? (
               <Button asChild variant="outline">
@@ -68,7 +68,7 @@ export default async function FeaturePage({ params }: { params: { slug: string }
 
         <FAQ items={feature.questions.map((question) => ({ question, answer: "Yes. Eclipse Systems scopes this around your workflow, customer access needs, internal controls, integrations, and launch path." }))} />
       </section>
-      <PublicCta eyebrow="Build this around your team" title="Start with the workflow that needs to work better." primaryLabel="Schedule a Demo" primaryHref="/schedule-demo" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
+      <PublicCta eyebrow="Build this around your team" title="Start with the workflow that needs to work better." primaryLabel="Schedule a Demo" primaryHref="/contact" secondaryLabel="Explore Our Systems" secondaryHref="/demos" />
     </main>
   );
 }
