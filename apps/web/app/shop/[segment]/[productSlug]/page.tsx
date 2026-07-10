@@ -2,19 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetailPage, activeProducts, findProductBySlug } from "@/components/app/storefront-pages";
 import { getStorefrontSeed } from "@/lib/storefront-db";
-import { productHref, productImageUrl, productSlug, productsForSegment, segmentForProduct, segmentLabel } from "@/lib/storefront-taxonomy";
+import { productHref, productImageUrl, productsForSegment, segmentLabel } from "@/lib/storefront-taxonomy";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ segment: string; productSlug: string }>;
 };
-
-export async function generateStaticParams() {
-  const seed = await getStorefrontSeed();
-  return activeProducts(seed).map((product) => ({
-    segment: segmentForProduct(product),
-    productSlug: productSlug(product)
-  }));
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { segment, productSlug: slug } = await params;

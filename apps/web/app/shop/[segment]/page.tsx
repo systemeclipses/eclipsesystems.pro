@@ -4,6 +4,8 @@ import { ListingPage, activeProducts } from "@/components/app/storefront-pages";
 import { getStorefrontSeed } from "@/lib/storefront-db";
 import { audienceSegments, categorySegments, merchandisingSegments, productsForSegment, segmentLabel } from "@/lib/storefront-taxonomy";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{ segment: string }>;
 };
