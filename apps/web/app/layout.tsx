@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     url: "https://eclipsesystems.pro",
     logo: "https://eclipsesystems.pro/api/og/default",
     sameAs: [
-      "https://www.linkedin.com/company/eclipse-systems",
+      "https://www.linkedin.com/in/eclipse-systems-2842a3410/",
       "https://twitter.com/eclipsesystems"
     ]
   };

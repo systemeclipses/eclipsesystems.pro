@@ -398,7 +398,7 @@ function ProductSwitcher({ context, activeProduct, tone = "light" }: { context: 
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get("x-pathname") ?? "";
-  const standalonePackageRoutes = ["/templates", "/dashboard", "/operations", "/client-portal", "/crm", "/storefront"];
+  const standalonePackageRoutes = ["/templates", "/dashboard", "/operations", "/operations-hub", "/client-portal", "/crm", "/crm-sales-pipeline", "/storefront"];
   const useStandalonePackageShell = standalonePackageRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   if (useStandalonePackageShell) {
     return (

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const socialLinks = [
-  { label: "LinkedIn", href: "https://www.linkedin.com/company/eclipse-systems", icon: Linkedin },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/eclipse-systems-2842a3410/", icon: Linkedin },
   { label: "X / Twitter", href: "https://twitter.com/eclipsesystems", icon: ExternalLink }
 ];
 
@@ -51,6 +51,10 @@ export default function ContactPage({ searchParams }: { searchParams?: { demo?: 
                 <p className="text-right text-sm font-bold uppercase tracking-[0.16em] text-[#314839]/62">Direct email</p>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <a href="mailto:info@eclipsesystems.pro" className="rounded-[1rem] border border-[#314839]/20 bg-[#eef1e5] p-4 transition hover:border-[#314839]/40 hover:bg-[#e5ead8] sm:col-span-2">
+                  <span className="block text-sm font-bold text-[#314839]/62">General inquiries</span>
+                  <span className="mt-1 block break-all text-xl font-black text-[#172219]">info@eclipsesystems.pro</span>
+                </a>
                 <a href="mailto:john@eclipsesystems.pro" className="rounded-[1rem] border border-[#d8d0c1] bg-white p-4 transition hover:border-[#314839]/35 hover:bg-[#eef1e5]">
                   <span className="block text-sm font-bold text-[#314839]/62">John Wittig</span>
                   <span className="mt-1 block break-all text-lg font-black text-[#172219]">john@eclipsesystems.pro</span>
@@ -60,7 +64,7 @@ export default function ContactPage({ searchParams }: { searchParams?: { demo?: 
                   <span className="mt-1 block break-all text-lg font-black text-[#172219]">garrett@eclipsesystems.pro</span>
                 </a>
               </div>
-              <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]/70">Email either of us directly for project ideas, workflow questions, partnerships, or a quick intro.</p>
+              <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]/70">Use the general inbox for project ideas, workflow questions, partnerships, or a quick introduction—or reach either of us directly.</p>
             </div>
 
             <div className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5">

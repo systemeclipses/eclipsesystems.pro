@@ -656,7 +656,7 @@ export function StorefrontPublicApp({ initialView = "home", productId, initialSe
           </button>
         </div>
         <div onMouseLeave={() => setHoverMenu(null)} className="relative mx-auto grid max-w-[1760px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-6 py-4">
-          <nav className="flex flex-wrap items-center gap-5 text-xs font-black uppercase">
+          <nav className="flex items-center gap-5 whitespace-nowrap text-xs font-black uppercase [&>button]:inline-flex [&>button]:h-9 [&>button]:items-center">
             <button onMouseEnter={() => setHoverMenu("new")} onClick={() => openCategory("All")}>New Arrivals</button>
             <button onMouseEnter={() => setHoverMenu("shop")} onClick={() => openCategory("All")}>Shop All</button>
             <button onMouseEnter={() => setHoverMenu("men")} onClick={() => openCategory("Men's")}>Men</button>

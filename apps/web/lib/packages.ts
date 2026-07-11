@@ -28,17 +28,17 @@ export const packageDefinitions: PackageDefinition[] = [
     name: "Operations Hub",
     tagline: "Your company intranet — plus timekeeping, billing, and the controls behind your client portal.",
     audience: "internal teams / employees",
-    href: "/operations",
+    href: "/operations-hub",
     navItems: [
-      { label: "Dashboard", href: "/operations#dashboard", icon: "dashboard" },
-      { label: "Timekeeping", href: "/operations#features", icon: "clock" },
-      { label: "Scheduling", href: "/operations#features", icon: "calendar" },
-      { label: "Billing", href: "/operations#features", icon: "invoice" },
-      { label: "HR", href: "/operations#features", icon: "people" },
-      { label: "Documents", href: "/operations#features", icon: "documents" },
-      { label: "Training", href: "/operations#features", icon: "training" },
-      { label: "Reports", href: "/operations#features", icon: "reports" },
-      { label: "Admin", href: "/operations#features", icon: "settings" }
+      { label: "Dashboard", href: "/operations-hub#dashboard", icon: "dashboard" },
+      { label: "Timekeeping", href: "/operations-hub#features", icon: "clock" },
+      { label: "Scheduling", href: "/operations-hub#features", icon: "calendar" },
+      { label: "Billing", href: "/operations-hub#features", icon: "invoice" },
+      { label: "HR", href: "/operations-hub#features", icon: "people" },
+      { label: "Documents", href: "/operations-hub#features", icon: "documents" },
+      { label: "Training", href: "/operations-hub#features", icon: "training" },
+      { label: "Reports", href: "/operations-hub#features", icon: "reports" },
+      { label: "Admin", href: "/operations-hub#features", icon: "settings" }
     ],
     description:
       "Operations Hub is the internal intranet and back office for running the company day-to-day: employee workflows, knowledge, documents, tickets, training, billing, reporting, and client-facing controls in one place.",
@@ -115,14 +115,14 @@ export const packageDefinitions: PackageDefinition[] = [
     name: "CRM & Sales Pipeline",
     tagline: "Turn leads into closed, signed deals.",
     audience: "sales teams",
-    href: "/crm",
+    href: "/crm-sales-pipeline",
     navItems: [
-      { label: "Dashboard", href: "/crm", icon: "dashboard" },
-      { label: "Pipeline", href: "/crm/pipeline", icon: "pipeline" },
-      { label: "Deals", href: "/crm/deals", icon: "invoice" },
-      { label: "Contacts", href: "/crm/contacts", icon: "people" },
-      { label: "Companies", href: "/crm/companies", icon: "people" },
-      { label: "Reports", href: "/crm/reports", icon: "reports" }
+      { label: "Dashboard", href: "/crm-sales-pipeline", icon: "dashboard" },
+      { label: "Pipeline", href: "/crm-sales-pipeline/pipeline", icon: "pipeline" },
+      { label: "Deals", href: "/crm-sales-pipeline/deals", icon: "invoice" },
+      { label: "Contacts", href: "/crm-sales-pipeline/contacts", icon: "people" },
+      { label: "Companies", href: "/crm-sales-pipeline/companies", icon: "people" },
+      { label: "Reports", href: "/crm-sales-pipeline/reports", icon: "reports" }
     ],
     description:
       "A standalone sales workspace for managing contacts, companies, deals, proposals, signatures, tasks, reminders, and conversion reporting.",

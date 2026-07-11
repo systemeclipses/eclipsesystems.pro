@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Mail } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { FacebookIcon, LinkedInIcon } from "@/components/marketing/social-icons";
 
 const navLinks = [
   ["Features", "/features"],
@@ -58,12 +58,34 @@ export function HomePillHeader() {
       </nav>
       <div className="flex items-center gap-2 sm:gap-3">
         <a
-          href="mailto:john@eclipsesystems.pro,garrett@eclipsesystems.pro"
-          aria-label="Email John and Garrett at Eclipse Systems"
+          href="mailto:info@eclipsesystems.pro"
+          aria-label="Email Eclipse Systems"
           title="Email Eclipse Systems"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:bg-white/10 hover:text-white"
+          className="hidden whitespace-nowrap text-sm font-bold text-[#f9e8d2]/90 transition hover:text-white md:inline-flex"
         >
-          <Mail className="h-4 w-4" />
+          <span className="xl:hidden">Email</span>
+          <span className="hidden xl:inline">info@eclipsesystems.pro</span>
+        </a>
+        <span aria-hidden="true" className="mx-1 hidden h-8 w-[2px] rounded-full bg-[#f9e8d2] md:block" />
+        <a
+          href="https://www.facebook.com/profile.php?id=61591896988440"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Eclipse Systems on Facebook"
+          title="Facebook"
+          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#b4c292] text-[#314839] transition hover:bg-[#c7d2aa] sm:inline-flex"
+        >
+          <FacebookIcon className="block h-6 w-6 shrink-0" />
+        </a>
+        <a
+          href="https://www.linkedin.com/in/eclipse-systems-2842a3410/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Eclipse Systems on LinkedIn"
+          title="LinkedIn"
+          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#b4c292] text-[#314839] transition hover:bg-[#c7d2aa] sm:inline-flex"
+        >
+          <LinkedInIcon className="block h-[1.3125rem] w-[1.3125rem] shrink-0" />
         </a>
         <Link href="/contact" className="whitespace-nowrap rounded-full bg-[#f9e8d2] px-4 py-2 font-bold text-[#314839] transition hover:bg-white sm:px-5">
           Contact

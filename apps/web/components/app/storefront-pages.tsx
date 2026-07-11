@@ -260,8 +260,8 @@ export function StorefrontNav({ products, activeSegment }: { products: Storefron
               </div>
             </div>
           ))}
-          <Link href="/shop/youth" className={activeSegment === "youth" ? "text-[#7f3f2f]" : ""}>Kids</Link>
-          <Link href="/shop/sale" className="text-[#7f3f2f]">Sale</Link>
+          <Link href="/shop/youth" className={`flex h-full items-center ${activeSegment === "youth" ? "text-[#7f3f2f]" : ""}`}>Kids</Link>
+          <Link href="/shop/sale" className="flex h-full items-center text-[#7f3f2f]">Sale</Link>
         </nav>
         <div className="flex items-center justify-end gap-3">
           <details className="relative xl:hidden">

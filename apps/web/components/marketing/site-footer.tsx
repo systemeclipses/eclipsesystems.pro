@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail } from "lucide-react";
+import { FacebookIcon, LinkedInIcon } from "@/components/marketing/social-icons";
 
 const productLinks = [
   ["Capabilities", "/features"],
@@ -34,10 +35,18 @@ export function SiteFooter() {
           <p className="mt-5 max-w-md text-sm leading-6 text-white/72">
             Custom software consulting for businesses that need portals, operations systems, CRM workflows, storefronts, dashboards, automations, and integrations built around how they actually work.
           </p>
-          <a href="mailto:help@eclipsesystems.pro" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-white">
-            <Mail className="h-4 w-4" />
-            help@eclipsesystems.pro
-          </a>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <a href="mailto:info@eclipsesystems.pro" className="inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-white">
+              <Mail className="h-4 w-4" />
+              info@eclipsesystems.pro
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61591896988440" target="_blank" rel="noreferrer" aria-label="Eclipse Systems on Facebook" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#b4c292] text-[#314839] transition hover:bg-[#c7d2aa]">
+              <FacebookIcon className="block h-6 w-6 shrink-0" />
+            </a>
+            <a href="https://www.linkedin.com/in/eclipse-systems-2842a3410/" target="_blank" rel="noreferrer" aria-label="Eclipse Systems on LinkedIn" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#b4c292] text-[#314839] transition hover:bg-[#c7d2aa]">
+              <LinkedInIcon className="block h-[1.3125rem] w-[1.3125rem] shrink-0" />
+            </a>
+          </div>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-3">
