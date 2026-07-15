@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
+  ArrowRight,
   BriefcaseBusiness,
   Check,
   LayoutDashboard,
@@ -71,26 +73,10 @@ export function DemoLibrary() {
     <section data-public-hero-shell className="px-3 pt-3">
       <div data-public-hero className="overflow-hidden rounded-[2rem] bg-[#172219] px-5 pb-5 pt-28 text-[#f9e8d2] md:px-8 md:pb-8 md:pt-32">
         <div className="mx-auto max-w-[100rem]">
-        <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-          <div>
-            <p className="text-sm font-bold text-[#b4c292]">Eclipse demo environments</p>
-            <h1 className="mt-3 max-w-4xl font-title text-5xl leading-[0.88] sm:text-6xl md:text-[5.4rem] lg:text-[6.25rem]">
-              See the system before the sales call.
-            </h1>
-          </div>
-          <div>
-            <p className="max-w-2xl text-base font-semibold leading-7 text-white/72 md:text-lg">
-              Choose an environment to see who uses it, what moves through it, and how the pieces work together before we ever ask you to book a call.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm font-bold text-[#f9e8d2]/78">
-              {["No login required", "Real workflow detail", "Built around your team"].map((item) => (
-                <span key={item} className="inline-flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#b4c292]" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
+        <div>
+          <h1 className="font-title text-5xl leading-[0.88] sm:text-6xl md:text-[5.4rem] lg:whitespace-nowrap lg:text-[clamp(5rem,6.1vw,6.25rem)]">
+            See what Eclipse can do for your team.
+          </h1>
         </div>
 
         <div
@@ -139,9 +125,17 @@ export function DemoLibrary() {
                 sizes="(min-width: 1024px) 52vw, 100vw"
                 className="animate-in object-cover fade-in duration-700"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-[#172219]/88 px-6 py-5 text-[#f9e8d2] backdrop-blur-md md:px-8">
-                <p className="text-xs font-bold uppercase text-[#b4c292]">Designed for</p>
-                <p className="mt-1 text-lg font-bold">{selected.audience}</p>
+              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-4 bg-[#172219]/88 px-6 py-5 text-[#f9e8d2] backdrop-blur-md sm:flex-row sm:items-center sm:justify-between md:px-8">
+                <div>
+                  <p className="text-xs font-bold uppercase text-[#b4c292]">Designed for</p>
+                  <p className="mt-1 text-lg font-bold">{selected.audience}</p>
+                </div>
+                <Link
+                  href={selected.href}
+                  className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#f9e8d2] px-5 py-2.5 text-sm font-bold text-[#314839] transition hover:bg-white sm:self-auto"
+                >
+                  Enter the environment <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
 

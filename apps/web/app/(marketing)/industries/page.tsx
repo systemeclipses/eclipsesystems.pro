@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeDollarSign, ChefHat, DraftingCompass, FileCheck2, Scale, UsersRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { loadIndustries, type IndustryContent } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
@@ -51,13 +50,13 @@ export default async function IndustriesPage() {
   return (
     <main className="min-h-screen bg-cream text-ink">
       <PublicPageHero
-        eyebrow="Built for operating complexity"
+        eyebrow=""
         title="Systems for Teams That Keep Things Moving."
         description="Eclipse gives service firms, professional teams, and shift-based businesses one place to capture work, review it, bill it, schedule it, and understand what is actually happening."
         image="/media/generated/heroes/industries.jpg"
         imageAlt="A team collaborating around an Eclipse workflow"
         points={["Billable work", "Operational clarity", "Auditable records"]}
-        actions={<Link href="/contact" className="rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839]">Find Your Starting Point</Link>}
+        height="medium"
       />
 
       <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
@@ -115,26 +114,31 @@ export default async function IndustriesPage() {
       </section>
 
       <section className="mx-auto max-w-[100rem] px-5 pb-20">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-primary">And more</p>
-            <h2 className="mt-2 font-title text-5xl leading-none md:text-6xl">More teams can run here.</h2>
-          </div>
-          <Button asChild className="bg-primary text-primary-foreground hover:bg-[#314839]">
-            <Link href="/signup">Start Trial <ArrowRight className="h-4 w-4" /></Link>
-          </Button>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {moreIndustries.map((industry) => (
-            <Link key={industry.slug} href={`/industries/${industry.slug}`} className="group rounded-[1.25rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
-              <h3 className="font-title text-4xl leading-none">{industry.name}</h3>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{industry.description}</p>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                View guide <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-              </span>
+        <div className="rounded-[2rem] bg-[#314839] px-7 py-9 text-[#f9e8d2] shadow-2xl shadow-[#172219]/15 md:px-10 md:py-12">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#b4c292]">Find out how we can help</p>
+              <h2 className="mt-3 max-w-5xl font-title text-5xl leading-[0.9] md:text-7xl">If your team has a workflow, Eclipse can help run it.</h2>
+              <p className="mt-5 max-w-3xl text-base font-semibold leading-7 text-white/72 md:text-lg">
+                These industries are examples, not limits. Tell us how your business works, and we’ll shape Eclipse around the people, approvals, schedules, records, and handoffs that keep it moving.
+              </p>
+            </div>
+            <Link href="/contact" className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#314839] transition hover:bg-white lg:self-auto">
+              Contact Eclipse <ArrowRight className="h-4 w-4" />
             </Link>
-          ))}
+          </div>
+
+          <div className="mt-9 grid gap-4 md:grid-cols-2">
+            {moreIndustries.map((industry) => (
+              <Link key={industry.slug} href={`/industries/${industry.slug}`} className="group rounded-[1.25rem] border border-white/15 bg-white/10 p-6 transition hover:-translate-y-1 hover:bg-white/15">
+                <h3 className="font-title text-4xl leading-none text-[#f9e8d2]">{industry.name}</h3>
+                <p className="mt-3 text-sm leading-6 text-white/68">{industry.description}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#b4c292]">
+                  View guide <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>

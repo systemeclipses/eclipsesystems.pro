@@ -210,7 +210,7 @@ function ticketMatchesSlug(ticket: Pick<SupportTicket, "id" | "subject">, slug: 
 }
 
 function ticketDetailHref(surface: Surface, ticket: Pick<SupportTicket, "id" | "subject">) {
-  return `${surface === "client" ? "/client-portal" : "/operations"}/tickets/${ticketSlug(ticket)}`;
+  return `${surface === "client" ? "/client-portal" : "/operations-hub"}/tickets/${ticketSlug(ticket)}`;
 }
 
 const demoSteps = [
@@ -3449,7 +3449,7 @@ function ThreadDetail({ thread }: { thread: MessageThread }) {
 }
 
 function TicketRouteWorkspace({ ticket, surface }: { ticket?: SupportTicket; surface: Surface }) {
-  const backHref = surface === "client" ? "/client-portal" : "/operations";
+  const backHref = surface === "client" ? "/client-portal" : "/operations-hub";
   if (!ticket) {
     return (
       <section className="rounded-md border border-border bg-white/75 p-5 dark:border-white/10 dark:bg-[#15231a]">

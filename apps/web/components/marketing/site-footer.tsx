@@ -41,7 +41,7 @@ export function SiteFooter() {
               info@eclipsesystems.pro
             </a>
             <a
-              href="https://www.facebook.com/share/14r9Ff6o8s1/?mibextid=wwXIfr"
+              href="https://www.facebook.com/profile.php?id=61591896988440"
               target="_blank"
               rel="noreferrer"
               aria-label="Visit Eclipse Systems on Facebook"
@@ -51,7 +51,7 @@ export function SiteFooter() {
               <FacebookMark className="h-4 w-4" />
             </a>
             <a
-              href="https://www.linkedin.com/company/eclipse-systems"
+              href="https://www.linkedin.com/in/eclipse-systems-2842a3410/"
               target="_blank"
               rel="noreferrer"
               aria-label="Visit Eclipse Systems on LinkedIn"

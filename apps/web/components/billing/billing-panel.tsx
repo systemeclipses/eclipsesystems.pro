@@ -138,13 +138,6 @@ export function BillingPanel({ orgId, subscription, context }: { orgId: string; 
     if (data.url) location.href = data.url;
   }
 
-  async function startTrial() {
-    setBusy(true);
-    const response = await fetch("/api/billing/trial", { method: "POST" });
-    if (response.ok) location.reload();
-    setBusy(false);
-  }
-
   function selectProduct(product: ProductCode, nextModal: ModalKind) {
     setSelectedProduct(product);
     setModal(nextModal);
@@ -173,10 +166,9 @@ export function BillingPanel({ orgId, subscription, context }: { orgId: string; 
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-semibold text-amber-900">No active subscription</p>
-              <p className="mt-1 text-sm text-amber-800">Start a trial or open the billing portal to connect payment details.</p>
+              <p className="mt-1 text-sm text-amber-800">Open the billing portal to connect payment details and choose a plan.</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={startTrial} disabled={busy}>Start free trial</Button>
               <Button variant="outline" onClick={openPortal} disabled={busy}>Open Stripe portal</Button>
             </div>
           </div>

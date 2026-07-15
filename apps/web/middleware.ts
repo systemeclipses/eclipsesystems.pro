@@ -11,6 +11,7 @@ const protectedPrefixes = [
   "/invoices",
   "/matters",
   "/operations",
+  "/operations-hub",
   "/onboarding",
   "/projects",
   "/reports",
@@ -26,8 +27,10 @@ const publicDemoPrefixes = [
   "/dashboard",
   "/templates",
   "/operations",
+  "/operations-hub",
   "/client-portal",
   "/crm",
+  "/crm-sales-pipeline",
   "/storefront"
 ];
 

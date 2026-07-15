@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 const socialLinks = [
-  { label: "Facebook", href: "https://www.facebook.com/share/14r9Ff6o8s1/?mibextid=wwXIfr", icon: FacebookMark },
-  { label: "LinkedIn", href: "https://www.linkedin.com/company/eclipse-systems", icon: LinkedInMark },
+  { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61591896988440", icon: FacebookMark },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/eclipse-systems-2842a3410/", icon: LinkedInMark },
   { label: "X / Twitter", href: "https://twitter.com/eclipsesystems", icon: ExternalLink }
 ];
 
