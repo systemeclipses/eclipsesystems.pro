@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail } from "lucide-react";
+import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
 
 const productLinks = [
   ["Capabilities", "/features"],
@@ -34,10 +35,32 @@ export function SiteFooter() {
           <p className="mt-5 max-w-md text-sm leading-6 text-white/72">
             Custom software consulting for businesses that need portals, operations systems, CRM workflows, storefronts, dashboards, automations, and integrations built around how they actually work.
           </p>
-          <a href="mailto:help@eclipsesystems.pro" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-white">
-            <Mail className="h-4 w-4" />
-            help@eclipsesystems.pro
-          </a>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <a href="mailto:info@eclipsesystems.pro" className="inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-white">
+              <Mail className="h-4 w-4" />
+              info@eclipsesystems.pro
+            </a>
+            <a
+              href="https://www.facebook.com/share/14r9Ff6o8s1/?mibextid=wwXIfr"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Visit Eclipse Systems on Facebook"
+              title="Facebook"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
+            >
+              <FacebookMark className="h-4 w-4" />
+            </a>
+            <a
+              href="https://www.linkedin.com/company/eclipse-systems"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Visit Eclipse Systems on LinkedIn"
+              title="LinkedIn"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
+            >
+              <LinkedInMark className="h-4 w-4" />
+            </a>
+          </div>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-3">

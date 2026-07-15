@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail } from "lucide-react";
+import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -86,12 +87,32 @@ export function SiteHeader() {
       </nav>
       <div className="flex items-center gap-2 sm:gap-3">
         <a
-          href="mailto:john@eclipsesystems.pro,garrett@eclipsesystems.pro"
-          aria-label="Email John and Garrett at Eclipse Systems"
+          href="mailto:info@eclipsesystems.pro"
+          aria-label="Email Eclipse Systems"
           title="Email Eclipse Systems"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 text-white/80 transition hover:bg-white/10 hover:text-white"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
         >
           <Mail className="h-4 w-4" />
+        </a>
+        <a
+          href="https://www.facebook.com/share/14r9Ff6o8s1/?mibextid=wwXIfr"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visit Eclipse Systems on Facebook"
+          title="Facebook"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
+        >
+          <FacebookMark className="h-4 w-4" />
+        </a>
+        <a
+          href="https://www.linkedin.com/company/eclipse-systems"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visit Eclipse Systems on LinkedIn"
+          title="LinkedIn"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
+        >
+          <LinkedInMark className="h-4 w-4" />
         </a>
         <Link href="/contact" className="whitespace-nowrap rounded-full bg-[#f9e8d2] px-4 py-2 font-bold text-[#314839] transition hover:bg-white sm:px-5">
           Contact

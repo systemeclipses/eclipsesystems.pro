@@ -37,7 +37,7 @@ async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) 
       "idempotency-key": crypto.randomUUID()
     },
     body: JSON.stringify({
-      from: process.env.DEMO_NOTIFICATION_FROM ?? "Eclipse Systems <bookings@eclipsesystems.pro>",
+      from: process.env.DEMO_NOTIFICATION_FROM ?? "Eclipse Systems <info@eclipsesystems.pro>",
       to: notificationRecipients(),
       reply_to: data.email,
       subject: `New demo request from ${data.name}`,

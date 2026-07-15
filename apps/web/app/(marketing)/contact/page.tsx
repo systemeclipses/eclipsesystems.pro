@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { ExternalLink, Linkedin, Mail, Phone } from "lucide-react";
+import { ExternalLink, Mail, Phone } from "lucide-react";
 import { ScheduleDemoForm } from "@/components/marketing/schedule-demo-form";
+import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
 
 export const metadata: Metadata = {
   title: "Contact | Eclipse Systems",
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 };
 
 const socialLinks = [
-  { label: "LinkedIn", href: "https://www.linkedin.com/company/eclipse-systems", icon: Linkedin },
+  { label: "Facebook", href: "https://www.facebook.com/share/14r9Ff6o8s1/?mibextid=wwXIfr", icon: FacebookMark },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/eclipse-systems", icon: LinkedInMark },
   { label: "X / Twitter", href: "https://twitter.com/eclipsesystems", icon: ExternalLink }
 ];
 
@@ -48,19 +50,13 @@ export default function ContactPage({ searchParams }: { searchParams?: { demo?: 
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#314839] text-[#f9e8d2]">
                   <Mail className="h-5 w-5" />
                 </span>
-                <p className="text-right text-sm font-bold uppercase tracking-[0.16em] text-[#314839]/62">Direct email</p>
+                <p className="text-right text-sm font-bold uppercase tracking-[0.16em] text-[#314839]/62">Email</p>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <a href="mailto:john@eclipsesystems.pro" className="rounded-[1rem] border border-[#d8d0c1] bg-white p-4 transition hover:border-[#314839]/35 hover:bg-[#eef1e5]">
-                  <span className="block text-sm font-bold text-[#314839]/62">John Wittig</span>
-                  <span className="mt-1 block break-all text-lg font-black text-[#172219]">john@eclipsesystems.pro</span>
-                </a>
-                <a href="mailto:garrett@eclipsesystems.pro" className="rounded-[1rem] border border-[#d8d0c1] bg-white p-4 transition hover:border-[#314839]/35 hover:bg-[#eef1e5]">
-                  <span className="block text-sm font-bold text-[#314839]/62">Garrett Helmers</span>
-                  <span className="mt-1 block break-all text-lg font-black text-[#172219]">garrett@eclipsesystems.pro</span>
-                </a>
-              </div>
-              <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]/70">Email either of us directly for project ideas, workflow questions, partnerships, or a quick intro.</p>
+              <a href="mailto:info@eclipsesystems.pro" className="mt-4 block rounded-[1rem] border border-[#d8d0c1] bg-white p-4 transition hover:border-[#314839]/35 hover:bg-[#eef1e5]">
+                <span className="block text-sm font-bold text-[#314839]/62">General inquiries</span>
+                <span className="mt-1 block break-all text-lg font-black text-[#172219]">info@eclipsesystems.pro</span>
+              </a>
+              <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]/70">Email us for project ideas, workflow questions, partnerships, or a quick intro.</p>
             </div>
 
             <div className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5">
@@ -105,8 +101,8 @@ export default function ContactPage({ searchParams }: { searchParams?: { demo?: 
           <div className="mb-6">
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#314839]/62">Send a message</p>
             <h2 className="mt-3 font-title text-5xl leading-none text-[#172219] md:text-6xl">Tell us what you need.</h2>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-[#314839]/70">
-              If it should become a demo conversation, we can take it there. If it is just a question, that works too.
+            <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]/70 md:whitespace-nowrap">
+              Want a demo? We&apos;d love to show you around. If it&apos;s just a question, we&apos;re happy to help with that too.
             </p>
           </div>
 

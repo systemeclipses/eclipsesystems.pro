@@ -245,9 +245,9 @@ export function QuickActionMenu() {
             </div>
           ) : view === "contact" ? (
             <div className="grid gap-3 py-3">
-              <a href="mailto:help@eclipsesystems.pro" className="rounded-[1rem] bg-[#314839] p-4 text-[#f9e8d2] transition hover:bg-[#172219]">
+              <a href="mailto:info@eclipsesystems.pro" className="rounded-[1rem] bg-[#314839] p-4 text-[#f9e8d2] transition hover:bg-[#172219]">
                 <span className="flex items-center gap-2 text-xs font-bold uppercase text-[#b4c292]"><Mail className="h-4 w-4" /> Email us</span>
-                <span className="mt-3 block text-sm font-bold">help@eclipsesystems.pro</span>
+                <span className="mt-3 block text-sm font-bold">info@eclipsesystems.pro</span>
                 <span className="mt-1 block text-xs leading-5 text-white/65">Questions, project ideas, and support requests are all welcome.</span>
               </a>
               <div className="grid grid-cols-2 gap-2">
