@@ -10,13 +10,14 @@ import {
   ChevronRight,
   ExternalLink,
   HelpCircle,
+  Instagram,
   Linkedin,
   Mail,
   MessageSquareText,
   Sparkles,
   X
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type View = "menu" | "schedule" | "faqs" | "contact";
 type Status = "idle" | "submitting" | "success" | "error";
@@ -78,6 +79,17 @@ export function QuickActionMenu() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    if (status !== "success") return;
+
+    const timeout = window.setTimeout(() => {
+      setStatus("idle");
+      setMessage("");
+    }, 10_000);
+
+    return () => window.clearTimeout(timeout);
+  }, [status]);
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const calendarDays = getCalendarDays(visibleMonth);
@@ -127,7 +139,7 @@ export function QuickActionMenu() {
     }
 
     setStatus("success");
-    setMessage("We will email you to confirm the time.");
+    setMessage("Request received! We’ll follow up as soon as we can.");
   }
 
   return (
@@ -255,8 +267,8 @@ export function QuickActionMenu() {
                   <span className="flex items-center gap-2"><Linkedin className="h-4 w-4" /> LinkedIn</span>
                   <ExternalLink className="h-3.5 w-3.5 text-[#314839]/50" />
                 </a>
-                <a href="https://twitter.com/eclipsesystems" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-[1rem] border border-[#d8d0c1] bg-white p-4 text-sm font-bold transition hover:bg-[#eef1e5]">
-                  <span className="flex items-center gap-2"><span aria-hidden="true" className="text-base">X</span> Follow</span>
+                <a href="https://www.instagram.com/get.eclipse/" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-[1rem] border border-[#d8d0c1] bg-white p-4 text-sm font-bold transition hover:bg-[#eef1e5]">
+                  <span className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram</span>
                   <ExternalLink className="h-3.5 w-3.5 text-[#314839]/50" />
                 </a>
               </div>

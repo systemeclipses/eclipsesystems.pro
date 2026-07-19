@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,17 @@ export function ScheduleDemoForm({
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
   const selectedDemoLabel = demoLabels[selectedDemo] ?? "";
+
+  useEffect(() => {
+    if (status !== "success") return;
+
+    const timeout = window.setTimeout(() => {
+      setStatus("idle");
+      setMessage("");
+    }, 10_000);
+
+    return () => window.clearTimeout(timeout);
+  }, [status]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +70,7 @@ export function ScheduleDemoForm({
 
     form.reset();
     setStatus("success");
-    setMessage("Demo request received. We will follow up with the next step.");
+    setMessage("Request received! We’ll follow up as soon as we can.");
   }
 
   return (

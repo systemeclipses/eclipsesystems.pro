@@ -48,8 +48,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@eclipsesystems",
-    creator: "@eclipsesystems",
     title: "Eclipse Systems - Custom Software Consulting",
     description: "Custom portals, operations hubs, CRM pipelines, storefronts, billing workflows, dashboards, automations, and integrations.",
     images: ["/api/og/default"]
@@ -75,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     logo: "https://eclipsesystems.pro/api/og/default",
     sameAs: [
       "https://www.linkedin.com/in/eclipse-systems-2842a3410/",
-      "https://twitter.com/eclipsesystems"
+      "https://www.instagram.com/get.eclipse/"
     ]
   };
 

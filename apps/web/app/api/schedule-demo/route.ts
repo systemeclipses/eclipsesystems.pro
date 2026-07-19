@@ -11,7 +11,8 @@ const demoRequestSchema = z.object({
   needs: z.string().trim().min(1).max(5000)
 });
 
-const defaultNotificationRecipients = [
+const requiredNotificationRecipients = [
+  "info@eclipsesystems.pro",
   "garrett@eclipsesystems.pro",
   "john@eclipsesystems.pro"
 ];
@@ -22,12 +23,12 @@ function notificationRecipients() {
     .map((email) => email.trim())
     .filter(Boolean);
 
-  return configured?.length ? configured : defaultNotificationRecipients;
+  return Array.from(new Set([...requiredNotificationRecipients, ...(configured ?? [])]));
 }
 
 async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
+  if (!apiKey) throw new Error("RESEND_API_KEY is not configured");
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -40,9 +41,9 @@ async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) 
       from: process.env.DEMO_NOTIFICATION_FROM ?? "Eclipse Systems <info@eclipsesystems.pro>",
       to: notificationRecipients(),
       reply_to: data.email,
-      subject: `New demo request from ${data.name}`,
+      subject: `New contact form submission from ${data.name}`,
       text: [
-        "A new demo request was submitted on eclipsesystems.pro.",
+        "A new contact form submission was received on eclipsesystems.pro.",
         "",
         `Name: ${data.name}`,
         `Email: ${data.email}`,
@@ -63,7 +64,6 @@ async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) 
     throw new Error("Demo notification email failed");
   }
 
-  return true;
 }
 
 export async function POST(request: Request) {
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
   const webhookUrl = process.env.DEMO_REQUEST_WEBHOOK_URL;
 
   try {
-    const emailSent = await sendBookingNotification(parsed.data);
+    await sendBookingNotification(parsed.data);
 
     if (webhookUrl) {
       const response = await fetch(webhookUrl, {
@@ -93,13 +93,6 @@ export async function POST(request: Request) {
       if (!response.ok) throw new Error("Demo request webhook failed");
     }
 
-    if (!emailSent && !webhookUrl) {
-      console.info("Schedule demo request", {
-        source: "eclipsesystems.pro/contact",
-        submittedAt: new Date().toISOString(),
-        ...parsed.data
-      });
-    }
   } catch (error) {
     console.error("Schedule demo delivery failed", error);
     return NextResponse.json({ error: "We could not send the request. Please try again." }, { status: 502 });

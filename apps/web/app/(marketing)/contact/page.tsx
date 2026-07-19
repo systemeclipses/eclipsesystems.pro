@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { ExternalLink, Mail, Phone } from "lucide-react";
+import { Instagram, Mail, Phone } from "lucide-react";
 import { ScheduleDemoForm } from "@/components/marketing/schedule-demo-form";
 import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const socialLinks = [
   { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61591896988440", icon: FacebookMark },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/eclipse-systems-2842a3410/", icon: LinkedInMark },
-  { label: "X / Twitter", href: "https://twitter.com/eclipsesystems", icon: ExternalLink }
+  { label: "Instagram", href: "https://www.instagram.com/get.eclipse/", icon: Instagram }
 ];
 
 export default function ContactPage({ searchParams }: { searchParams?: { demo?: string } }) {

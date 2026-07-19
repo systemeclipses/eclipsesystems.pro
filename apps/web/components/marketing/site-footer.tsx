@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail } from "lucide-react";
+import { Instagram, Mail } from "lucide-react";
 import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
 
 const productLinks = [
@@ -59,6 +59,16 @@ export function SiteFooter() {
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
             >
               <LinkedInMark className="h-4 w-4" />
+            </a>
+            <a
+              href="https://www.instagram.com/get.eclipse/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Visit Eclipse Systems on Instagram"
+              title="Instagram"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
+            >
+              <Instagram className="h-4 w-4" />
             </a>
           </div>
         </div>
