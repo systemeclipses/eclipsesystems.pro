@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { ArrowRight, Check, ClipboardList, Hammer, Presentation, Wrench } from "lucide-react";
 import { HomePillHeader } from "@/components/marketing/home-pill-header";
 import { HomeScrollMotion } from "@/components/marketing/home-scroll-motion";
-import { MuteOnlyVideo } from "@/components/marketing/mute-only-video";
+import { DemoScreenshotCarousel } from "@/components/marketing/demo-screenshot-carousel";
 import { ConnectedSystems } from "@/components/marketing/connected-systems";
 import { HomeBlogCarousel } from "@/components/marketing/home-blog-carousel";
 
@@ -22,8 +22,12 @@ const featureCards = [
     text: "The first conversation gets concrete fast. We can walk through operations, client portals, CRM, storefronts, billing, and reporting as working environments.",
     cta: "Find Your Starting Point",
     href: "/demos",
-    video: "/media/eclipse-systems-demo-showcase.webm",
-    poster: "/media/eclipse-systems-demo-showcase-poster.png"
+    screenshots: [
+      { src: "/media/demo-screenshots/operations-hub.png", alt: "Live Eclipse Operations Hub dashboard", label: "Operations Hub", href: "/operations-hub" },
+      { src: "/media/demo-screenshots/client-portal.png", alt: "Live Eclipse Client Portal dashboard", label: "Client Portal", href: "/client-portal" },
+      { src: "/media/demo-screenshots/crm-sales-pipeline.png", alt: "Live Eclipse CRM sales pipeline dashboard", label: "CRM Pipeline", href: "/crm-sales-pipeline" },
+      { src: "/media/demo-screenshots/storefront.png", alt: "Live Eclipse Storefront administration dashboard", label: "Storefront", href: "/storefront" }
+    ]
   },
   {
     eyebrow: "",
@@ -507,13 +511,9 @@ export default function LandingPage() {
                         </div>
                       </div>
 
-                      <div className="relative overflow-hidden rounded-[1.6rem] border border-[#f9e8d2]/20 bg-[#172219] shadow-[0_28px_70px_rgba(0,0,0,.24)]">
-                        {"video" in card ? (
-                          <MuteOnlyVideo
-                            className="aspect-video w-full origin-top scale-[1.13] object-cover"
-                            src={card.video}
-                            poster={card.poster}
-                          />
+                      <div className="relative overflow-hidden rounded-[1.6rem] border border-[#f9e8d2]/30 bg-[#efe2cd] p-2 shadow-[0_28px_70px_rgba(0,0,0,.24)]">
+                        {"screenshots" in card ? (
+                          <DemoScreenshotCarousel images={card.screenshots} />
                         ) : null}
                       </div>
                     </div>
@@ -533,12 +533,8 @@ export default function LandingPage() {
                 }`}
               >
                 <div className="relative m-5 min-h-[340px] overflow-hidden rounded-[1.5rem] bg-[#172219] md:m-6 md:min-h-[460px] lg:ml-10 lg:mr-2">
-                  {"video" in card ? (
-                    <MuteOnlyVideo
-                      className="feature-media h-full min-h-[340px] w-full object-cover md:min-h-[460px]"
-                      src={card.video}
-                      poster={card.poster}
-                    />
+                  {"screenshots" in card ? (
+                    <DemoScreenshotCarousel images={card.screenshots} />
                   ) : (
                     <Image
                       src={card.image}

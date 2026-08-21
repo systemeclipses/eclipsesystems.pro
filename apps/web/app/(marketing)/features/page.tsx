@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -81,7 +82,20 @@ export default async function FeaturesPage() {
       />
 
       <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
-        <PublicSectionHeading eyebrow="What we build" title="The useful parts, connected." description="Choose the capabilities your workflow needs now, then connect the rest as your team grows." />
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,680px)] lg:items-stretch lg:gap-4">
+          <div className="flex w-full items-center rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-8 shadow-2xl shadow-[#172219]/10 sm:p-10">
+            <PublicSectionHeading eyebrow="" title="The useful parts, connected." description="Choose the capabilities your workflow needs now, then connect the rest as your team grows." />
+          </div>
+          <div className="w-full max-w-[680px] overflow-hidden rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] shadow-2xl shadow-[#172219]/10 lg:justify-self-end">
+            <Image
+              src="/media/generated/features-connected-systems.png"
+              alt="Business systems connected through one central Eclipse hub"
+              width={1536}
+              height={1024}
+              className="aspect-[3/2] h-auto w-full object-cover"
+            />
+          </div>
+        </div>
         <div className="mt-12 grid gap-5 lg:grid-cols-4">
           {features.map((feature) => {
             const design = getDesign(feature);

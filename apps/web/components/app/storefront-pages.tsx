@@ -233,7 +233,7 @@ export function StorefrontNav({ products, activeSegment }: { products: Storefron
       </div>
       <div className="relative mx-auto grid max-w-[1760px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-6 py-4">
         <Link href="/shop" className="font-title text-3xl font-black leading-none">Eclipse</Link>
-        <nav className="hidden min-w-0 self-stretch whitespace-nowrap text-xs font-black uppercase xl:flex xl:items-stretch xl:justify-center xl:gap-5">
+        <nav className="hidden min-w-0 self-stretch whitespace-nowrap text-xs font-black uppercase xl:absolute xl:inset-y-0 xl:left-1/2 xl:flex xl:-translate-x-1/2 xl:items-stretch xl:justify-center xl:gap-5">
           {megaMenus.map((menu) => (
             <div key={menu.key} className="group flex items-center">
               <Link href={menu.href} className={`flex h-full items-center ${activeSegment && menu.href.endsWith(activeSegment) ? "text-[#7f3f2f]" : ""}`}>{menu.label}</Link>

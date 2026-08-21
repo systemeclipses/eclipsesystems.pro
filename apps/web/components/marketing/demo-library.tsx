@@ -70,50 +70,69 @@ export function DemoLibrary() {
   const detail = presentation[selected.slug];
 
   return (
-    <section data-public-hero-shell className="px-3 pt-3">
-      <div data-public-hero className="overflow-hidden rounded-[2rem] bg-[#172219] px-5 pb-5 pt-28 text-[#f9e8d2] md:px-8 md:pb-8 md:pt-32">
-        <div className="mx-auto max-w-[100rem]">
-        <div>
-          <h1 className="font-title text-5xl leading-[0.88] sm:text-6xl md:text-[5.4rem] lg:whitespace-nowrap lg:text-[clamp(5rem,6.1vw,6.25rem)]">
-            See what Eclipse can do for your team.
-          </h1>
+    <>
+      <section data-public-hero-shell className="px-3 pt-3">
+        <div data-public-hero className="relative min-h-[min(61vh,36.5rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-[#172219] text-[#f9e8d2] shadow-2xl shadow-black/25">
+          <Image
+            src="/media/generated/heroes/demos-hero.png"
+            alt="A software consultant guiding business leaders through an Eclipse product demo"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0b140e]/94 via-[#0b140e]/68 to-[#0b140e]/30" />
+          <div className="relative z-10 mx-auto flex min-h-[min(61vh,36.5rem)] max-w-[100rem] flex-col justify-end px-6 py-12 md:px-10 md:py-16 lg:px-14">
+            <p className="text-sm font-bold text-[#c7d6a5] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Interactive product tours</p>
+            <h1 className="mt-4 max-w-6xl font-title text-5xl leading-[0.87] text-[#f9e8d2] drop-shadow-[0_6px_24px_rgba(0,0,0,0.72)] sm:text-6xl md:text-[5.1rem] md:leading-[0.84] lg:text-[5.8rem] xl:text-[6.55rem]">
+              See what Eclipse can do for your team.
+            </h1>
+            <p className="mt-8 max-w-3xl text-base font-semibold leading-7 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)] md:text-lg">
+              Explore four working environments built around operations, customer access, sales, and commerce.
+            </p>
+          </div>
         </div>
+      </section>
 
-        <div
-          role="tablist"
-          aria-label="Demo environments"
-          className="mt-10 flex gap-2 overflow-x-auto border-b border-white/15 pb-4"
-        >
-          {packageDefinitions.map((item) => {
-            const itemDetail = presentation[item.slug];
-            const Icon = itemDetail.icon;
-            const selectedTab = item.slug === selected.slug;
+      <section className="mx-auto max-w-[100rem] px-5 pb-16 pt-6 md:pb-24 md:pt-8">
+        <div>
+          <p className="text-sm font-bold text-[#314839]">Choose an environment</p>
+          <div
+            role="tablist"
+            aria-label="Demo environments"
+            className="mt-4 flex gap-2 overflow-x-auto pb-1"
+          >
+            {packageDefinitions.map((item) => {
+              const itemDetail = presentation[item.slug];
+              const Icon = itemDetail.icon;
+              const selectedTab = item.slug === selected.slug;
 
-            return (
-              <button
-                key={item.slug}
-                type="button"
-                role="tab"
-                aria-selected={selectedTab}
-                aria-controls="selected-demo"
-                onClick={() => setSelectedSlug(item.slug)}
-                className={
-                  selectedTab
-                    ? "flex h-12 shrink-0 items-center gap-2 rounded-full bg-[#f9e8d2] px-5 text-sm font-bold text-[#314839]"
-                    : "flex h-12 shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 text-sm font-bold text-white/72 transition hover:bg-white/10 hover:text-white"
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {itemDetail.shortName}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={item.slug}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedTab}
+                  aria-controls="selected-demo"
+                  onClick={() => setSelectedSlug(item.slug)}
+                  className={
+                    selectedTab
+                      ? "flex h-12 shrink-0 items-center gap-2 rounded-full bg-[#314839] px-5 text-sm font-bold text-[#f9e8d2] shadow-[0_6px_16px_rgba(23,34,25,0.18)]"
+                      : "flex h-12 shrink-0 items-center gap-2 rounded-full border border-[#314839]/30 bg-[#314839]/5 px-5 text-sm font-bold text-[#314839] shadow-[0_6px_16px_rgba(23,34,25,0.1)] transition hover:bg-[#314839]/10 hover:text-[#172219]"
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                  {itemDetail.shortName}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <article
           id="selected-demo"
           role="tabpanel"
-          className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/15 bg-[#fbfaf6] text-[#172219] shadow-2xl shadow-black/20"
+          className="mt-6 overflow-hidden rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] text-[#172219] shadow-2xl shadow-[#172219]/10"
         >
           <div className="grid lg:grid-cols-[1.06fr_0.94fr]">
             <div className="relative min-h-[360px] overflow-hidden bg-[#172219] md:min-h-[560px]">
@@ -180,8 +199,7 @@ export function DemoLibrary() {
             </ol>
           </div>
         </article>
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

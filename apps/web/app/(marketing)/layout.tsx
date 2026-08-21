@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { QuickActionMenu } from "@/components/marketing/quick-action-menu";
+import { MarketingThemeGuard } from "@/components/marketing/marketing-theme-guard";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           __html: `(() => { document.documentElement.classList.remove("dark"); document.documentElement.style.colorScheme = "light"; })();`
         }}
       />
+      <MarketingThemeGuard />
       <SiteHeader />
       <div className="marketing-page-backdrop">{children}</div>
       <QuickActionMenu />

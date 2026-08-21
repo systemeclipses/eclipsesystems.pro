@@ -60,27 +60,27 @@ export default async function IndustriesPage() {
       />
 
       <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
-        <PublicSectionHeading eyebrow="Priority industries" title="Different work. The same need for clarity." description="Start with the workflow pressure your team feels most, then shape the system around the rest." />
+        <PublicSectionHeading eyebrow="" title="Different work. The same need for clarity." description="Start with the workflow pressure your team feels most, then shape the system around the rest." />
         <div className="mt-12 grid gap-5 lg:grid-cols-4">
           {priority.map(({ industry, label, eyebrow, icon: Icon }) => (
             <Link
               key={industry.slug}
               href={`/industries/${industry.slug}`}
-              className="group flex min-h-[440px] flex-col rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-xl shadow-[#172219]/5 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12"
+              className="group flex min-h-[440px] flex-col rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 text-[#172219] shadow-xl shadow-[#172219]/5 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-primary">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary text-[#172219]">
                   <Icon className="h-5 w-5" />
                 </div>
-                <span className="text-xs font-semibold uppercase text-muted-foreground">{eyebrow}</span>
+                <span className="text-xs font-semibold uppercase text-[#314839]">{eyebrow}</span>
               </div>
               <h2 className="mt-8 font-title text-5xl leading-none">{label}</h2>
-              <p className="mt-5 text-sm leading-6 text-muted-foreground">{industry.description}</p>
+              <p className="mt-5 text-sm leading-6 text-[#314839]">{industry.description}</p>
               <div className="mt-6 border-t border-border pt-5">
                 <p className="text-sm font-semibold">Common pressure</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{industry.problems[0]}</p>
+                <p className="mt-2 text-sm leading-6 text-[#314839]">{industry.problems[0]}</p>
               </div>
-              <span className="mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-primary">
+              <span className="mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-[#314839]">
                 Explore {label} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </span>
             </Link>

@@ -10,13 +10,13 @@ import {
   ChevronRight,
   ExternalLink,
   HelpCircle,
-  Linkedin,
   Mail,
   MessageSquareText,
   Sparkles,
   X
 } from "lucide-react";
 import { FormEvent, useState } from "react";
+import { InstagramMark, LinkedInMark } from "@/components/marketing/social-icons";
 
 type View = "menu" | "schedule" | "faqs" | "contact";
 type Status = "idle" | "submitting" | "success" | "error";
@@ -252,11 +252,11 @@ export function QuickActionMenu() {
               </a>
               <div className="grid grid-cols-2 gap-2">
                 <a href="https://www.linkedin.com/in/eclipse-systems-2842a3410/" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-[1rem] border border-[#d8d0c1] bg-white p-4 text-sm font-bold transition hover:bg-[#eef1e5]">
-                  <span className="flex items-center gap-2"><Linkedin className="h-4 w-4" /> LinkedIn</span>
+                  <span className="flex items-center gap-2"><LinkedInMark className="h-4 w-4" /> LinkedIn</span>
                   <ExternalLink className="h-3.5 w-3.5 text-[#314839]/50" />
                 </a>
-                <a href="https://twitter.com/eclipsesystems" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-[1rem] border border-[#d8d0c1] bg-white p-4 text-sm font-bold transition hover:bg-[#eef1e5]">
-                  <span className="flex items-center gap-2"><span aria-hidden="true" className="text-base">X</span> Follow</span>
+                <a href="https://www.instagram.com/get.eclipse/" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-[1rem] border border-[#d8d0c1] bg-white p-4 text-sm font-bold transition hover:bg-[#eef1e5]">
+                  <span className="flex items-center gap-2"><InstagramMark className="h-4 w-4" /> Instagram</span>
                   <ExternalLink className="h-3.5 w-3.5 text-[#314839]/50" />
                 </a>
               </div>

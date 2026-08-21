@@ -62,20 +62,23 @@ export function PublicSectionHeading({
   eyebrow,
   title,
   description,
-  align = "left"
+  align = "left",
+  tone = "light"
 }: {
   eyebrow: string;
   title: string;
   description?: string;
   align?: "left" | "center";
+  tone?: "light" | "dark";
 }) {
   const centered = align === "center";
+  const dark = tone === "dark";
   return (
     <div className={centered ? "mx-auto grid max-w-5xl justify-items-center text-center" : "max-w-5xl"}>
-      <p className="text-sm font-bold text-[#314839]">{eyebrow}</p>
-      <h2 className="mt-3 font-title text-[clamp(3.2rem,5.8vw,7rem)] leading-[0.88] text-[#172219]">{title}</h2>
+      {eyebrow ? <p className={`text-sm font-bold ${dark ? "text-[#b4c292]" : "text-[#314839]"}`}>{eyebrow}</p> : null}
+      <h2 className={`${eyebrow ? "mt-3 " : ""}font-title text-[clamp(3.2rem,5.8vw,7rem)] leading-[0.88] ${dark ? "text-[#f9e8d2]" : "text-[#172219]"}`}>{title}</h2>
       {description ? (
-        <p className="mt-6 max-w-3xl text-base font-semibold leading-7 text-[#314839]/72 md:text-lg">{description}</p>
+        <p className={`mt-6 max-w-3xl text-base font-semibold leading-7 md:text-lg ${dark ? "text-[#f9e8d2]/82" : "text-[#314839]"}`}>{description}</p>
       ) : null}
     </div>
   );

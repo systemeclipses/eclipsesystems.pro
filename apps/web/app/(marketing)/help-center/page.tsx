@@ -49,7 +49,7 @@ export default function HelpCenterPage() {
                 <p className="mt-2 text-sm text-white/72">Send us the question and the workspace context. We will point you in the right direction.</p>
               </div>
             </div>
-            <a href="mailto:help@eclipsesystems.pro" className="text-sm font-semibold text-cream hover:text-white">help@eclipsesystems.pro</a>
+            <a href="mailto:info@eclipsesystems.pro" className="text-sm font-semibold text-cream hover:text-white">info@eclipsesystems.pro</a>
           </div>
         </div>
       </section>

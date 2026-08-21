@@ -739,7 +739,7 @@ function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar
   ];
   const count = items.length;
   const buttonClass = surface === "sidebar"
-    ? "relative inline-flex h-12 min-w-12 items-center justify-center rounded-md bg-secondary px-3 text-primary hover:bg-[#c4d19f]"
+    ? "relative inline-flex h-12 min-w-12 items-center justify-center rounded-md bg-secondary px-3 text-[#203527] hover:bg-[#c4d19f]"
     : "relative inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary hover:bg-cream dark:border-white/10 dark:text-secondary dark:hover:bg-white/8";
   const panelClass = surface === "sidebar"
     ? "left-0 top-12 w-[360px]"
@@ -1660,7 +1660,7 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
                   ["week", "This week"],
                   ["pay-period", "Pay period"]
                 ].map(([id, label]) => (
-                  <button key={id} onClick={() => setPeriod(id as typeof period)} className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${period === id ? "border-secondary bg-secondary text-primary" : "border-white/15 text-white/78 hover:bg-white/10"}`}>{label}</button>
+                  <button key={id} onClick={() => setPeriod(id as typeof period)} className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${period === id ? "border-secondary bg-secondary text-[#203527]" : "border-white/15 text-white/78 hover:bg-white/10"}`}>{label}</button>
                 ))}
               </div>
               <div className="mt-6 grid gap-3 lg:grid-cols-3">
@@ -2132,7 +2132,7 @@ function ClockInWidget({ employeeId, onReport }: { employeeId: string; onReport?
       </div>
       <div className="grid grid-cols-3 gap-1 rounded-full bg-cream p-1 dark:bg-white/8">
         {(["Office", "Home", "Field"] as const).map((item) => (
-          <button key={item} onClick={() => setLocation(item)} className={`h-8 rounded-full text-[11px] font-bold transition ${location === item ? "bg-secondary text-primary shadow-sm" : "text-muted-foreground hover:bg-white/70 dark:hover:bg-white/10"}`}>
+          <button key={item} onClick={() => setLocation(item)} className={`h-8 rounded-full text-[11px] font-bold transition ${location === item ? "bg-secondary text-[#203527] shadow-sm" : "text-muted-foreground hover:bg-white/70 dark:hover:bg-white/10"}`}>
             {item}
           </button>
         ))}

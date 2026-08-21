@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail } from "lucide-react";
-import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
+import { InstagramMark, LinkedInMark } from "@/components/marketing/social-icons";
 
 const productLinks = [
   ["Capabilities", "/features"],
@@ -41,14 +41,14 @@ export function SiteFooter() {
               info@eclipsesystems.pro
             </a>
             <a
-              href="https://www.facebook.com/profile.php?id=61591896988440"
+              href="https://www.instagram.com/get.eclipse/"
               target="_blank"
               rel="noreferrer"
-              aria-label="Visit Eclipse Systems on Facebook"
-              title="Facebook"
+              aria-label="Visit Eclipse Systems on Instagram"
+              title="Instagram"
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
             >
-              <FacebookMark className="h-4 w-4" />
+              <InstagramMark className="h-4 w-4" />
             </a>
             <a
               href="https://www.linkedin.com/in/eclipse-systems-2842a3410/"

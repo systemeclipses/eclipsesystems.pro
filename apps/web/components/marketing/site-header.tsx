@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail } from "lucide-react";
-import { FacebookMark, LinkedInMark } from "@/components/marketing/social-icons";
+import { InstagramMark, LinkedInMark } from "@/components/marketing/social-icons";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -78,7 +78,7 @@ export function SiteHeader() {
       <Link href="/" className="flex items-center gap-3">
         <Image src="/brand/wordmark-white.png" alt="Eclipse Systems" width={168} height={70} priority className="h-8 w-auto object-contain sm:h-9" />
       </Link>
-      <nav className="hidden items-center gap-10 lg:flex">
+      <nav className="hidden items-center gap-10 lg:absolute lg:left-1/2 lg:flex lg:-translate-x-1/2">
         {navLinks.map(([label, href]) => (
           <Link key={label} href={href} className="transition hover:text-white">
             {label}
@@ -95,14 +95,14 @@ export function SiteHeader() {
           <Mail className="h-4 w-4" />
         </a>
         <a
-          href="https://www.facebook.com/profile.php?id=61591896988440"
+          href="https://www.instagram.com/get.eclipse/"
           target="_blank"
           rel="noreferrer"
-          aria-label="Visit Eclipse Systems on Facebook"
-          title="Facebook"
+          aria-label="Visit Eclipse Systems on Instagram"
+          title="Instagram"
           className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[#f9e8d2] bg-[#b4c292] text-[#314839] transition hover:border-white hover:bg-[#c5d2a4]"
         >
-          <FacebookMark className="h-4 w-4" />
+          <InstagramMark className="h-4 w-4" />
         </a>
         <a
           href="https://www.linkedin.com/in/eclipse-systems-2842a3410/"
