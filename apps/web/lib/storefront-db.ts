@@ -169,7 +169,13 @@ export async function getStorefrontSeed(): Promise<StorefrontSeed> {
         createdAt: adjustment.created_at.toISOString()
       }))
     };
+  } catch (error) {
+    console.error(
+      "Storefront database unavailable; using demo data.",
+      error instanceof Error ? error.message : error
+    );
+    return storefrontSeed;
   } finally {
-    await sql.end();
+    await sql.end().catch(() => undefined);
   }
 }
