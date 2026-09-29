@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3 } from "lucide-react";
 import { useRef, useState } from "react";
+import { additionalBlogPosts } from "@/lib/additional-blog-posts";
 
-const posts = [
+const originalPosts = [
   {
     title: "The weekly time review that saves Friday afternoon",
     category: "Timekeeping",
@@ -47,6 +48,20 @@ const posts = [
     readTime: "7 min"
   }
 ] as const;
+
+const posts = [
+  ...additionalBlogPosts.map((post) => ({
+    title: post.title,
+    category: post.category,
+    excerpt: post.description,
+    href: `/blog/${post.slug}`,
+    image: post.image,
+    imageAlt: post.imageAlt,
+    date: post.date,
+    readTime: post.readTime.replace(" read", "")
+  })),
+  ...originalPosts
+];
 
 export function HomeBlogCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);

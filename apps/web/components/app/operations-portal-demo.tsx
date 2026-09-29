@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DndContext, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
@@ -14,6 +15,7 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
+  ChevronRight,
   ChevronDown,
   ClipboardList,
   Clock3,
@@ -192,10 +194,6 @@ function denyReason(label: string) {
   return window.prompt(`${label}. Enter a reason:`)?.trim() ?? "";
 }
 
-function surfaceForRole(role: PortalRole) {
-  return role === "client" ? "Client Portal" : "Operations Hub";
-}
-
 function slugifyTicketSubject(subject: string) {
   const slug = subject.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return slug || "ticket";
@@ -291,30 +289,6 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
     ? selectedContact?.name ?? selectedClient?.name ?? "there"
     : store.employees.find((employee) => employee.id === currentEmployeeId(store.viewer))?.name ?? "there";
   const firstName = currentPerson.split(" ")[0] ?? "there";
-  const dashboardGreeting = isClient
-    ? {
-        eyebrow: "Client Portal",
-        title: `Welcome back, ${firstName}.`,
-        body: "Your Eclipse project updates, invoices, documents, support tickets, and messages are ready in one place."
-      }
-    : store.viewer.role === "manager"
-      ? {
-          eyebrow: "Operations Hub",
-          title: `Good to see you, ${firstName}.`,
-          body: "Your Eclipse team schedule, time approvals, PTO coverage, tickets, and training follow-ups are ready for review."
-        }
-      : store.viewer.role === "employee"
-        ? {
-            eyebrow: "My Eclipse Workspace",
-            title: `Welcome back, ${firstName}.`,
-            body: "Your clock, schedule, tasks, training, PTO, and messages are lined up for today."
-          }
-        : {
-            eyebrow: "Operations Hub",
-            title: `Welcome back, ${firstName}.`,
-            body: "Eclipse operations, client work, scheduling, billing, tickets, learning, and team activity are ready."
-          };
-
   function fireDemoStep(stepIndex = store.demoStepIndex) {
     const step = demoSteps[stepIndex];
     if (!step) return;
@@ -368,19 +342,17 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
     return () => window.clearInterval(timer);
   }, [store.demoMode, store.demoAutoplay, store.demoStepIndex, demoClient.id, demoInvoice.id, demoDocument.id, demoThread.id, demoProject.id]);
 
-  const metrics = [
-    { label: isClient ? "Open projects" : "Active clients", value: isClient ? String(visibleProjects.length) : String(store.clients.length) },
-    { label: isClient ? "Payable invoices" : "Client invoices", value: String(visibleInvoices.filter((invoice) => invoice.status === "payable" || invoice.status === "sent").length) },
-    { label: isClient ? "Awaiting signature" : "Signature queue", value: String(visibleDocuments.filter((document) => document.status === "awaiting_signature").length) },
-    { label: isClient ? "Support tickets" : "Inbox + tickets", value: String(visibleThreads.length + visibleTickets.filter((ticket) => ticket.status !== "resolved" && ticket.status !== "closed").length) }
-  ];
-
   return (
-    <section className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-[#2f4135] p-4 text-white md:flex md:flex-col">
+    <section className={`min-h-screen ${isClient ? "bg-[#f4f2ed]" : "dark bg-[#0b1510]"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-30 hidden w-64 border-r p-4 text-white md:flex md:flex-col ${isClient ? "border-white/8 bg-[#173126]" : "border-white/8 bg-[#0d1c14]"}`}>
         <div className="flex items-center justify-between gap-3">
-          <Link href="/templates" className={`${portalBrand.fonts.title} text-3xl leading-none text-cream`}>{portalBrand.logoText}</Link>
-          {!isClient ? <NotificationBell surface="sidebar" /> : null}
+          <Link href="/demos" aria-label="Back to Eclipse Systems demos" className="flex items-center gap-3">
+            {isClient ? <span className="grid h-9 w-9 place-items-center rounded-lg border border-[#b7c597]/35 bg-[#b7c597]/15 text-xs font-black tracking-[0.16em] text-[#dbe3c2]">RB</span> : null}
+            <span>
+              <span className={`${portalBrand.fonts.title} block text-3xl leading-none text-cream`}>{isClient ? "Ridgeway" : portalBrand.logoText}</span>
+              {isClient ? <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-white/42">Client workspace</span> : null}
+            </span>
+          </Link>
         </div>
         <nav className="mt-7 grid flex-1 content-start gap-1">
           {isClient ? (
@@ -399,26 +371,29 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
             />
           )}
         </nav>
+        {isClient ? (
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <button onClick={() => store.setActivePage("messages")} className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-white/8">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-[#b7c597] text-xs font-black text-[#173126]">SW</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-white">Sam Whitlow</span>
+                <span className="block truncate text-xs text-white/45">Cahaba Brewing Co.</span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-white/30" />
+            </button>
+          </div>
+        ) : null}
         {!isClient && sidebarMode === "main" ? <SidebarProfileButton active={store.activePage === "profile"} onSelect={() => { setActiveReport(null); store.setActivePage("profile"); }} /> : null}
       </aside>
 
       <main className="md:pl-64">
-        <div className="px-4 py-5 md:px-8 md:py-8 xl:px-10">
+        <div className={isClient ? "px-4 py-4 md:px-7 md:py-6 xl:px-10" : "px-4 py-5 md:px-8 md:py-8 xl:px-10"}>
           {onDashboard ? (
-            <header className="rounded-md bg-primary p-5 text-white md:p-7">
-              <div className="grid gap-5 xl:grid-cols-[1fr_520px] xl:items-end">
-                <div>
-                  <p className="text-sm font-semibold text-secondary">{dashboardGreeting.eyebrow}</p>
-                  <h1 className="mt-3 max-w-5xl font-title text-5xl leading-[0.9] text-cream md:text-7xl">
-                    {dashboardGreeting.title}
-                  </h1>
-                  <p className="mt-5 max-w-3xl text-sm leading-6 text-white/74 md:text-base">
-                    {dashboardGreeting.body}
-                  </p>
-                </div>
-                <ViewerSwitcher selectedClientId={selectedClient.id} />
-              </div>
-            </header>
+            isClient ? (
+              <ClientPortalHeader selectedClientId={selectedClient.id} firstName={firstName} />
+            ) : (
+              <OperationsPortalHeader selectedClientId={selectedClient.id} firstName={firstName} />
+            )
           ) : (
             <ModuleTopBar selectedClientId={selectedClient.id} navItems={navItems} isClient={isClient} reportLabel={reportLabel} />
           )}
@@ -453,17 +428,6 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
             </>
           ) : (
             <>
-          {onDashboard ? (
-            <section className="mt-5 grid gap-4 md:grid-cols-4">
-              {metrics.map((metric) => (
-                <div key={metric.label} className="rounded-md border border-border bg-white/65 p-4 dark:border-white/10 dark:bg-[#15231a]">
-                  <p className="text-sm text-muted-foreground dark:text-white/62">{metric.label}</p>
-                  <p className="mt-3 text-3xl font-semibold text-ink dark:text-cream">{metric.value}</p>
-                </div>
-              ))}
-            </section>
-          ) : null}
-
           <section className={onDashboard ? "mt-5" : "mt-4"}>
             {routeTicketSlug ? (
               <TicketRouteWorkspace ticket={routeTicket} surface={surface} />
@@ -495,40 +459,65 @@ export function OperationsPortalDemo({ surface, ticketSlug: routeTicketSlug }: D
   );
 }
 
-function ViewerSwitcher({ selectedClientId }: { selectedClientId: string }) {
-  const { viewer, setViewer } = useOperationsPortalStore();
+function OperationsPortalHeader({ selectedClientId, firstName }: { selectedClientId: string; firstName: string }) {
+  const store = useOperationsPortalStore();
+  const { viewer, setViewer } = store;
+  const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
+  const initials = store.employees.find((employee) => employee.id === currentEmployeeId(viewer))?.avatar ?? "ES";
+  const eyebrow = viewer.role === "manager" ? "Team operations" : viewer.role === "employee" ? "My workspace" : "Operations command center";
+
+  return (
+    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#aebd84]">{eyebrow}</p>
+        <h1 className="mt-1 font-title text-3xl leading-none text-[#f1ecdf] md:text-4xl">Welcome back, {firstName}.</h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <NotificationBell surface="topbar" />
+        <label className="relative hidden sm:block">
+          <span className="sr-only">Preview role</span>
+          <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-10 appearance-none rounded-full border border-white/12 bg-[#12231a] py-0 pl-4 pr-9 text-xs font-bold text-[#e9e6d8] shadow-sm outline-none transition hover:border-[#aebd84]/55">
+            <option value="owner">Owner/Admin view</option>
+            <option value="manager">Manager view</option>
+            <option value="employee">Staff view</option>
+            <option value="client">Client view</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#aebd84]" />
+        </label>
+        <span className="grid h-10 w-10 place-items-center rounded-full border border-[#aebd84]/25 bg-[#aebd84] text-xs font-black text-[#0d1c14]">{initials}</span>
+      </div>
+    </header>
+  );
+}
+
+function ClientPortalHeader({ selectedClientId, firstName }: { selectedClientId: string; firstName: string }) {
+  const { viewer, setViewer, setActivePage } = useOperationsPortalStore();
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
 
   return (
-    <div className="rounded-md border border-white/15 bg-white/10 p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/52">Eclipse Workspace</p>
-          <p className="mt-1 text-sm text-white/72">Switch roles inside the Eclipse workspace.</p>
-        </div>
+    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#173126]/10 pb-5">
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#76815f]">Cahaba Brewing Co.</p>
+        <h1 className="mt-1 font-title text-3xl leading-none text-[#173126] md:text-4xl">Welcome back, {firstName}.</h1>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <label className="grid min-w-0 gap-2 text-sm font-semibold text-white/70">
-          View
-          <span className="relative min-w-0">
-            <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-11 w-full min-w-0 appearance-none truncate rounded-md border border-white/15 bg-[#101a14] py-0 pl-3 pr-12 text-white">
-              <option value="owner">Owner/Admin view</option>
-              <option value="manager">Manager view (as Marcus)</option>
-              <option value="employee">Staff view</option>
-              <option value="client">Client view</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/80" />
-          </span>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setActivePage("messages")} aria-label="Open messages" className="relative grid h-10 w-10 place-items-center rounded-full border border-[#173126]/12 bg-white text-[#315143] shadow-sm transition hover:border-[#879665] hover:bg-[#f8f7f3]">
+          <Bell className="h-4 w-4" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-[#b88b42]" />
+        </button>
+        <label className="relative hidden sm:block">
+          <span className="sr-only">Preview role</span>
+          <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-10 appearance-none rounded-full border border-[#173126]/12 bg-white py-0 pl-4 pr-9 text-xs font-bold text-[#315143] shadow-sm">
+            <option value="client">Client view</option>
+            <option value="owner">Owner/Admin view</option>
+            <option value="manager">Manager view</option>
+            <option value="employee">Staff view</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#76815f]" />
         </label>
-        <div className="grid min-w-0 gap-2 text-sm font-semibold text-white/70">
-          Workspace
-          <div className="flex h-11 min-w-0 items-center justify-between gap-3 rounded-md border border-white/15 bg-[#101a14] px-3 text-white">
-            <span className="truncate">{surfaceForRole(viewer.role)}</span>
-            <span className="truncate text-xs font-medium text-white/52">Eclipse</span>
-          </div>
-        </div>
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#173126] text-xs font-black text-[#f6f1e8]">SW</span>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -538,8 +527,8 @@ function FlatSidebarNav({ items, activePage, onSelect }: { items: SidebarNavItem
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <button key={item.page} onClick={() => onSelect(item.page)} className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[15px] transition ${activePage === item.page ? "bg-white/12 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
-            <Icon className="h-[18px] w-[18px] text-secondary" />
+          <button key={item.page} onClick={() => onSelect(item.page)} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition ${activePage === item.page ? "bg-[#f2eee5] text-[#173126] shadow-sm" : "text-white/62 hover:bg-white/8 hover:text-white"}`}>
+            <Icon className={`h-[17px] w-[17px] ${activePage === item.page ? "text-[#6f7f4d]" : "text-[#b7c597]/72 group-hover:text-[#dbe3c2]"}`} />
             <span className="min-w-0 flex-1">{item.label}</span>
           </button>
         );
@@ -648,21 +637,24 @@ function ReportsSidebarNav({ activeReport, onBack, onSelect }: { activeReport: R
 }
 
 function ModuleTopBar({ selectedClientId, navItems, isClient, reportLabel }: { selectedClientId: string; navItems: Array<{ page: PortalPage; label: string; icon: typeof LayoutDashboard }>; isClient: boolean; reportLabel?: string }) {
-  const { viewer, activePage, setViewer } = useOperationsPortalStore();
+  const store = useOperationsPortalStore();
+  const { viewer, activePage, setViewer } = store;
   const roleValue = viewer.role === "client" ? "client" : viewer.role === "manager" ? "manager" : viewer.role === "employee" ? "employee" : "owner";
+  const initials = viewer.role === "client" ? "SW" : store.employees.find((employee) => employee.id === currentEmployeeId(viewer))?.avatar ?? "ES";
   const activeLabel = reportLabel ? `Reports / ${reportLabel}` : navItems.find((item) => item.page === activePage)?.label ?? (isClient ? "Client Portal" : "Operations Hub");
 
   return (
-    <header className="rounded-md border border-border bg-white/75 p-3 dark:border-white/10 dark:bg-[#15231a]">
+    <header className={isClient ? "rounded-2xl border border-[#173126]/10 bg-[#fffefa] p-4 shadow-[0_12px_40px_rgba(23,49,38,.05)]" : "rounded-md border border-border bg-white/75 p-3 dark:border-white/10 dark:bg-[#15231a]"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary dark:text-secondary">{isClient ? "Client Portal" : "Operations Hub"}</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink dark:text-cream">{activeLabel}</h1>
+          <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${isClient ? "text-[#7d8962]" : "text-primary dark:text-secondary"}`}>{isClient ? "Cahaba Brewing Co." : "Operations Hub"}</p>
+          <h1 className={`mt-1 text-2xl font-semibold ${isClient ? "text-[#173126]" : "text-ink dark:text-cream"}`}>{activeLabel}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {!isClient ? <NotificationBell surface="topbar" /> : null}
           <label className="relative">
             <span className="sr-only">View</span>
-            <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className="h-10 min-w-[190px] appearance-none rounded-md border border-border bg-white py-0 pl-3 pr-10 text-sm font-semibold text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
+            <select value={roleValue} onChange={(event) => setViewer(event.target.value === "client" ? { role: "client", clientId: selectedClientId } : { role: event.target.value as Exclude<PortalRole, "client"> })} className={`h-10 min-w-[190px] appearance-none rounded-full border bg-white py-0 pl-4 pr-10 text-sm font-semibold ${isClient ? "border-[#173126]/12 text-[#315143]" : "border-white/12 text-ink dark:bg-[#12231a] dark:text-cream"}`}>
               <option value="owner">Owner/Admin view</option>
               <option value="manager">Manager view</option>
               <option value="employee">Staff view</option>
@@ -670,10 +662,7 @@ function ModuleTopBar({ selectedClientId, navItems, isClient, reportLabel }: { s
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           </label>
-          <div className="flex h-10 min-w-[210px] items-center justify-between gap-3 rounded-md border border-border bg-white px-3 text-sm font-semibold text-ink dark:border-white/10 dark:bg-[#0f1a14] dark:text-cream">
-            <span className="truncate">{surfaceForRole(viewer.role)}</span>
-            <span className="truncate text-xs font-medium text-muted-foreground dark:text-white/52">Eclipse</span>
-          </div>
+          <span className={`grid h-10 w-10 place-items-center rounded-full text-xs font-black ${isClient ? "bg-[#173126] text-[#f6f1e8]" : "border border-[#aebd84]/25 bg-[#aebd84] text-[#0d1c14]"}`}>{initials}</span>
         </div>
       </div>
     </header>
@@ -749,7 +738,7 @@ function NotificationBell({ surface }: { surface: "sidebar" | "header" | "topbar
     <div className="relative">
       <button onClick={() => setOpen(!open)} aria-expanded={open} className={buttonClass}>
         <span className="inline-flex items-center gap-2"><Bell className={surface === "sidebar" ? "h-6 w-6" : "h-4 w-4"} />{surface === "sidebar" ? null : " Notifications"}</span>
-        {count ? <span className={surface === "sidebar" ? "ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-black leading-none text-secondary" : "rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-primary"}>{count}</span> : null}
+        {count ? <span className={surface === "sidebar" ? "ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-black leading-none text-secondary" : "inline-grid min-w-7 place-items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-black text-[#172219] dark:text-[#172219]"}>{count}</span> : null}
       </button>
       {open ? (
         <div className={`absolute z-50 mt-2 max-h-[70vh] overflow-auto rounded-md border border-border bg-white p-3 shadow-xl dark:border-white/10 dark:bg-[#15231a] ${panelClass}`}>
@@ -1644,7 +1633,7 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
   return (
     <section className="grid gap-5">
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <div className="overflow-hidden rounded-md bg-primary text-white dark:bg-[#253629]">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#12231a] text-white shadow-[0_18px_60px_rgba(0,0,0,.2)]">
           <div className="grid items-stretch gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_360px] md:p-6">
             <div className="flex h-full flex-col">
               <p className="text-sm font-semibold text-secondary">{scopeLabel(scope)} executive overview</p>
@@ -1660,12 +1649,12 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
                   ["week", "This week"],
                   ["pay-period", "Pay period"]
                 ].map(([id, label]) => (
-                  <button key={id} onClick={() => setPeriod(id as typeof period)} className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${period === id ? "border-secondary bg-secondary text-[#203527]" : "border-white/15 text-white/78 hover:bg-white/10"}`}>{label}</button>
+                  <button key={id} onClick={() => setPeriod(id as typeof period)} className={`rounded-full border px-4 py-2 text-xs font-bold transition ${period === id ? "border-[#d7aa62] bg-[#d7aa62] text-[#172219]" : "border-white/12 text-white/65 hover:border-[#aebd84]/45 hover:bg-white/8"}`}>{label}</button>
                 ))}
               </div>
               <div className="mt-6 grid gap-3 lg:grid-cols-3">
                 {commandNotes.map((note) => (
-                  <button key={note.label} onClick={() => store.setActivePage(note.label === "Coverage" ? scope === "self" ? "my-schedule" : "scheduling" : note.label === "Next follow-up" ? "ticketing" : "action-center")} className="rounded-md border border-white/12 bg-white/7 p-3 text-left transition hover:bg-white/12">
+                  <button key={note.label} onClick={() => store.setActivePage(note.label === "Coverage" ? scope === "self" ? "my-schedule" : "scheduling" : note.label === "Next follow-up" ? "ticketing" : "action-center")} className="rounded-xl border border-white/10 bg-[#192b21] p-3 text-left transition hover:border-[#aebd84]/35 hover:bg-[#203429]">
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-white/42">{note.label}</p>
                     <p className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-cream">{note.value}</p>
                   </button>
@@ -1673,7 +1662,7 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
               </div>
               <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-4">
                 {pulseMetrics.map((metric, index) => (
-                  <div key={metric.label} className="rounded-md border border-white/12 bg-white/8 p-3">
+                  <div key={metric.label} className="rounded-xl border border-white/10 bg-[#0d1c14] p-3">
                     <p className="text-xs font-semibold text-white/58">{metric.label}</p>
                     <p className="mt-2 text-2xl font-black text-cream tabular-nums">{metric.value}</p>
                     <div className="mt-3 h-1.5 rounded-full bg-white/12">
@@ -1683,14 +1672,14 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
                 ))}
               </div>
             </div>
-            <div className="rounded-md border border-white/12 bg-[#102017] p-4 shadow-inner">
+            <div className="rounded-xl border border-white/10 bg-[#09140e] p-4 shadow-inner">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-secondary">Needs attention</p>
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-secondary motion-safe:animate-pulse" />
               </div>
               <div className="mt-4 grid gap-2">
                 {attentionItems.map((item) => (
-                  <button key={item.label} onClick={() => store.setActivePage(item.page)} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-sm bg-white/8 px-3 py-2 text-left transition hover:bg-white/12">
+                  <button key={item.label} onClick={() => store.setActivePage(item.page)} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg border border-transparent bg-white/6 px-3 py-2.5 text-left transition hover:border-[#aebd84]/25 hover:bg-white/10">
                     <span>
                       <span className="block text-sm font-semibold text-cream">{item.label}</span>
                       <span className="block text-xs text-white/52">{item.action}</span>
@@ -1727,11 +1716,11 @@ function ExecutiveDashboardPanel({ scope }: { scope: PermissionScope }) {
       <div className="grid gap-5 xl:grid-cols-[1fr_1fr_360px]">
         <DashboardQueuePanel title={admin ? "Invoice pipeline" : "Workload queues"} summary={admin ? `${money(paid)} collected · ${money(receivable)} open` : `${openTickets.length} tickets · ${pendingApprovals.length} approvals`} items={admin ? invoicePipeline : workloadQueue} onOpen={(page) => store.setActivePage(page)} />
         <DashboardQueuePanel title={admin ? "Cash collection queue" : "Coverage and follow-up"} summary={admin ? "Due-date buckets from live invoices" : "Schedule, time, training, and tasks"} items={admin ? collectionBuckets : coverageQueue} onOpen={(page) => store.setActivePage(page)} />
-        <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
+        <section className="rounded-xl border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#12231a]">
           <p className="text-sm font-semibold text-primary dark:text-secondary">Recent activity</p>
           <div className="mt-4 grid gap-3">
             {recent.map((item) => (
-              <button key={item.id} onClick={() => store.setActivePage(item.page)} className="rounded-sm bg-cream/70 p-3 text-left hover:bg-secondary/25 dark:bg-white/8">
+              <button key={item.id} onClick={() => store.setActivePage(item.page)} className="rounded-lg border border-transparent bg-cream/70 p-3 text-left transition hover:bg-secondary/25 dark:bg-[#0d1c14] dark:hover:border-[#aebd84]/25 dark:hover:bg-[#192b21]">
                 <p className="text-sm font-semibold text-ink dark:text-cream">{item.label}</p>
                 <p className="mt-1 line-clamp-2 text-sm text-muted-foreground dark:text-white/62">{item.value}</p>
               </button>
@@ -3114,7 +3103,113 @@ function SettingsLayoutPanel() {
 }
 
 function ClientDashboardPanel(props: { clientId: string; project?: ClientProject; invoice?: ClientInvoice; document?: ClientDocument; thread?: MessageThread; ticket?: SupportTicket }) {
-  return <DashboardPanel isClient clientId={props.clientId} project={props.project} invoice={props.invoice} document={props.document} thread={props.thread} ticket={props.ticket} />;
+  const store = useOperationsPortalStore();
+  const projects = store.projects.filter((item) => item.clientId === props.clientId);
+  const invoices = store.invoices.filter((item) => item.clientId === props.clientId);
+  const documents = store.documents.filter((item) => item.clientId === props.clientId);
+  const tickets = store.tickets.filter((item) => item.clientId === props.clientId);
+  const project = props.project ?? projects[0];
+  const invoice = invoices.find((item) => item.status === "payable" || item.status === "sent" || item.status === "overdue") ?? props.invoice;
+  const document = documents.find((item) => item.status === "awaiting_signature") ?? props.document;
+  const openTicket = tickets.find((item) => item.status !== "resolved" && item.status !== "closed") ?? props.ticket;
+  const milestones = ["Site review", "Scope", "Approval", "Installation", "Closeout"];
+  const activeMilestone = project?.status === "Launched" ? 5 : project?.status === "Client review" ? 3 : project?.status === "Blocked" ? 2 : 2;
+  const recentActivity = [
+    { title: "Replacement options uploaded", detail: "Ryan Patel added the equipment comparison and pricing options.", at: "Today, 10:24 AM", icon: FileText },
+    { title: "Site assessment completed", detail: "Jamal Carter documented measurements and compressor condition.", at: "Yesterday, 3:48 PM", icon: CheckCircle2 },
+    { title: "Project timeline updated", detail: `Next milestone: ${project?.nextMilestone ?? "Client approval"}.`, at: "Monday, 9:12 AM", icon: CalendarDays }
+  ];
+
+  return (
+    <div className="grid gap-5">
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,.72fr)]">
+        <article className="overflow-hidden rounded-2xl border border-[#173126]/10 bg-[#fffefa] shadow-[0_18px_60px_rgba(23,49,38,.07)]">
+          <div className="relative h-52 md:h-64">
+            <Image src="/media/generated/heroes/local-business.jpg" alt="Ridgeway service team reviewing the Cahaba Brewing project" fill priority sizes="(min-width: 1280px) 58vw, 100vw" className="object-cover object-right" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#173126]/90 via-[#173126]/42 to-transparent" />
+            <div className="absolute inset-y-0 left-0 flex max-w-lg flex-col justify-end p-6 text-white md:p-8">
+              <span className="w-fit rounded-full border border-white/20 bg-white/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-sm">Active project</span>
+              <h2 className="mt-4 font-title text-4xl leading-[.92] text-[#f8f2e8] md:text-5xl">{project?.name ?? "Facilities renewal"}</h2>
+              <p className="mt-3 text-sm font-medium text-white/68">Managed by {project?.manager ?? "Ryan Patel"} · Updated {project?.updatedAt ?? "Today"}</p>
+            </div>
+          </div>
+          <div className="p-6 md:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8962]">Project progress</p>
+                <p className="mt-2 text-sm font-semibold text-[#315143]">{project?.status ?? "In progress"} · {project?.nextMilestone ?? "Client approval"}</p>
+              </div>
+              <button onClick={() => project && store.setSelectedProject(project.id)} className="inline-flex h-9 items-center gap-2 rounded-full border border-[#173126]/12 px-4 text-xs font-bold text-[#315143] transition hover:border-[#879665] hover:bg-[#f4f2ed]">View project <ArrowRight className="h-3.5 w-3.5" /></button>
+            </div>
+            <div className="mt-7 grid grid-cols-5">
+              {milestones.map((milestone, index) => {
+                const complete = index < activeMilestone;
+                const current = index === activeMilestone;
+                return (
+                  <div key={milestone} className="relative text-center">
+                    {index > 0 ? <span className={`absolute right-1/2 top-2 h-px w-full ${complete || current ? "bg-[#879665]" : "bg-[#173126]/14"}`} /> : null}
+                    <span className={`relative z-10 mx-auto block h-4 w-4 rounded-full border-[3px] ${complete ? "border-[#879665] bg-[#879665]" : current ? "border-[#b88b42] bg-[#fffefa]" : "border-[#d7d5ce] bg-[#fffefa]"}`} />
+                    <span className={`mt-3 block text-[10px] font-bold leading-4 ${complete || current ? "text-[#315143]" : "text-[#315143]/42"}`}>{milestone}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </article>
+
+        <aside className="rounded-2xl border border-[#173126]/10 bg-[#fffefa] p-5 shadow-[0_18px_60px_rgba(23,49,38,.06)] md:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8962]">For your attention</p>
+              <h2 className="mt-2 text-xl font-bold text-[#173126]">Next steps</h2>
+            </div>
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#b88b42]/12 text-xs font-black text-[#9b6e2b]">3</span>
+          </div>
+          <div className="mt-5 divide-y divide-[#173126]/9">
+            <button onClick={() => document && store.setSelectedDocument(document.id)} className="group flex w-full items-start gap-3 py-4 text-left first:pt-0">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#fff1e9] text-[#b45d36]"><FileSignature className="h-4 w-4" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-bold text-[#173126]">Review and sign</span><span className="mt-1 block truncate text-xs text-[#315143]/58">{document?.title ?? "Equipment approval"}</span></span>
+              <ChevronRight className="mt-2 h-4 w-4 text-[#315143]/25 transition group-hover:translate-x-1 group-hover:text-[#879665]" />
+            </button>
+            <button onClick={() => invoice && store.setSelectedInvoice(invoice.id)} className="group flex w-full items-start gap-3 py-4 text-left">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#edf2e3] text-[#667542]"><ReceiptText className="h-4 w-4" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-bold text-[#173126]">Invoice ready</span><span className="mt-1 block text-xs text-[#315143]/58">{invoice ? `${invoice.number} · ${money(invoiceTotal(invoice))}` : "No balance due"}</span></span>
+              <ChevronRight className="mt-2 h-4 w-4 text-[#315143]/25 transition group-hover:translate-x-1 group-hover:text-[#879665]" />
+            </button>
+            <button onClick={() => props.thread && store.setSelectedThread(props.thread.id)} className="group flex w-full items-start gap-3 py-4 text-left">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#edf0ee] text-[#315143]"><MessageSquareText className="h-4 w-4" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-bold text-[#173126]">New project message</span><span className="mt-1 block truncate text-xs text-[#315143]/58">Ryan shared an updated timeline</span></span>
+              <ChevronRight className="mt-2 h-4 w-4 text-[#315143]/25 transition group-hover:translate-x-1 group-hover:text-[#879665]" />
+            </button>
+          </div>
+          <button onClick={() => store.setActivePage("tickets")} className="mt-3 w-full rounded-xl bg-[#173126] px-4 py-3 text-xs font-bold text-white transition hover:bg-[#29483a]">Ask Ridgeway for help</button>
+        </aside>
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.75fr)]">
+        <article className="rounded-2xl border border-[#173126]/10 bg-[#fffefa] p-5 md:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8962]">Project feed</p><h2 className="mt-2 text-xl font-bold text-[#173126]">Recent activity</h2></div>
+            <button onClick={() => store.setActivePage("messages")} className="text-xs font-bold text-[#667542] hover:text-[#173126]">Open messages</button>
+          </div>
+          <div className="mt-5 divide-y divide-[#173126]/9">
+            {recentActivity.map((item) => {
+              const Icon = item.icon;
+              return <div key={item.title} className="flex gap-4 py-4 first:pt-0 last:pb-0"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#173126]/10 bg-[#f4f2ed] text-[#667542]"><Icon className="h-4 w-4" /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-start justify-between gap-2"><p className="text-sm font-bold text-[#173126]">{item.title}</p><span className="text-[10px] font-semibold text-[#315143]/42">{item.at}</span></div><p className="mt-1 text-xs leading-5 text-[#315143]/62">{item.detail}</p></div></div>;
+            })}
+          </div>
+        </article>
+
+        <article className="rounded-2xl border border-[#173126]/10 bg-[#fffefa] p-5 md:p-6">
+          <div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8962]">Shared files</p><h2 className="mt-2 text-xl font-bold text-[#173126]">Documents</h2></div><span className="text-xs font-bold text-[#315143]/45">{documents.length} files</span></div>
+          <div className="mt-5 grid gap-2">
+            {documents.slice(0, 3).map((item) => <button key={item.id} onClick={() => store.setSelectedDocument(item.id)} className="group flex items-center gap-3 rounded-xl border border-transparent bg-[#f4f2ed]/70 p-3 text-left transition hover:border-[#879665]/35 hover:bg-[#f4f2ed]"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-[#667542] shadow-sm"><FileText className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold text-[#173126]">{item.title}</span><span className="mt-1 block text-[10px] font-semibold capitalize text-[#315143]/48">{statusLabel(item.status)} · {item.updatedAt}</span></span><ChevronRight className="h-4 w-4 text-[#315143]/20 group-hover:text-[#879665]" /></button>)}
+          </div>
+          <button onClick={() => store.setActivePage("documents")} className="mt-4 text-xs font-bold text-[#667542] hover:text-[#173126]">View all documents</button>
+        </article>
+      </section>
+    </div>
+  );
 }
 
 function ClientProjectsPortal({ projects, selectedProject }: { projects: ClientProject[]; selectedProject?: ClientProject }) {
@@ -3140,7 +3235,7 @@ function ClientTicketsPortal({ tickets, selectedTicket }: { tickets: SupportTick
 function DashboardQueuePanel({ title, summary, items, onOpen }: { title: string; summary: string; items: Array<{ label: string; value: string; detail: string; barValue: number; tone: string; page: PortalPage }>; onOpen: (page: PortalPage) => void }) {
   const max = Math.max(...items.map((item) => item.barValue), 1);
   return (
-    <section className="rounded-md border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#15231a]">
+    <section className="rounded-xl border border-border bg-white/70 p-5 dark:border-white/10 dark:bg-[#12231a]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-primary dark:text-secondary">{title}</p>
@@ -3150,7 +3245,7 @@ function DashboardQueuePanel({ title, summary, items, onOpen }: { title: string;
       </div>
       <div className="mt-5 grid gap-3">
         {items.map((item) => (
-          <button key={item.label} onClick={() => onOpen(item.page)} className="rounded-sm border border-border bg-white p-3 text-left transition hover:border-secondary/55 hover:bg-secondary/20 dark:border-white/10 dark:bg-[#0f1a14] dark:hover:border-secondary/45 dark:hover:bg-[#15231a]">
+          <button key={item.label} onClick={() => onOpen(item.page)} className="rounded-lg border border-border bg-white p-3 text-left transition hover:border-secondary/55 hover:bg-secondary/20 dark:border-white/8 dark:bg-[#0d1c14] dark:hover:border-secondary/35 dark:hover:bg-[#192b21]">
             <div className="flex items-start justify-between gap-3">
               <span className="min-w-0">
                 <span className="block text-sm font-semibold capitalize text-ink dark:text-cream">{item.label}</span>
@@ -3185,7 +3280,7 @@ function RolePanel({ eyebrow, title, icon: Icon, children }: { eyebrow: string; 
 
 function MetricTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border bg-cream/65 p-4 dark:border-white/10 dark:bg-[#0f1a14]">
+    <div className="rounded-xl border border-border bg-cream/65 p-4 dark:border-white/10 dark:bg-[#12231a]">
       <p className="text-sm text-muted-foreground dark:text-white/62">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-ink dark:text-cream">{value}</p>
     </div>

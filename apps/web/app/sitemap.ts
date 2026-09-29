@@ -1,5 +1,13 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl, loadCompetitors, loadFeatures, loadGlossary, loadIndustries, loadLocations, loadPlans, loadUtbmsCodes } from "@/lib/seo/content";
+import { additionalBlogPosts } from "@/lib/additional-blog-posts";
+
+const originalBlogPosts = [
+  { slug: "weekly-time-review", publishedAt: "2026-06-24" },
+  { slug: "approved-time-invoices", publishedAt: "2026-06-17" },
+  { slug: "shift-swap-record", publishedAt: "2026-06-10" },
+  { slug: "legal-time-tracking", publishedAt: "2026-06-03" }
+] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [plans, features, competitors, locations, industries, utbmsCodes, glossary] = await Promise.all([
@@ -36,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]),
     ...locations.map((location) => ({ url: absoluteUrl(`/locations/${location.slug}`), lastModified: now, changeFrequency: "monthly" as const, priority: 0.78 })),
     ...industries.map((industry) => ({ url: absoluteUrl(`/industries/${industry.slug}`), lastModified: now, changeFrequency: "monthly" as const, priority: 0.78 })),
+    ...[...additionalBlogPosts, ...originalBlogPosts].map((post) => ({ url: absoluteUrl(`/blog/${post.slug}`), lastModified: post.publishedAt, changeFrequency: "monthly" as const, priority: 0.65 })),
     ...utbmsCodes.map((entry) => ({ url: absoluteUrl(`/utbms/${entry.code.toLowerCase()}`), lastModified: now, changeFrequency: "yearly" as const, priority: 0.6 })),
     ...glossary.map((term) => ({ url: absoluteUrl(`/glossary/${term.slug}`), lastModified: now, changeFrequency: "yearly" as const, priority: 0.55 }))
   ];

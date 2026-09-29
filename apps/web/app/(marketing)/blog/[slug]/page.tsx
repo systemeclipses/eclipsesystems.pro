@@ -4,8 +4,10 @@ import Link from "next/link";
 import { ArrowLeft, CalendarDays, Clock3 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { BlogLikeButton } from "@/components/marketing/blog-like-button";
+import { additionalBlogPosts } from "@/lib/additional-blog-posts";
+import { absoluteUrl } from "@/lib/seo/content";
 
-const posts = [
+const originalPosts = [
   {
     slug: "weekly-time-review",
     title: "The weekly time review that saves Friday afternoon",
@@ -14,6 +16,7 @@ const posts = [
     image: "/media/generated/blog/weekly-time-review.png",
     imageAlt: "An operations manager reviewing a weekly timesheet in warm afternoon light",
     date: "Jun 24, 2026",
+    publishedAt: "2026-06-24",
     readTime: "5 min read",
     likes: 42,
     sections: [
@@ -30,6 +33,7 @@ const posts = [
     image: "/media/generated/blog/approved-time-invoices.png",
     imageAlt: "A billing professional aligning approved time with an invoice draft",
     date: "Jun 17, 2026",
+    publishedAt: "2026-06-17",
     readTime: "6 min read",
     likes: 31,
     sections: [
@@ -46,6 +50,7 @@ const posts = [
     image: "/media/generated/blog/shift-swap-record.png",
     imageAlt: "A restaurant team reviewing a shift change together on a tablet",
     date: "Jun 10, 2026",
+    publishedAt: "2026-06-10",
     readTime: "4 min read",
     likes: 57,
     sections: [
@@ -62,6 +67,7 @@ const posts = [
     image: "/media/generated/blog/legal-time-tracking.png",
     imageAlt: "A lawyer reviewing matter notes and time records in a quiet office",
     date: "Jun 03, 2026",
+    publishedAt: "2026-06-03",
     readTime: "7 min read",
     likes: 38,
     sections: [
@@ -72,21 +78,46 @@ const posts = [
   }
 ] as const;
 
+const posts = [...additionalBlogPosts, ...originalPosts] as const;
+
 export function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const post = posts.find((item) => item.slug === params.slug);
-  return post ? { title: post.title, description: post.description } : {};
+  return post ? {
+    title: post.title,
+    description: post.description,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.description,
+      publishedTime: post.publishedAt,
+      images: [{ url: post.image, alt: post.imageAlt }]
+    }
+  } : {};
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = posts.find((item) => item.slug === params.slug);
   if (!post) notFound();
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.publishedAt,
+    image: absoluteUrl(post.image),
+    mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`),
+    publisher: { "@type": "Organization", name: "Eclipse Systems", url: absoluteUrl("/") }
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#172219]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <article>
         <header className="pb-10 pl-5 pt-32 md:pl-14 md:pt-40 lg:pl-20">
           <div className="w-full">

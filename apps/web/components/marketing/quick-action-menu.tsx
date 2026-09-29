@@ -359,9 +359,9 @@ export function QuickActionMenu() {
         aria-label={open ? "Close quick actions" : "Open quick actions"}
         aria-expanded={open}
         onClick={() => (open ? closeMenu() : setOpen(true))}
-        className="grid h-14 w-14 place-items-center rounded-full border border-[#f9e8d2]/30 bg-[#314839] shadow-2xl shadow-black/25 transition hover:-translate-y-1 hover:bg-[#172219]"
+        className="grid h-14 w-14 place-items-center rounded-full border-2 border-white/80 bg-[#f9e8d2] shadow-[0_10px_32px_rgba(180,194,146,.48),0_3px_10px_rgba(0,0,0,.28)] transition duration-300 hover:-translate-y-1 hover:border-white hover:bg-white hover:shadow-[0_14px_38px_rgba(180,194,146,.62),0_4px_12px_rgba(0,0,0,.3)]"
       >
-        <Image src="/brand/logomark-white.png" alt="" width={34} height={34} className="h-8 w-8 object-contain" />
+        <Image src="/brand/logomark-olive.png" alt="" width={34} height={34} className="h-8 w-8 object-contain" />
       </button>
     </div>
   );

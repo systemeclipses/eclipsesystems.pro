@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { BlogLikeButton } from "@/components/marketing/blog-like-button";
+import { additionalBlogPosts } from "@/lib/additional-blog-posts";
 
 const posts = [
   {
@@ -53,9 +54,24 @@ const posts = [
 ] as const;
 
 export function BlogPostList() {
+  const allPosts = [
+    ...additionalBlogPosts.map((post) => ({
+      id: post.slug,
+      title: post.title,
+      category: post.category,
+      excerpt: post.description,
+      href: `/blog/${post.slug}`,
+      image: post.image,
+      imageAlt: post.imageAlt,
+      date: post.date,
+      likes: post.likes
+    })),
+    ...posts
+  ];
+
   return (
     <div className="grid gap-7">
-      {posts.map((post, index) => {
+      {allPosts.map((post, index) => {
         return (
           <article
             key={post.id}
@@ -65,7 +81,7 @@ export function BlogPostList() {
               <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[#314839]/65">
                 <span className="text-[#314839]">{post.category}</span>
                 <span className="h-1 w-1 rounded-full bg-[#b4c292]" />
-                <span>0{index + 1}</span>
+                <span>{String(index + 1).padStart(2, "0")}</span>
               </div>
 
               <h2 className="mt-8 max-w-2xl font-title text-[clamp(2.8rem,4.5vw,5.2rem)] leading-[0.9] text-[#172219]">
