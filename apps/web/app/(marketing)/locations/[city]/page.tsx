@@ -26,7 +26,12 @@ export default async function LocationPage({ params }: { params: { city: string 
     "@type": "LocalBusiness",
     name: "Eclipse Timekeeping by Eclipse Systems",
     url: absoluteUrl(`/locations/${location.slug}`),
-    areaServed: [{ "@type": "City", name: location.city }, { "@type": "State", name: location.state }],
+    areaServed: [
+      { "@type": "City", name: "Birmingham, Alabama" },
+      { "@type": "AdministrativeArea", name: "Central Alabama" },
+      { "@type": "AdministrativeArea", name: "Jefferson County, Alabama" },
+      { "@type": "AdministrativeArea", name: "Shelby County, Alabama" }
+    ],
     priceRange: "$10-$38 per seat per month, plus legal add-on"
   };
 
@@ -39,7 +44,7 @@ export default async function LocationPage({ params }: { params: { city: string 
       <div className="mt-10"><PublicSectionHeading eyebrow="Local workflow guide" title={"What " + location.city + " teams should expect from their systems."} /></div>
       <div className="mt-8 rounded-[2rem] border border-[#cbd3b0] bg-[#eef1e5] p-7 md:p-10">
         <p className="font-semibold">Quick answer</p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">Eclipse Timekeeping helps {location.city} businesses track time, review work, bill clients, and manage schedules from one organization-based workspace.</p>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">Eclipse Timekeeping helps businesses across Birmingham and Central Alabama track time, review work, bill clients, and manage schedules from one organization-based workspace.</p>
       </div>
       {isBirmingham ? <CitationBlock source="Birmingham Bar Association and Northern District of Alabama are local context references for Birmingham legal workflows." url="https://www.alnd.uscourts.gov/" accessedOn="2026-05-13" /> : null}
       <article className="mt-12 grid gap-5 md:grid-cols-2">
@@ -57,7 +62,7 @@ export default async function LocationPage({ params }: { params: { city: string 
         </ul>
       </section>
       <FAQ items={[
-        { question: `What is the best time tracking software for ${location.city} businesses?`, answer: `The best option depends on the workflow. Eclipse Timekeeping is built for ${location.city} teams that need time tracking plus invoicing, shift management, legal billing, or manager approvals.` },
+        { question: "What is the best time tracking software for Birmingham and Central Alabama businesses?", answer: "The best option depends on the workflow. Eclipse Timekeeping is built for Birmingham and Central Alabama teams that need time tracking plus invoicing, shift management, legal billing, or manager approvals." },
         { question: `Does Eclipse Timekeeping support ${location.city} law firms?`, answer: "Yes. Eclipse Legal Add-on supports matters, UTBMS codes, LEDES 1998B export, conflict checks, custom rates, and trust accounting records." },
         { question: `How much does Eclipse Timekeeping cost in ${location.state}?`, answer: "Pricing is national: Eclipse Timekeeping is $10, Mission Command is $18, Eclipse is $22, Eclipse Suite is $38, and Eclipse Legal Add-on is $20 per seat per month." }
       ]} />
