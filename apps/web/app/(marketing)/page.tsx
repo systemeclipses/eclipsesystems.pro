@@ -388,8 +388,8 @@ export default function LandingPage() {
             <div className="motion-rise-delay grid flex-1 place-items-center pb-20 pt-16 text-center md:pb-28">
               <div className="w-full max-w-[104rem]">
                 <h1 className="text-[clamp(2.65rem,5vw,6.65rem)] leading-[0.96] text-[#f9e8d2] drop-shadow-[0_16px_34px_rgba(0,0,0,.36)]">
-                  <span className="block md:whitespace-nowrap font-title">Transform your workflow.</span>
-                  <span className="block md:whitespace-nowrap font-sans font-normal">Elevate your operations.</span>
+                  <span className="block md:whitespace-nowrap font-title">Custom business software.</span>
+                  <span className="block md:whitespace-nowrap font-sans font-normal">Built around your workflow.</span>
                 </h1>
               </div>
             </div>
