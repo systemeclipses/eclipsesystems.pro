@@ -1,1 +1,2 @@
-export { default, metadata } from "../pricing/page";
+import { permanentRedirect } from "next/navigation";
+export default function Page() { permanentRedirect("/pricing"); }

@@ -7,7 +7,7 @@ import { packageDefinitions } from "@/lib/packages";
 import { PublicPageHero } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
-  title: "Pricing | Eclipse Systems",
+  title: "Engagements & Custom Software Pricing",
   description: "Engagement options for Eclipse Systems custom software, four packaged templates, and package customization projects.",
   keywords: packageDefinitions.flatMap((pkg) => pkg.seoKeywords),
   alternates: { canonical: "/pricing" }

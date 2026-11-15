@@ -3,6 +3,7 @@ import { BlogPostList } from "@/components/marketing/blog-post-list";
 import { PublicCta, PublicPageHero } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/blog" },
   title: "Blog",
   description: "Practical guidance on custom business software, client portals, CRM, operations, invoicing, dashboards and workflow automation."
 };

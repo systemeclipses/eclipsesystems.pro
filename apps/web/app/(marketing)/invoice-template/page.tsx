@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/invoice-template" },
   title: "Invoice Template",
   description: "A practical invoice template and review checklist for teams billing from approved time."
 };

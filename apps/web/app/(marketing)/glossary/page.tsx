@@ -4,6 +4,7 @@ import { loadGlossary } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/glossary" },
   title: "Business Workflow Glossary",
   description: "Definitions for billing, document exchange and professional-services workflows, with practical business context."
 };

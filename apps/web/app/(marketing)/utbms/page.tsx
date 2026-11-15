@@ -6,6 +6,7 @@ import { loadUtbmsCodes } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/utbms" },
   title: "UTBMS Code Reference",
   description: "A practical UTBMS task, activity, and expense code reference for legal billing teams."
 };

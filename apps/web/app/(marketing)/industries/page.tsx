@@ -5,6 +5,7 @@ import { loadIndustries, type IndustryContent } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/industries" },
   title: "Custom Business Software by Industry",
   description: "Custom business software for engineering, construction, professional services and hospitality: client portals, operations workflows, documents, dashboards and integrations."
 };

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/webinars" },
   title: "Custom Software Workshops",
   description: "Discuss client portals, workflow automation, operations dashboards and integration planning with Eclipse Systems."
 };

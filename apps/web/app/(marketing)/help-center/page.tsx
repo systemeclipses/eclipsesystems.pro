@@ -4,6 +4,7 @@ import { ArrowRight, CircleHelp, FileText, ShieldCheck, TimerReset, UsersRound }
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/help-center" },
   title: "Help Center",
   description: "Help with Eclipse Systems custom projects, client portals, access, integrations and post-launch support."
 };

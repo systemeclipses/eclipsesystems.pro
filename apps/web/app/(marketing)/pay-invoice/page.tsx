@@ -4,7 +4,8 @@ import { PayInvoiceForm } from "@/components/marketing/pay-invoice-form";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
-  title: "Pay Invoice | Eclipse Systems",
+  robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
+  title: "Pay Invoice",
   description: "Find and pay an Eclipse Systems invoice online through PayPal.",
   alternates: { canonical: "/pay-invoice" }
 };

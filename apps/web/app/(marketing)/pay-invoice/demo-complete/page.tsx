@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
   title: "Demo Payment Complete | Eclipse Systems",
   description: "Demo invoice payment confirmation for Eclipse Systems."
 };

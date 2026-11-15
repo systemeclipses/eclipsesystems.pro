@@ -3,6 +3,7 @@ import { Code2, Database, KeyRound, Webhook } from "lucide-react";
 import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/developer-documentation" },
   title: "Integration & Technical Planning",
   description: "Developer documentation concepts for Eclipse Systems APIs, webhooks, authentication, and data workflows."
 };

@@ -4,6 +4,7 @@ import { loadLocations } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/locations" },
   title: "Custom Software for Birmingham & Central Alabama",
   description: "Custom business software for Birmingham and Central Alabama: portals, operations, CRM, workflow automation, dashboards and integrations."
 };
