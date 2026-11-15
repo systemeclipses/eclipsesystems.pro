@@ -118,7 +118,7 @@ export default async function IndustriesPage() {
         <div className="rounded-[2rem] bg-[#314839] px-7 py-9 text-[#f9e8d2] shadow-2xl shadow-[#172219]/15 md:px-10 md:py-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-bold text-[#b4c292]">Find out how we can help</p>
+              <p className="text-sm font-bold text-[#f9e8d2]">Find out how we can help</p>
               <h2 className="mt-3 max-w-5xl font-title text-5xl leading-[0.9] md:text-7xl">If your team has a workflow, Eclipse can help run it.</h2>
               <p className="mt-5 max-w-3xl text-base font-semibold leading-7 text-white/90 md:text-lg">
                 These industries are examples, not limits. Tell us how your business works, and we’ll shape Eclipse around the people, approvals, schedules, records, and handoffs that keep it moving.
@@ -134,7 +134,7 @@ export default async function IndustriesPage() {
               <Link key={industry.slug} href={`/industries/${industry.slug}`} className="group rounded-[1.25rem] border border-white/15 bg-white/10 p-6 transition hover:-translate-y-1 hover:bg-white/15">
                 <h3 className="font-title text-4xl leading-none text-[#f9e8d2]">{industry.name}</h3>
                 <p className="mt-3 text-sm leading-6 text-white/90">{industry.description}</p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#b4c292]">
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#f9e8d2]">
                   View guide <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </span>
               </Link>
