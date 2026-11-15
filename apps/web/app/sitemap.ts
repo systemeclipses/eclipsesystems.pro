@@ -6,7 +6,7 @@ const revised = "2026-11-15";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [plans, features, locations, industries, codes, glossary] = await Promise.all([loadPlans(), loadFeatures(), loadLocations(), loadIndustries(), loadUtbmsCodes(), loadGlossary()]);
   const changed = new Set(["/", "/industries", "/locations", "/utbms", "/glossary", "/blog", "/vs", "/help-center", "/webinars", "/developer-documentation", "/invoice-template", "/pricing", "/features"]);
-  const pages = ["/", "/pricing", "/demos", "/features", "/industries", "/locations", "/contact", "/utbms", "/glossary", "/blog", "/vs", "/help-center", "/webinars", "/developer-documentation", "/invoice-template", "/pricing", "/features"];
+  const pages = ["/", "/pricing", "/demos", "/features", "/industries", "/locations", "/contact", "/utbms", "/glossary", "/blog", "/vs", "/help-center", "/webinars", "/developer-documentation", "/invoice-template"];
   const articles = [...additionalBlogPosts, { slug: "approved-time-invoices", publishedAt: "2026-06-17" }].filter(post => !isProductLegacyPost(post.slug));
   return [
     ...pages.map(path => ({ url: absoluteUrl(path), ...(changed.has(path) ? { lastModified: revised } : {}), changeFrequency: "monthly" as const, priority: path === "/" ? 1 : 0.75 })),

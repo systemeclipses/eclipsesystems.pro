@@ -97,7 +97,7 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
       title: post.title,
       description: post.description,
       publishedTime: post.publishedAt,
-      ...(post.slug === "weekly-time-review" ? { modifiedTime: "2026-11-15" } : {}),
+      ...(isProductLegacyPost(post.slug) ? { modifiedTime: "2026-11-15" } : {}),
       images: [{ url: post.image, alt: post.imageAlt }]
     }
   } : {};
@@ -113,7 +113,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     headline: post.title,
     description: post.description,
     datePublished: post.publishedAt,
-    ...(post.slug === "weekly-time-review" ? { dateModified: "2026-11-15" } : {}),
+    ...(isProductLegacyPost(post.slug) ? { dateModified: "2026-11-15" } : {}),
     image: absoluteUrl(post.image),
     mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`),
     publisher: { "@type": "Organization", name: "Eclipse Systems", url: absoluteUrl("/") }
