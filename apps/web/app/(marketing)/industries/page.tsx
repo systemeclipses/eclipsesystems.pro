@@ -92,21 +92,21 @@ export default async function IndustriesPage() {
       <section className="px-3 pb-16">
         <div className="mx-auto grid max-w-[100rem] gap-8 rounded-[2rem] bg-primary p-8 text-white lg:grid-cols-[0.65fr_1fr] lg:p-12">
           <div>
-            <p className="text-sm font-semibold text-secondary">One platform, different operating shapes.</p>
-            <h2 className="mt-4 font-title text-5xl leading-none text-cream md:text-6xl">Match the workflow to the work.</h2>
+            <p className="text-sm font-semibold text-[#f9e8d2]">Different businesses. Scoped solutions.</p>
+            <h2 className="mt-4 font-title text-5xl leading-none text-white md:text-6xl">Match the workflow to the work.</h2>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             {[
-              { title: "Professional services", text: "Clients, projects, phases, budgets, rates, invoices, and profitability.", icon: FileCheck2 },
-              { title: "Legal teams", text: "Matter-aware billing, UTBMS codes, LEDES exports, approvals, and trust context.", icon: Scale },
-              { title: "Shift operators", text: "Schedules, swaps, chat, manager approvals, and coverage visibility.", icon: UsersRound }
+              { title: "Professional services", text: "Client requests, project phases, documents and delivery handoffs.", icon: FileCheck2 },
+              { title: "Legal teams", text: "Client intake, controlled document exchange and internal review.", icon: Scale },
+              { title: "Location operators", text: "Maintenance, purchasing and cross-location reporting.", icon: UsersRound }
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.title} className="rounded-[1.25rem] border border-white/15 bg-white/10 p-5">
-                  <Icon className="h-5 w-5 text-secondary" />
-                  <p className="mt-6 text-lg font-semibold text-cream">{item.title}</p>
-                  <p className="mt-3 text-sm leading-6 text-white/72">{item.text}</p>
+                  <Icon className="h-5 w-5 text-[#f9e8d2]" />
+                  <p className="mt-6 text-lg font-semibold text-white">{item.title}</p>
+                  <p className="mt-3 text-sm leading-6 text-white/90">{item.text}</p>
                 </div>
               );
             })}
@@ -120,7 +120,7 @@ export default async function IndustriesPage() {
             <div>
               <p className="text-sm font-bold text-[#b4c292]">Find out how we can help</p>
               <h2 className="mt-3 max-w-5xl font-title text-5xl leading-[0.9] md:text-7xl">If your team has a workflow, Eclipse can help run it.</h2>
-              <p className="mt-5 max-w-3xl text-base font-semibold leading-7 text-white/72 md:text-lg">
+              <p className="mt-5 max-w-3xl text-base font-semibold leading-7 text-white/90 md:text-lg">
                 These industries are examples, not limits. Tell us how your business works, and we’ll shape Eclipse around the people, approvals, schedules, records, and handoffs that keep it moving.
               </p>
             </div>
@@ -133,7 +133,7 @@ export default async function IndustriesPage() {
             {moreIndustries.map((industry) => (
               <Link key={industry.slug} href={`/industries/${industry.slug}`} className="group rounded-[1.25rem] border border-white/15 bg-white/10 p-6 transition hover:-translate-y-1 hover:bg-white/15">
                 <h3 className="font-title text-4xl leading-none text-[#f9e8d2]">{industry.name}</h3>
-                <p className="mt-3 text-sm leading-6 text-white/68">{industry.description}</p>
+                <p className="mt-3 text-sm leading-6 text-white/90">{industry.description}</p>
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#b4c292]">
                   View guide <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </span>

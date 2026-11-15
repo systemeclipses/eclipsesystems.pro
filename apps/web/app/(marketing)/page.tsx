@@ -340,7 +340,7 @@ export default function LandingPage() {
 
       <section className="relative px-3 py-3">
         <div id="home-hero-card" className="relative min-h-[calc(100vh-1.5rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-[#18231c] shadow-2xl shadow-black/40">
-          <div className="hero-scene absolute" aria-label="A hand holding floating glass software dashboards in Eclipse brand colors">
+          <div className="hero-scene absolute" role="img" aria-label="A hand holding floating glass software dashboards in Eclipse brand colors">
             <Image
               src="/media/generated/hero-layers/hero-base.png"
               alt=""

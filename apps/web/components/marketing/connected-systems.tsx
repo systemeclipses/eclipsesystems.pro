@@ -53,7 +53,7 @@ export function ConnectedSystems() {
         />
       </div>
 
-      <div className="mt-8 flex flex-wrap justify-center gap-x-7 gap-y-3 border-t border-[#314839]/14 pt-7 text-sm font-bold text-[#314839]/70">
+      <div className="mt-8 flex flex-wrap justify-center gap-x-7 gap-y-3 border-t border-[#314839]/14 pt-7 text-sm font-bold text-[#314839]">
         {["Shared customer records", "Cleaner handoffs", "One reporting layer", "Modules that grow with you"].map((item) => (
           <span key={item} className="inline-flex items-center gap-2">
             <Check className="h-4 w-4 text-[#78905d]" />
@@ -88,7 +88,7 @@ function SystemCard({
     <article className={"flex min-h-[34rem] flex-col overflow-hidden rounded-[1.6rem] border " + colors[tone]}>
       <div className="relative h-[19rem] overflow-hidden">{visual}</div>
       <div className="mt-auto p-6 md:p-7">
-        <p className={tone === "dark" ? "text-xs font-bold uppercase text-[#b4c292]" : "text-xs font-bold uppercase text-[#314839]/60"}>
+        <p className={tone === "dark" ? "text-xs font-bold uppercase text-[#b4c292]" : "text-xs font-bold uppercase text-[#314839]"}>
           {label}
         </p>
         <h3 className="mt-3 font-title text-4xl leading-none md:text-5xl">{title}</h3>
@@ -131,7 +131,7 @@ function OperationsVisual() {
                 <span className="h-1.5 w-8 rounded-full bg-[#b4c292]" />
               </div>
               <p className="mt-5 font-title text-2xl leading-none">{tile.value}</p>
-              <p className="mt-1 text-[9px] font-bold text-[#314839]/55">{tile.label}</p>
+              <p className="mt-1 text-[9px] font-bold text-[#314839]">{tile.label}</p>
             </div>
           );
         })}

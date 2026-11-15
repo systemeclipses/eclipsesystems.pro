@@ -131,7 +131,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#65734c]">{post.category}</p>
                   <h1 className="mt-5 max-w-5xl font-title text-[clamp(2.75rem,4.2vw,5rem)] leading-[0.9]">{post.title}</h1>
                   <p className="mt-7 max-w-4xl text-lg font-semibold leading-8 text-[#314839]/72">{post.description}</p>
-                  <div className="mt-8 flex flex-wrap items-center gap-5 text-sm font-bold text-[#314839]/70">
+                  <div className="mt-8 flex flex-wrap items-center gap-5 text-sm font-bold text-[#314839]">
                     <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-[#879665]" />{post.date}</span>
                     <span className="inline-flex items-center gap-2"><Clock3 className="h-4 w-4 text-[#879665]" />{post.readTime}</span>
                     <BlogLikeButton postId={post.slug} title={post.title} likes={post.likes} />

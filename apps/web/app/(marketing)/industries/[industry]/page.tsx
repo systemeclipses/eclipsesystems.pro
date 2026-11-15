@@ -33,7 +33,7 @@ export default async function IndustryPage({ params }: { params: { industry: str
       <section className="mt-10">
         <h2 className="text-xl font-semibold">Which custom workflows address those problems?</h2>
         <div className="mt-4 grid gap-3">
-          {industry.featureMap.map((item) => <div key={item.problem} className="rounded-[1.25rem] border border-[#cbd3b0] bg-[#eef1e5] p-6"><p className="font-bold">{item.problem}</p><p className="mt-2 text-sm font-semibold leading-6 text-[#314839]/70">{item.feature}</p></div>)}
+          {industry.featureMap.map((item) => <div key={item.problem} className="rounded-[1.25rem] border border-[#cbd3b0] bg-[#eef1e5] p-6"><p className="font-bold">{item.problem}</p><p className="mt-2 text-sm font-semibold leading-6 text-[#314839]">{item.feature}</p></div>)}
         </div>
       </section>
       <section className="mt-10 rounded-[2rem] border border-[#314839]/15 bg-[#314839] p-7 text-[#f9e8d2] md:p-10">

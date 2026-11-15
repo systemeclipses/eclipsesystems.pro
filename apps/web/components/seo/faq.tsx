@@ -20,7 +20,7 @@ export function FAQ({ items }: { items: FaqItem[] }) {
         {items.map((item) => (
           <details key={item.question} className="group rounded-[1rem] border border-[#d8d0c1] bg-[#fbfaf6] p-5 open:bg-[#eef1e5]">
             <summary className="cursor-pointer font-bold text-[#172219]">{item.question}</summary>
-            <p className="mt-3 text-sm font-semibold leading-6 text-[#314839]/70">{item.answer}</p>
+            <p className="mt-3 text-sm font-semibold leading-6 text-[#314839]/85">{item.answer}</p>
           </details>
         ))}
       </div>

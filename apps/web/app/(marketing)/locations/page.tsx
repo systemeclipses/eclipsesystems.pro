@@ -20,7 +20,7 @@ export default async function LocationsPage() {
         {locations.map((location) => (
           <Link key={location.slug} href={`/locations/${location.slug}`} className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl">
             <h2 className="font-title text-4xl leading-none">{location.city}, {location.state}</h2>
-            <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]/70">{location.description}</p>
+            <p className="mt-4 text-sm font-semibold leading-6 text-[#314839]">{location.description}</p>
           </Link>
         ))}
       </div>

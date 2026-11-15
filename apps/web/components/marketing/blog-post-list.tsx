@@ -79,7 +79,7 @@ export function BlogPostList() {
             className="group grid overflow-hidden rounded-[1.75rem] border border-[#d8d0c1] bg-[#fbfaf6] shadow-xl shadow-[#172219]/6 transition duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#172219]/12 lg:grid-cols-[0.9fr_1.1fr]"
           >
             <div className="flex min-h-[28rem] flex-col p-7 md:p-10 lg:p-12">
-              <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[#314839]/65">
+              <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[#314839]">
                 <span className="text-[#314839]">{post.category}</span>
                 <span className="h-1 w-1 rounded-full bg-[#b4c292]" />
                 <span>{String(index + 1).padStart(2, "0")}</span>
@@ -92,7 +92,7 @@ export function BlogPostList() {
               <p className="mt-7 max-w-xl text-base font-semibold leading-7 text-[#314839]/75">{post.excerpt}</p>
 
               <div className="mt-auto flex flex-wrap items-center justify-between gap-5 pt-10">
-                <div className="flex items-center gap-5 text-sm font-bold text-[#314839]/68">
+                <div className="flex items-center gap-5 text-sm font-bold text-[#314839]">
                   <span className="inline-flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-[#879665]" />
                     {post.date}
