@@ -7,7 +7,8 @@ const productLinks = [
   ["Capabilities", "/features"],
   ["Engagements", "/pricing"],
   ["Industries", "/industries"],
-  ["Demo environments", "/demos"]
+  ["Demo environments", "/demos"],
+  ["ClockEclipse timekeeping", "https://clockeclipse.com"]
 ] as const;
 
 const resourceLinks = [

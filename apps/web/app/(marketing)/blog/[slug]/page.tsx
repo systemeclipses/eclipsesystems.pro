@@ -95,6 +95,7 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
       title: post.title,
       description: post.description,
       publishedTime: post.publishedAt,
+      ...(post.slug === "weekly-time-review" ? { modifiedTime: "2026-11-15" } : {}),
       images: [{ url: post.image, alt: post.imageAlt }]
     }
   } : {};
@@ -110,6 +111,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     headline: post.title,
     description: post.description,
     datePublished: post.publishedAt,
+    ...(post.slug === "weekly-time-review" ? { dateModified: "2026-11-15" } : {}),
     image: absoluteUrl(post.image),
     mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`),
     publisher: { "@type": "Organization", name: "Eclipse Systems", url: absoluteUrl("/") }
@@ -144,6 +146,18 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                       </div>
                     </section>
                   ))}
+                  {post.slug === "weekly-time-review" ? (
+                    <aside aria-labelledby="clockeclipse-review-title" className="mb-10 rounded-2xl border border-[#314839]/25 bg-[#e9eedf] p-6 text-[#172219] md:p-8">
+                      <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#314839]">Put the review into practice</p>
+                      <h2 id="clockeclipse-review-title" className="mt-4 font-title text-3xl leading-tight md:text-4xl">A checklist for the payroll handoff.</h2>
+                      <p className="mt-5 text-base leading-7">ClockEclipse is our employee timekeeping product. Its payroll review guide walks through period dates, missed punches, approved leave, employee matching and the final CSV handoff. Use it alongside your records before sending hours to your payroll provider.</p>
+                      <div className="mt-6 flex flex-wrap gap-3">
+                        <a href="https://clockeclipse.com/resources/payroll-close-checklist" className="inline-flex min-h-12 items-center rounded-full bg-[#314839] px-5 py-3 text-sm font-bold text-[#f9e8d2] transition hover:bg-[#172219] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#314839]">Read the payroll review guide →</a>
+                        <a href="https://clockeclipse.com/alabama/birmingham-timekeeping-software" className="inline-flex min-h-12 items-center rounded-full border border-[#314839] bg-[#fbfaf6] px-5 py-3 text-sm font-bold text-[#172219] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#314839]">Explore ClockEclipse →</a>
+                      </div>
+                      <p className="mt-5 text-xs text-[#314839]">Product links added November 15, 2026. The original article publication date is unchanged.</p>
+                    </aside>
+                  ) : null}
                   <div className="border-t border-[#314839]/15 pt-8">
                     <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-[#314839]"><ArrowLeft className="h-4 w-4" />View all blog posts</Link>
                   </div>

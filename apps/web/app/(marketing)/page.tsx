@@ -578,6 +578,19 @@ export default function LandingPage() {
               <ConnectedSystems />
             </div>
 
+            <section aria-labelledby="clockeclipse-title" className="grid gap-8 rounded-[2rem] border border-[#b4c292]/50 bg-[#314839] p-7 text-[#f9e8d2] md:p-12 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d8e2bf]">Meet ClockEclipse</p>
+                <h2 id="clockeclipse-title" className="mt-4 font-title text-4xl leading-tight md:text-5xl">Employee timekeeping.<br />A clearer payroll handoff.</h2>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-[#f9e8d2]">Our ready-to-use timekeeping product brings clock-ins, schedules, PTO and payroll review together. Built for everyday team workflows, with plans starting at $4 per employee per month.</p>
+                <p className="mt-4 text-sm leading-6 text-[#d8e2bf]">Explore the employee and manager workflows, or start with a free payroll review checklist.</p>
+              </div>
+              <div className="flex min-w-0 flex-col items-start gap-4">
+                <a href="https://clockeclipse.com/alabama/birmingham-timekeeping-software" className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#172219] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Explore Birmingham timekeeping <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></a>
+                <a href="https://clockeclipse.com/tools/payroll-readiness-checklist" className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full border border-[#d8e2bf] bg-[#24382b] px-6 py-3 text-sm font-bold text-[#f9e8d2] transition hover:bg-[#172219] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Use the free payroll checklist <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></a>
+              </div>
+            </section>
+
             <div data-reveal className="min-w-0">
               <HomeBlogCarousel />
             </div>
