@@ -1,28 +1,15 @@
 # Eclipse Systems
 
-> Eclipse Systems is a custom software solutions company. It designs and builds bespoke business systems, including internal portals, timekeeping and invoicing workflows, training and onboarding hubs, storefronts, dashboards, integrations, and packaged systems based on proven modules.
+> Custom business software for Birmingham and beyond: client portals, operations systems, CRM, storefronts, dashboards, workflow automation and integrations.
 
-## Company
-- [Home](https://eclipsesystems.pro/): Custom software, packaged systems, and production-ready modules for small and midsize teams.
-- [Contact](https://eclipsesystems.pro/contact): Contact form, direct emails, phone numbers, and social links for Eclipse Systems.
-- [Pricing](https://eclipsesystems.pro/pricing): Engagement options for proven packages, customized packages, and bespoke software builds.
-- [Features](https://eclipsesystems.pro/features): Examples of Eclipse modules and workflows that can be used as demos, packages, or custom build foundations.
+## Business solutions
+- [Custom software](https://www.eclipsesystems.pro/features/custom-software): Discovery, prototyping and scoped implementation.
+- [Client portals](https://www.eclipsesystems.pro/features/client-portals): Customer requests, documents and project information.
+- [Birmingham business software](https://www.eclipsesystems.pro/locations/birmingham-al): Workflow planning for Birmingham and Central Alabama businesses.
+- [Build or buy](https://www.eclipsesystems.pro/vs): Compare buying a product, connecting tools, customizing a foundation and a bespoke build.
+- [Engagements](https://www.eclipsesystems.pro/pricing): Pricing is scoped after discovery for custom work.
+- [Guides](https://www.eclipsesystems.pro/blog): Business workflow and software planning resources.
+- [Contact](https://www.eclipsesystems.pro/contact): Discuss a project.
 
-## Common Builds
-- Internal intranets and employee portals
-- Timekeeping, approvals, and invoicing systems
-- Training and onboarding portals
-- Storefronts and customer accounts
-- Dashboards, reports, and admin tools
-- Integrations with existing business systems
-
-## Engagement Model
-- Buy a proven package as-is when the workflow already fits.
-- Customize a package when the starting point is right but the business rules need adaptation.
-- Commission a bespoke build when the system needs to be designed around a specific workflow.
-
-## Company Links
-- [Industries](https://eclipsesystems.pro/industries)
-- [Guides](https://eclipsesystems.pro/guides)
-- [Security](https://eclipsesystems.pro/security)
-- [Privacy](https://eclipsesystems.pro/privacy)
+## Separate product: ClockEclipse
+Employee timekeeping, scheduling, PTO and payroll review live at [ClockEclipse](https://clockeclipse.com/), not in the custom-software offer. Use that site's current features, plans and guides for employee timekeeping questions. Historical Eclipse Timekeeping package prices and comparisons on this domain are retired.

@@ -4,7 +4,7 @@ import { PublicCta, PublicPageHero } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Eclipse Systems writing on timekeeping, billing operations, shift management, and legal workflows."
+  description: "Practical guidance on custom business software, client portals, CRM, operations, invoicing, dashboards and workflow automation."
 };
 
 export default function BlogPage() {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3 } from "lucide-react";
 import { useRef, useState } from "react";
 import { additionalBlogPosts } from "@/lib/additional-blog-posts";
+import { isProductLegacyPost } from "@/lib/seo/positioning";
 
 const originalPosts = [
   {
@@ -61,7 +62,7 @@ const posts = [
     readTime: post.readTime.replace(" read", "")
   })),
   ...originalPosts
-];
+].filter(post => !isProductLegacyPost(post.href.split("/").at(-1) ?? ""));
 
 export function HomeBlogCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);

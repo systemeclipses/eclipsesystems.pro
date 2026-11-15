@@ -1,15 +1,18 @@
-slug: paralegals
-name: Paralegals
-title: Time Tracking & Billing Software for Paralegals
-description: Capture paralegal work with clear descriptions, matter context, UTBMS codes, and attorney review.
-compliance: Paralegal billing should be described clearly enough for client review and supervised consistently by responsible attorneys.
-recommendedPlan: Legal
+slug: "paralegals"
+name: "Legal support teams"
+title: "Custom Workflow Software for Legal Support Teams"
+description: "Connect document requests, task ownership, deadlines and attorney review in a scoped legal-support workflow."
+compliance: "Confirm access permissions, record ownership, retention, hosting and integration requirements during discovery. Industry-specific obligations require review by the business and its advisers; a software feature list does not establish compliance."
+recommendedPlan: "A scoped discovery conversation, followed by a focused prototype or a clearly defined customization project."
 problems:
-  - Paralegal work is often under-described or written off because it lacks matter and task context.
-  - Firms need review before entries become client-facing invoices.
+  - "A request changes hands without a clear next owner."
+  - "Files and supporting notes are scattered across messages."
+  - "Staff need visibility without access to every matter."
 featureMap:
-  - problem: Entries lack billing context.
-    feature: Matter-linked time entries with UTBMS task and activity codes.
-  - problem: Supervising attorneys need review.
-    feature: Approval workflows and subordinate reporting.
-originalData: Eclipse Systems recommends measuring paralegal realization separately from attorney realization because write-down patterns are often different.
+  - problem: "A request changes hands without a clear next owner."
+    feature: "Task queues with assignment, status and review responsibility."
+  - problem: "Files and supporting notes are scattered across messages."
+    feature: "A controlled workspace linking requests, documents and the relevant matter context."
+  - problem: "Staff need visibility without access to every matter."
+    feature: "Role-aware views designed around the firm’s access requirements."
+originalData: "A support team collects a requested document, records the outstanding information and routes the completed item to the attorney responsible for review. This is a workflow illustration and does not replace professional judgment."

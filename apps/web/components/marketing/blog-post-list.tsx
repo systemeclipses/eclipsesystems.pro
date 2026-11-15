@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { BlogLikeButton } from "@/components/marketing/blog-like-button";
 import { additionalBlogPosts } from "@/lib/additional-blog-posts";
+import { isProductLegacyPost } from "@/lib/seo/positioning";
 
 const posts = [
   {
@@ -67,7 +68,7 @@ export function BlogPostList() {
       likes: post.likes
     })),
     ...posts
-  ];
+  ].filter(post => !isProductLegacyPost(post.id));
 
   return (
     <div className="grid gap-7">

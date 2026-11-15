@@ -1,24 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { loadCompetitors } from "@/lib/seo/content";
-import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
-
-export const metadata: Metadata = {
-  title: "Comparisons",
-  description: "Compare Eclipse Timekeeping by Eclipse Systems with time tracking, billing, legal, and shift management competitors."
-};
-
-export default async function VsIndexPage() {
-  const competitors = await loadCompetitors();
-  return (
-    <main className="min-h-screen bg-cream text-ink">
-      <PublicPageHero eyebrow="Software comparisons" title="Compare the Workflow, Not Just the Feature List." description="See where Eclipse fits against common timekeeping, billing, legal, and workforce tools, with practical context for choosing the right system." image="/media/generated/heroes/engagements.jpg" imageAlt="Modular software foundations arranged for comparison" points={["Workflow fit", "Verified sources", "Clear tradeoffs"]} />
-      <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
-      <PublicSectionHeading eyebrow="Comparisons" title="Find the difference that matters to your team." />
-      <div className="mt-12 grid gap-4 md:grid-cols-2">
-        {competitors.map((competitor) => <Link key={competitor.slug} href={`/vs/${competitor.slug}`} className="rounded-[1.25rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 font-title text-3xl leading-none transition hover:-translate-y-1 hover:shadow-xl">Eclipse vs {competitor.name}</Link>)}
-      </div>
-      </section>
-    </main>
-  );
-}
+import { PublicCta, PublicPageHero } from "@/components/marketing/public-page";
+export const metadata: Metadata = { title: "Custom Software vs Off-the-Shelf: Choosing a Build Path", description: "Compare buying an existing tool, connecting your current systems, customizing a foundation and commissioning bespoke business software. Start with workflow fit and ownership.", alternates: { canonical: "/vs" } };
+const options = [
+  { title: "Buy an existing product", body: "Start here when a product already fits the core workflow, permissions and reporting needs. Test real tasks and the difficult exceptions. Check exports, contract terms, support and how the data can leave the system. A larger feature list is not useful if the team must keep a parallel spreadsheet to make the work function." },
+  { title: "Connect the tools worth keeping", body: "A missing handoff may need an integration rather than a replacement. Identify which system owns each record and how customer, project or invoice identifiers match. Confirm supported interfaces, access limits, failure handling and reconciliation. A successful test transfer is only the beginning; the operating team needs to understand how an unsuccessful one is resolved." },
+  { title: "Customize a proven foundation", body: "A portal, CRM, operations workspace or storefront can provide a starting point while specific fields, review steps and access rules are scoped around the business. Review the reusable parts and the changes separately. Agree on what will be delivered, what requires additional work and which parts the team will maintain after launch." },
+  { title: "Commission a bespoke build", body: "A custom project can make sense when the process is distinctive, several systems must work together or an existing product creates substantial workarounds. Begin with one complete task and a prototype. Include record migration, permissions, reporting, support and ownership in the scope. The decision needs a delivery plan and ongoing responsibilities as well as an attractive demonstration." }
+];
+export default function BuildOrBuyPage() { return <main className="min-h-screen bg-cream text-ink"><PublicPageHero eyebrow="Build, buy or connect" title="Choose the right path for your business software." description="Compare the actual workflow and the work around it before deciding whether to buy a product, connect tools or build something specific." image="/media/generated/heroes/engagements.jpg" imageAlt="Business software modules arranged around a workflow plan" points={["Workflow fit", "Data ownership", "Long-term operation"]} /><section className="mx-auto max-w-[90rem] px-5 py-16"><div className="grid gap-5 md:grid-cols-2">{options.map(option => <article key={option.title} className="rounded-2xl border border-[#d8d0c1] bg-[#fbfaf6] p-7"><h2 className="font-title text-3xl leading-tight">{option.title}</h2><p className="mt-5 leading-7 text-[#314839]">{option.body}</p></article>)}</div><section className="mt-10 rounded-2xl border border-[#cbd3b0] bg-[#eef1e5] p-7"><h2 className="font-title text-3xl leading-tight">Bring the same example to every option.</h2><p className="mt-5 leading-7 text-[#314839]">Walk through a customer request, its approval, the work record and the final handoff. Include a rejected request, a reassigned owner and an integration failure. Compare how the staff handles each outcome, what information is preserved and what the business is responsible for maintaining. Use a scoped quote for the custom options and verified current terms for commercial products.</p><div className="mt-6 flex flex-wrap gap-3"><Link className="inline-flex min-h-12 items-center rounded-full bg-[#314839] px-6 py-3 font-bold text-[#f9e8d2]" href="/features/custom-software">Explore custom software →</Link><a className="inline-flex min-h-12 items-center rounded-full border border-[#314839] bg-white px-6 py-3 font-bold text-[#172219]" href="https://clockeclipse.com/">Looking for employee timekeeping? Visit ClockEclipse →</a></div></section></section><PublicCta eyebrow="A practical starting point" title="Discuss the workflow before choosing the build." primaryLabel="Start discovery" primaryHref="/contact" secondaryLabel="See example systems" secondaryHref="/demos" /></main>; }

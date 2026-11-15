@@ -4,17 +4,17 @@ import { loadLocations } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
-  title: "Birmingham & Central Alabama | Locations",
-  description: "Eclipse Systems is based in Birmingham and serves businesses throughout Central Alabama with connected timekeeping, operations, billing, and customer workflows."
+  title: "Custom Software for Birmingham & Central Alabama",
+  description: "Custom business software for Birmingham and Central Alabama: portals, operations, CRM, workflow automation, dashboards and integrations."
 };
 
 export default async function LocationsPage() {
   const locations = await loadLocations();
   return (
     <main className="min-h-screen bg-cream text-ink">
-      <PublicPageHero eyebrow="Birmingham, Alabama" title="Serving Birmingham and Central Alabama." description="Eclipse Systems helps businesses across the Birmingham metro and Central Alabama connect time, operations, billing, customer workflows, and reporting around the work they already do." image="/media/generated/heroes/local-business.jpg" imageAlt="A local service business team coordinating daily operations in Birmingham, Alabama" points={["Birmingham-based", "Central Alabama service area", "One connected platform"]} />
+      <PublicPageHero eyebrow="Birmingham, Alabama" title="Serving Birmingham and Central Alabama." description="Eclipse Systems works with Birmingham-area businesses to scope custom software around customer requests, internal operations, documents, reporting and integrations." image="/media/generated/heroes/local-business.jpg" imageAlt="A local service business team coordinating daily operations in Birmingham, Alabama" points={["Birmingham-area workflows", "Central Alabama service area", "Scoped custom software"]} />
       <section className="mx-auto max-w-[100rem] px-5 py-16 md:py-24">
-      <PublicSectionHeading eyebrow="Our location" title="Built in Birmingham. Serving Central Alabama." />
+      <PublicSectionHeading eyebrow="Our location" title="Custom business solutions for Central Alabama." />
       <div className="mt-12 grid gap-5">
         {locations.map((location) => (
           <Link key={location.slug} href={`/locations/${location.slug}`} className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7 shadow-xl shadow-[#172219]/5 transition hover:-translate-y-1 hover:shadow-2xl">

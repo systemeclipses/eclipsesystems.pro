@@ -1,15 +1,18 @@
-slug: restaurants
-name: Restaurants
-title: Time Tracking & Shift Software for Restaurants
-description: Restaurant timekeeping with shift scheduling, add/drop marketplace, swaps, chat, and manager approvals.
-compliance: Restaurant operators should align scheduling and time records with applicable wage-and-hour rules and local predictive scheduling obligations where they apply.
-recommendedPlan: Business
+slug: "restaurants"
+name: "Restaurants & hospitality teams"
+title: "Custom Business Software for Restaurants & Hospitality"
+description: "Connect maintenance requests, purchasing approvals, location reporting and internal communication across hospitality operations."
+compliance: "Confirm access permissions, record ownership, retention, hosting and integration requirements during discovery. Industry-specific obligations require review by the business and its advisers; a software feature list does not establish compliance."
+recommendedPlan: "A scoped discovery conversation, followed by a focused prototype or a clearly defined customization project."
 problems:
-  - Shift swaps happen through texts that managers cannot easily audit.
-  - Coverage gaps become payroll and customer-service problems.
+  - "Location issues are reported in disconnected group messages."
+  - "Purchasing requests need a consistent approval process."
+  - "Owners need a useful cross-location view."
 featureMap:
-  - problem: Untracked shift swaps create confusion.
-    feature: Shift marketplace, swap requests, and approvals.
-  - problem: Managers need fast coordination.
-    feature: Channels, DMs, and shift sharing in chat.
-originalData: Eclipse Systems recommends tracking swap response time and no-show rate as weekly scheduling health metrics.
+  - problem: "Location issues are reported in disconnected group messages."
+    feature: "Location-aware issue intake with a responsible person and visible resolution status."
+  - problem: "Purchasing requests need a consistent approval process."
+    feature: "Request forms, review steps and records tied to the appropriate location."
+  - problem: "Owners need a useful cross-location view."
+    feature: "Reporting focused on unresolved issues, pending decisions and operational handoffs."
+originalData: "A location manager submits a maintenance request, an operations reviewer assigns responsibility and the site receives a completion update. The example is a proposed workflow, not a customer case study."

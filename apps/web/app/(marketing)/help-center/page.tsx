@@ -5,13 +5,13 @@ import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/pub
 
 export const metadata: Metadata = {
   title: "Help Center",
-  description: "Help center resources for Eclipse Systems timekeeping, billing, operations, and legal workflows."
+  description: "Help with Eclipse Systems custom projects, client portals, access, integrations and post-launch support."
 };
 
 const topics = [
-  { title: "Timers and timesheets", text: "Starting timers, submitting weeks, approvals, and edits.", icon: TimerReset },
+  { title: "Project and rollout support", text: "Clarify scope, review a workflow and plan the next implementation step.", icon: TimerReset },
   { title: "Invoices and payments", text: "Draft invoices, exports, payment links, and billing review.", icon: FileText },
-  { title: "Schedules and swaps", text: "Marketplace shifts, swaps, manager approval, and coverage.", icon: UsersRound },
+  { title: "Client portal workflows", text: "Requests, documents, customer updates and shared project information.", icon: UsersRound },
   { title: "Roles and access", text: "Owners, admins, managers, members, and tenant-safe data.", icon: ShieldCheck }
 ] as const;
 

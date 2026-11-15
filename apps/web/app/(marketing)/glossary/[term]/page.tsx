@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { archivedProductRobots } from "@/lib/seo/positioning";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FAQ } from "@/components/seo/faq";
@@ -12,7 +13,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { term: string } }): Promise<Metadata> {
   const term = await loadGlossaryTerm(params.term);
   if (!term) return {};
-  return { title: `${term.term} Definition`, description: term.definition, alternates: { canonical: `/glossary/${term.slug}` } };
+  return { ...(term.slug === "shift-swap" ? { robots: archivedProductRobots } : {}), title: `${term.term} Definition`, description: term.definition, alternates: { canonical: `/glossary/${term.slug}` } };
 }
 
 export default async function GlossaryTermPage({ params }: { params: { term: string } }) {

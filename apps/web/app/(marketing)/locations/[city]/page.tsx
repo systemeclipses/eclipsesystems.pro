@@ -1,73 +1,30 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
-import { CitationBlock } from "@/components/seo/citation-block";
 import { FAQ } from "@/components/seo/faq";
 import { StructuredData } from "@/components/seo/structured-data";
 import { absoluteUrl, loadLocation, loadLocations } from "@/lib/seo/content";
-import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
+import { PublicCta, PublicPageHero } from "@/components/marketing/public-page";
 
-export async function generateStaticParams() {
-  return (await loadLocations()).map((location) => ({ city: location.slug }));
-}
-
+export async function generateStaticParams() { return (await loadLocations()).map(location => ({ city: location.slug })); }
 export async function generateMetadata({ params }: { params: { city: string } }): Promise<Metadata> {
   const location = await loadLocation(params.city);
-  if (!location) return {};
-  return { title: `${location.title}`, description: location.description, alternates: { canonical: `/locations/${location.slug}` } };
+  return location ? { title: location.title, description: location.description, alternates: { canonical: `/locations/${location.slug}` } } : {};
 }
-
+const headings = ["Start with the handoff that needs fixing", "Connect the tools worth keeping", "Choose a practical first workflow", "Test a complete task, including permissions", "Plan migration and rollout together", "Scope the engagement around the work"];
 export default async function LocationPage({ params }: { params: { city: string } }) {
-  const location = await loadLocation(params.city);
-  if (!location) notFound();
-  const isBirmingham = location.slug === "birmingham-al";
-  const localBusiness = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: "Eclipse Timekeeping by Eclipse Systems",
-    url: absoluteUrl(`/locations/${location.slug}`),
-    areaServed: [
-      { "@type": "City", name: "Birmingham, Alabama" },
-      { "@type": "AdministrativeArea", name: "Central Alabama" },
-      { "@type": "AdministrativeArea", name: "Jefferson County, Alabama" },
-      { "@type": "AdministrativeArea", name: "Shelby County, Alabama" }
-    ],
-    priceRange: "$10-$38 per seat per month, plus legal add-on"
-  };
-
-  return (
-    <main className="min-h-screen bg-cream text-ink">
-      <PublicPageHero eyebrow={location.city + ", " + location.state} title={"Eclipse Systems for " + location.city + "."} description={location.description} image="/media/generated/heroes/local-business.jpg" imageAlt="A local service business team coordinating daily operations" points={["Local workflow context", "Connected operations", "Supported implementation"]} />
-      <section className="mx-auto max-w-[90rem] px-5 py-16 md:py-24">
+  const location = await loadLocation(params.city); if (!location) notFound();
+  const service = { "@context": "https://schema.org", "@type": "Service", name: `Custom business software for ${location.city}`, description: location.description, url: absoluteUrl(`/locations/${location.slug}`), serviceType: "Custom software design and development", areaServed: [{ "@type": "City", name: `${location.city}, ${location.state}` }, { "@type": "AdministrativeArea", name: "Central Alabama" }], provider: { "@id": absoluteUrl("/") + "/#organization" } };
+  return <main className="min-h-screen bg-cream text-ink">
+    <PublicPageHero eyebrow={`${location.city}, ${location.state}`} title={`Custom software for ${location.city} businesses.`} description={location.description} image="/media/generated/heroes/local-business.jpg" imageAlt="A business team coordinating customer and internal workflows" points={["Workflow discovery", "Connected business systems", "Scoped implementation"]} />
+    <section className="mx-auto max-w-[90rem] px-5 py-16 md:py-24">
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Locations", href: "/locations" }, { name: `${location.city}, ${location.state}`, href: `/locations/${location.slug}` }]} />
-      <StructuredData schema={localBusiness} />
-      <div className="mt-10"><PublicSectionHeading eyebrow="Local workflow guide" title={"What " + location.city + " teams should expect from their systems."} /></div>
-      <div className="mt-8 rounded-[2rem] border border-[#cbd3b0] bg-[#eef1e5] p-7 md:p-10">
-        <p className="font-semibold">Quick answer</p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">Eclipse Timekeeping helps businesses across Birmingham and Central Alabama track time, review work, bill clients, and manage schedules from one organization-based workspace.</p>
-      </div>
-      {isBirmingham ? <CitationBlock source="Birmingham Bar Association and Northern District of Alabama are local context references for Birmingham legal workflows." url="https://www.alnd.uscourts.gov/" accessedOn="2026-05-13" /> : null}
-      <article className="mt-12 grid gap-5 md:grid-cols-2">
-        {location.body.map((paragraph, index) => (
-          <section key={paragraph} className="rounded-[1.5rem] border border-[#d8d0c1] bg-[#fbfaf6] p-7">
-            <h2 className="font-title text-3xl leading-none">{index === 0 ? `Why do ${location.city} teams need local timekeeping workflows?` : index === 1 ? `What should ${location.city} businesses look for?` : `How does Eclipse Timekeeping support ${location.industries[index % location.industries.length]}?`}</h2>
-            <p className="mt-4 font-semibold leading-7 text-[#314839]/70">{paragraph}</p>
-          </section>
-        ))}
-      </article>
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Local context covered</h2>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {location.localSignals.map((signal) => <li key={signal} className="rounded-md border border-border px-3 py-2 text-sm">{signal}</li>)}
-        </ul>
-      </section>
-      <FAQ items={[
-        { question: "What is the best time tracking software for Birmingham and Central Alabama businesses?", answer: "The best option depends on the workflow. Eclipse Timekeeping is built for Birmingham and Central Alabama teams that need time tracking plus invoicing, shift management, legal billing, or manager approvals." },
-        { question: `Does Eclipse Timekeeping support ${location.city} law firms?`, answer: "Yes. Eclipse Legal Add-on supports matters, UTBMS codes, LEDES 1998B export, conflict checks, custom rates, and trust accounting records." },
-        { question: `How much does Eclipse Timekeeping cost in ${location.state}?`, answer: "Pricing is national: Eclipse Timekeeping is $10, Mission Command is $18, Eclipse is $22, Eclipse Suite is $38, and Eclipse Legal Add-on is $20 per seat per month." }
-      ]} />
-      </section>
-      <PublicCta eyebrow="Work with a team that understands the context" title={"Build the right starting point for " + location.city + "."} primaryLabel="Schedule a Demo" primaryHref="/contact" />
-    </main>
-  );
+      <StructuredData schema={service} />
+      <article className="mt-10 grid gap-5 md:grid-cols-2">{location.body.map((paragraph, index) => <section key={headings[index] ?? index} className="rounded-2xl border border-[#d8d0c1] bg-[#fbfaf6] p-7"><h2 className="font-title text-3xl leading-tight text-[#172219]">{headings[index] ?? "Review the workflow"}</h2><p className="mt-5 leading-7 text-[#314839]">{paragraph}</p></section>)}</article>
+      <section className="mt-10 rounded-2xl border border-[#cbd3b0] bg-[#eef1e5] p-7"><h2 className="font-title text-3xl leading-tight">Bring one process to discovery.</h2><p className="mt-4 leading-7 text-[#314839]">A spreadsheet, sample request or redacted workflow diagram is enough to begin. Review the people, records, access rules and handoffs before choosing the build path.</p><div className="mt-6 flex flex-wrap gap-3"><Link href="/features/custom-software" className="inline-flex min-h-12 items-center rounded-full bg-[#314839] px-6 py-3 font-bold text-[#f9e8d2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#314839]">Explore custom software →</Link><a href="https://clockeclipse.com/alabama/birmingham-timekeeping-software" className="inline-flex min-h-12 items-center rounded-full border border-[#314839] bg-white px-6 py-3 font-bold text-[#172219] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#314839]">Need employee timekeeping? Visit ClockEclipse →</a></div></section>
+      <FAQ items={[{ question: "What can Eclipse Systems build for a Birmingham business?", answer: "Projects can include client portals, internal operations systems, CRM workflows, storefronts, dashboards, approvals and integrations. Discovery establishes the actual scope and delivery requirements." }, { question: "Can we keep our current business software?", answer: "The scope can focus on a missing workflow or an integration. Review supported interfaces, record ownership, permissions and recovery behavior before relying on a connection." }, { question: "How is a custom software project priced?", answer: "Pricing is scoped after discovery around workflow, customization, integrations, migration and support. ClockEclipse is a separate ready-to-use product with its own published plans." }]} />
+    </section>
+    <PublicCta eyebrow="Business solutions for Birmingham and beyond" title="Start with the process. Build the right system." primaryLabel="Discuss your workflow" primaryHref="/contact" secondaryLabel="Explore capabilities" secondaryHref="/features" />
+  </main>;
 }

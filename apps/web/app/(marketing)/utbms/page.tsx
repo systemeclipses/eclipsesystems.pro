@@ -28,7 +28,7 @@ export default async function UtbmsPage() {
       </div>
       <FAQ items={[
         { question: "What does UTBMS stand for?", answer: "UTBMS stands for Uniform Task-Based Management System." },
-        { question: "Does Eclipse Timekeeping support UTBMS codes?", answer: "Yes. Eclipse Timekeeping Legal supports UTBMS task and activity codes for matter-aware time entries and invoices." },
+        { question: "Can Eclipse Systems scope a coded billing workflow?", answer: "A custom project can include code fields, review rules and export validation when explicitly scoped. This reference is not a specification for a packaged legal billing product." },
         { question: "Is UTBMS the same as LEDES?", answer: "No. UTBMS is a code system. LEDES is a set of electronic invoice exchange formats that can include UTBMS-coded line items." }
       ]} />
       </section>

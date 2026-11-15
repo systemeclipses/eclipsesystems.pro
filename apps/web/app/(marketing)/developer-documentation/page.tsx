@@ -3,14 +3,14 @@ import { Code2, Database, KeyRound, Webhook } from "lucide-react";
 import { PublicCta, PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
-  title: "Developer Documentation",
+  title: "Integration & Technical Planning",
   description: "Developer documentation concepts for Eclipse Systems APIs, webhooks, authentication, and data workflows."
 };
 
 const docs = [
   { title: "Authentication", text: "Connect users, organizations, and role-aware access.", icon: KeyRound },
-  { title: "Data model", text: "Understand members, projects, time entries, shifts, invoices, and matters.", icon: Database },
-  { title: "Webhooks", text: "Prepare downstream systems for invoice, approval, and shift events.", icon: Webhook },
+  { title: "Data model", text: "Identify users, customers, projects, documents and the system that owns each record.", icon: Database },
+  { title: "Webhooks", text: "Plan events, validation, retries and reconciliation for supported interfaces.", icon: Webhook },
   { title: "API patterns", text: "Build integrations without bypassing tenant boundaries.", icon: Code2 }
 ] as const;
 

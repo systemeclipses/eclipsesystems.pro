@@ -1,15 +1,18 @@
-slug: accounting-firms
-name: Accounting Firms
-title: Time Tracking & Billing Software for Accounting Firms
-description: Track client work, projects, fixed-fee engagements, hourly billing, and realization across accounting teams.
-compliance: Accounting firms should retain clear records of billable and non-billable client work, especially during tax season and advisory engagements.
-recommendedPlan: Pro
+slug: "accounting-firms"
+name: "Accounting firms"
+title: "Custom Client Portals & Workflows for Accounting Firms"
+description: "Organize client intake, document requests, recurring work, review queues and billing handoffs around your accounting practice."
+compliance: "Confirm access permissions, record ownership, retention, hosting and integration requirements during discovery. Industry-specific obligations require review by the business and its advisers; a software feature list does not establish compliance."
+recommendedPlan: "A scoped discovery conversation, followed by a focused prototype or a clearly defined customization project."
 problems:
-  - Busy seasons make after-the-fact time reconstruction common.
-  - Fixed-fee engagements still need internal profitability visibility.
+  - "Teams repeatedly ask clients for the same missing documents."
+  - "Recurring work is difficult to hand off between staff."
+  - "Client context is split between CRM, documents and billing."
 featureMap:
-  - problem: Client work crosses many small tasks.
-    feature: Clients, projects, tasks, and weekly timesheets.
-  - problem: Fixed-fee work hides margin.
-    feature: Budget hours and project reporting.
-originalData: Eclipse Systems' internal planning benchmark treats realization, utilization, and WIP aging as the three reporting views accounting firms should review monthly.
+  - problem: "Teams repeatedly ask clients for the same missing documents."
+    feature: "A client portal with request status, assigned staff and a clear upload path."
+  - problem: "Recurring work is difficult to hand off between staff."
+    feature: "Work queues with owners, review steps and visible outstanding information."
+  - problem: "Client context is split between CRM, documents and billing."
+    feature: "Scoped integrations and shared identifiers, with explicit ownership of each record."
+originalData: "A firm requests a document, receives it through the portal and moves the client task to the reviewer. Missing information remains visible. This is an illustrative operating example, not an accounting or tax determination."

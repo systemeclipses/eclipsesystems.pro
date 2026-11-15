@@ -22,7 +22,7 @@ const resourceLinks = [
 const companyLinks = [
   ["Contact", "/contact"],
   ["Locations", "/locations"],
-  ["Alternatives", "/alternatives"]
+  ["Build or buy", "/vs"]
 ] as const;
 
 export function SiteFooter() {

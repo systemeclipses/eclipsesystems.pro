@@ -4,7 +4,7 @@ import YAML from "yaml";
 import { packageDefinitions } from "@/lib/packages";
 
 const contentRoot = path.join(process.cwd(), "content");
-const siteUrl = "https://eclipsesystems.pro";
+const siteUrl = "https://www.eclipsesystems.pro";
 
 export type PlanContent = {
   slug: string;

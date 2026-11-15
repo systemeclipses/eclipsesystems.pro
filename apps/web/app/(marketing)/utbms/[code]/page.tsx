@@ -33,16 +33,16 @@ export default async function UtbmsCodePage({ params }: { params: { code: string
         <ul className="mt-3 grid gap-2">{entry.common_misuses.map((misuse) => <li key={misuse} className="rounded-[1rem] border border-[#cbd3b0] bg-[#eef1e5] p-4 font-semibold text-[#314839]/75">{misuse}</li>)}</ul>
       </section>
       <section className="mt-10">
-        <h2 className="text-xl font-semibold">How does Eclipse Timekeeping handle {entry.code}?</h2>
-        <p className="mt-2 leading-7 text-muted-foreground">Eclipse Timekeeping Legal lets firms attach UTBMS task and activity codes to matter-linked time entries so invoice review and LEDES export do not require re-keying code data.</p>
+        <h2 className="text-xl font-semibold">How could a custom workflow use {entry.code}?</h2>
+        <p className="mt-2 leading-7 text-muted-foreground">A custom billing workflow can include structured code fields and review steps when these are part of the agreed scope. Confirm code versions, export formats and recipient validation requirements before relying on an integration.</p>
       </section>
       <FAQ items={[
         { question: `What is UTBMS code ${entry.code}?`, answer: `${entry.code} is the UTBMS code for ${entry.task}.` },
-        { question: `Can Eclipse Timekeeping track ${entry.code}?`, answer: "Yes. Eclipse Timekeeping Legal supports UTBMS-coded time entries." },
+        { question: `Can a custom project include ${entry.code}?`, answer: "Code fields and validation can be considered during discovery. This reference does not promise a ready-made product or a configured recipient connection." },
         { question: `What codes are related to ${entry.code}?`, answer: entry.related_codes.join(", ") }
       ]} />
       </section>
-      <PublicCta eyebrow="Legal billing without re-keying" title="Connect coded time directly to review and invoicing." primaryLabel="Schedule a Demo" primaryHref="/contact" />
+      <PublicCta eyebrow="Scope the workflow" title="Plan coded records, review and integrations together." primaryLabel="Schedule a Demo" primaryHref="/contact" />
     </main>
   );
 }

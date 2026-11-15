@@ -26,7 +26,7 @@ export const packageDefinitions: PackageDefinition[] = [
   {
     slug: "operations-hub",
     name: "Operations Hub",
-    tagline: "Your company intranet — plus timekeeping, billing, and the controls behind your client portal.",
+    tagline: "Your company intranet, internal workflows and the controls behind your client portal.",
     audience: "internal teams / employees",
     href: "/operations-hub",
     navItems: [
@@ -60,7 +60,7 @@ export const packageDefinitions: PackageDefinition[] = [
       "business intranet",
       "employee intranet",
       "client portal back office",
-      "timekeeping billing HR software"
+      "custom operations software"
     ],
     moduleNote: "Modules can be turned on or off per client, so buyers only run what they need.",
     worksWith: {

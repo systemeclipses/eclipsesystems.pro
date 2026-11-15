@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const feature = (await loadFeatures()).find((entry) => entry.slug === params.slug);
   if (!feature) return {};
   return {
-    title: `${feature.name} | Eclipse Systems`,
+    title: feature.name,
     description: feature.summary,
     alternates: { canonical: `/features/${feature.slug}` }
   };

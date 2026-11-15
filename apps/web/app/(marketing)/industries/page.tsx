@@ -5,33 +5,33 @@ import { loadIndustries, type IndustryContent } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
-  title: "Industries",
-  description: "Time tracking, billing, and workforce management workflows for engineering firms, lawyers, accounting firms, restaurants, and more."
+  title: "Custom Business Software by Industry",
+  description: "Custom business software for engineering, construction, professional services and hospitality: client portals, operations workflows, documents, dashboards and integrations."
 };
 
 const priorityIndustries = [
   {
     slug: "engineering",
     label: "Engineering",
-    eyebrow: "Project budgets, phases, and billable work",
+    eyebrow: "Projects, phases and client handoffs",
     icon: DraftingCompass
   },
   {
     slug: "law-firms",
     label: "Lawyers",
-    eyebrow: "Matters, UTBMS, LEDES, and approvals",
+    eyebrow: "Client intake, documents and review",
     icon: Scale
   },
   {
     slug: "accounting-firms",
     label: "Accounting",
-    eyebrow: "Busy season, realization, and client work",
+    eyebrow: "Client requests, documents and recurring work",
     icon: BadgeDollarSign
   },
   {
     slug: "restaurants",
     label: "Restaurants",
-    eyebrow: "Schedules, swaps, chat, and coverage",
+    eyebrow: "Locations, purchasing and issue resolution",
     icon: ChefHat
   }
 ] as const;
@@ -52,10 +52,10 @@ export default async function IndustriesPage() {
       <PublicPageHero
         eyebrow=""
         title="Systems for Teams That Keep Things Moving."
-        description="Eclipse gives service firms, professional teams, and shift-based businesses one place to capture work, review it, bill it, schedule it, and understand what is actually happening."
+        description="Eclipse Systems scopes custom software around the records, people and handoffs that make each business different. Explore client portals, operations workflows, documents, reporting and integrations."
         image="/media/generated/heroes/industries.jpg"
         imageAlt="A team collaborating around an Eclipse workflow"
-        points={["Billable work", "Operational clarity", "Auditable records"]}
+        points={["Workflow discovery", "Role-aware access", "Connected records"]}
         height="medium"
       />
 

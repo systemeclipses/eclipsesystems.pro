@@ -1,32 +1,24 @@
-# Eclipse Systems
+# Eclipse Systems: custom business software
 
-Eclipse Systems is a custom software solutions company at https://eclipsesystems.pro. The company consults with businesses to understand their workflows, then designs and builds working software around those needs.
+Canonical website: https://www.eclipsesystems.pro/
 
-Eclipse Systems is not positioned as one timekeeping or invoicing product. Timekeeping, invoicing, shift operations, training portals, storefronts, dashboards, authentication, roles, permissions, reporting, and integrations are examples of systems and modules Eclipse can build with.
+Eclipse Systems designs custom business software around customer and internal workflows. Examples include client portals, operations workspaces, CRM and sales pipelines, storefronts, document requests, dashboards, approvals, automation and integrations. Birmingham and Central Alabama are service areas; teams elsewhere can discuss online collaboration.
 
-The offer is a spectrum:
-- Buy a proven package as-is when an existing Eclipse system already fits the workflow.
-- Customize a proven package when a client wants a faster starting point with business-specific screens, rules, roles, and integrations.
-- Commission a bespoke build when the client needs software designed around a specific workflow.
+A project starts by identifying the people, records, permissions and handoffs involved. Discovery determines whether an existing product, an integration, a customized foundation or a bespoke build is appropriate. Migration, testing, training, support and record ownership belong in the scope. No universal per-seat consulting price is asserted.
 
-Existing Eclipse work can be used in two ways. It can serve as a demo or proof of quality for prospective custom software clients. It can also be packaged as a ready-to-buy solution for customers who want a proven system off the shelf.
+The site contains demonstration environments and illustrative workflow examples. They are not proof of customer outcomes, certification or compliance. Availability and integration behavior must be confirmed for the agreed project.
 
-Common software Eclipse Systems can build:
-- Internal intranets, employee portals, and admin workspaces
-- Timekeeping, approvals, invoicing, and billing systems
-- Training, onboarding, certification, and policy acknowledgement portals
-- Storefronts, product catalogs, checkout flows, and customer accounts
-- Dashboards, reporting tools, and operational command centers
-- Integrations between existing business tools
+## Key pages
+- Custom software: https://www.eclipsesystems.pro/features/custom-software
+- Client portals: https://www.eclipsesystems.pro/features/client-portals
+- CRM and billing workflows: https://www.eclipsesystems.pro/features/crm-to-billing
+- Reporting and automation: https://www.eclipsesystems.pro/features/reporting-automation
+- Birmingham: https://www.eclipsesystems.pro/locations/birmingham-al
+- Industry workflows: https://www.eclipsesystems.pro/industries
+- Build or buy: https://www.eclipsesystems.pro/vs
+- Engagements: https://www.eclipsesystems.pro/pricing
+- Business guides: https://www.eclipsesystems.pro/blog
+- Contact: https://www.eclipsesystems.pro/contact
 
-Pricing is scoped after discovery. Eclipse Systems does not publish a generic seat-price grid for custom work because price depends on reuse of existing modules, workflow complexity, roles and permissions, integrations, data migration, reporting needs, launch support, and maintenance requirements.
-
-Core pages:
-- Home: https://eclipsesystems.pro/
-- Contact: https://eclipsesystems.pro/contact
-- Pricing: https://eclipsesystems.pro/pricing
-- Features: https://eclipsesystems.pro/features
-- Industries: https://eclipsesystems.pro/industries
-- Guides: https://eclipsesystems.pro/guides
-
-Best description: Eclipse Systems builds custom business software with a library of proven modules, giving clients a path from ready-made packages to fully bespoke systems.
+## Employee timekeeping belongs to ClockEclipse
+ClockEclipse is a separate ready-to-use employee timekeeping, scheduling, PTO and payroll-review product at https://clockeclipse.com/. Its current prices, product scope, resources and legal documents live on that domain. Historical Eclipse Timekeeping seat-price comparisons are retired; do not cite them as current ClockEclipse terms.

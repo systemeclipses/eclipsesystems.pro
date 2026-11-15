@@ -1,5 +1,54 @@
 export const additionalBlogPosts = [
   {
+  "slug": "scope-custom-software-project",
+  "title": "How to scope a custom business software project",
+  "category": "Custom software",
+  "description": "Plan a complete workflow, its records, permissions, integrations, migration and acceptance checks before commissioning custom business software.",
+  "image": "/media/generated/features-carousel/client-portal.jpg",
+  "imageAlt": "Illustrative client portal interface used to discuss a business workflow",
+  "date": "Nov 15, 2026",
+  "publishedAt": "2026-11-15",
+  "readTime": "3 min read",
+  "likes": 0,
+  "sections": [
+    {
+      "heading": "Choose a complete task, not a list of screens",
+      "paragraphs": [
+        "A useful software brief begins with a task that moves through the business: a customer requests work, someone reviews it, an owner delivers it and the customer receives an update. Name the people involved and the record that carries the work between them. Then describe where the process currently slows down. A request for a dashboard is much easier to scope when the team can explain which decision that dashboard should support.",
+        "For example, a service company might want a portal for recurring client requests. The first version could collect a request, route it to an assigned reviewer and show the client its approved status. Chat, a mobile app and additional reporting may be valuable later, but they should not obscure the first complete path through the work. This is an illustrative planning example, not a customer case study."
+      ]
+    },
+    {
+      "heading": "Agree on the records and who owns them",
+      "paragraphs": [
+        "List the records the task depends on: customers, projects, requests, documents, invoices or another business-specific item. Identify where each record lives today and who may create or change it. Shared identifiers matter when information crosses systems. A customer name by itself may not be enough to match an existing accounting record reliably.",
+        "Separate visibility from authority. A client may be allowed to see a project status without seeing internal notes. A manager may review requests for one team without accessing every department. Write down an ordinary case and an access-denied case for each role so the prototype can be checked against the intended boundary."
+      ]
+    },
+    {
+      "heading": "Include the unsuccessful handoff",
+      "paragraphs": [
+        "An integration brief should explain more than what happens when a request succeeds. Describe a missing identifier, an unavailable service, a rejected update and a request that gets retried. Decide how the user sees the problem, who resolves it and how the team checks that the same work was not processed twice. Available interfaces and the receiving system’s requirements must be verified during discovery.",
+        "Use the same discipline for internal approvals. If the reviewer is unavailable, a request is sent back or responsibility changes, the next owner and current status should remain clear. Those paths often determine whether the software reduces administrative work or simply moves the confusion to a new screen."
+      ]
+    },
+    {
+      "heading": "Plan the move from current records",
+      "paragraphs": [
+        "Bring a redacted or synthetic sample of the information the new workflow needs. Review required fields, duplicates, identifiers and the point at which an old record becomes part of the new system. Assign someone from the business to approve the import results. A successful file upload does not establish that the resulting records are complete or correctly matched.",
+        "Agree on how historical information remains available and whether the first launch includes one team, one location or a wider rollout. Training, support, hosting responsibilities and record retention belong in the plan. They are practical delivery requirements, even when the first conversation concentrates on the interface."
+      ]
+    },
+    {
+      "heading": "Define what completion will look like",
+      "paragraphs": [
+        "Write a short acceptance scenario for the first task. Include the starting record, the permitted user, the action, the saved result and what the next person should see. Add the exception cases and identify who will sign off. This gives the prototype review a purpose beyond deciding whether a screen looks attractive.",
+        "A scoped quote should distinguish reusable foundations, project-specific changes, integrations, migration and ongoing responsibilities. Keep a separate list of later ideas rather than treating every new suggestion as part of the original commitment. Eclipse Systems can use discovery to discuss that build path. For employee timekeeping as an existing product, explore ClockEclipse and its own published plans instead."
+      ]
+    }
+  ]
+},
+  {
     slug: "client-portal-small-business",
     title: "What a client portal should do for a small business",
     category: "Client experience",

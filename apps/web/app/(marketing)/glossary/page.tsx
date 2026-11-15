@@ -4,12 +4,12 @@ import { loadGlossary } from "@/lib/seo/content";
 import { PublicPageHero, PublicSectionHeading } from "@/components/marketing/public-page";
 
 export const metadata: Metadata = {
-  title: "Timekeeping Glossary",
-  description: "Definitions for timekeeping, billing, legal operations, shift management, and professional services terms."
+  title: "Business Workflow Glossary",
+  description: "Definitions for billing, document exchange and professional-services workflows, with practical business context."
 };
 
 export default async function GlossaryPage() {
-  const terms = await loadGlossary();
+  const terms = (await loadGlossary()).filter(term => term.slug !== "shift-swap");
   return (
     <main className="min-h-screen bg-cream text-ink">
       <PublicPageHero eyebrow="Plain-language reference" title="The Eclipse Workflow Glossary." description="Clear definitions for operations, billing, legal workflows, scheduling, customer systems, and the language teams use to run the work." image="/media/generated/heroes/resources.jpg" imageAlt="Workflow notes and diagrams arranged into a practical reference" points={["Plain language", "Practical context", "Related concepts"]} />

@@ -9,9 +9,9 @@ import { ConnectedSystems } from "@/components/marketing/connected-systems";
 import { HomeBlogCarousel } from "@/components/marketing/home-blog-carousel";
 
 export const metadata: Metadata = {
-  title: "Eclipse Systems | Custom Software Consulting",
+  title: { absolute: "Custom Business Software in Birmingham | Eclipse Systems" },
   description:
-    "Eclipse Systems designs custom business software for operations, client portals, CRM, storefronts, billing workflows, dashboards, automations, and integrations.",
+    "Eclipse Systems builds custom software for Birmingham businesses and teams elsewhere: client portals, operations systems, CRM, dashboards, automation and integrations.",
   alternates: { canonical: "/" }
 };
 
@@ -581,13 +581,13 @@ export default function LandingPage() {
             <section aria-labelledby="clockeclipse-title" className="grid gap-8 rounded-[2rem] border border-[#b4c292]/50 bg-[#314839] p-7 text-[#f9e8d2] md:p-12 lg:grid-cols-[1.4fr_1fr] lg:items-center">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d8e2bf]">Meet ClockEclipse</p>
-                <h2 id="clockeclipse-title" className="mt-4 font-title text-4xl leading-tight md:text-5xl">Employee timekeeping.<br />A clearer payroll handoff.</h2>
-                <p className="mt-5 max-w-2xl text-base leading-7 text-[#f9e8d2]">Our ready-to-use timekeeping product brings clock-ins, schedules, PTO and payroll review together. Built for everyday team workflows, with plans starting at $4 per employee per month.</p>
-                <p className="mt-4 text-sm leading-6 text-[#d8e2bf]">Explore the employee and manager workflows, or start with a free payroll review checklist.</p>
+                <h2 id="clockeclipse-title" className="mt-4 font-title text-4xl leading-tight md:text-5xl">ClockEclipse.<br />A product by Eclipse.</h2>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-[#f9e8d2]">Looking for employee timekeeping rather than a custom software project? ClockEclipse is our dedicated product for clock-ins, schedules, PTO and payroll review.</p>
+                <p className="mt-4 text-sm leading-6 text-[#d8e2bf]">Product details, plans and employee workflows live on clockeclipse.com.</p>
               </div>
               <div className="flex min-w-0 flex-col items-start gap-4">
-                <a href="https://clockeclipse.com/alabama/birmingham-timekeeping-software" className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#172219] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Explore Birmingham timekeeping <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></a>
-                <a href="https://clockeclipse.com/tools/payroll-readiness-checklist" className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full border border-[#d8e2bf] bg-[#24382b] px-6 py-3 text-sm font-bold text-[#f9e8d2] transition hover:bg-[#172219] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Use the free payroll checklist <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></a>
+                <a href="https://clockeclipse.com/" className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full bg-[#f9e8d2] px-6 py-3 text-sm font-bold text-[#172219] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Visit ClockEclipse <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></a>
+                <a href="/features/custom-software" className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full border border-[#d8e2bf] bg-[#24382b] px-6 py-3 text-sm font-bold text-[#f9e8d2] transition hover:bg-[#172219] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Explore custom software <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></a>
               </div>
             </section>
 

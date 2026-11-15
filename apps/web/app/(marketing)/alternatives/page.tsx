@@ -1,1 +1,2 @@
-export { default, metadata } from "../vs/page";
+import { permanentRedirect } from "next/navigation";
+export default function Page() { permanentRedirect("/vs"); }
