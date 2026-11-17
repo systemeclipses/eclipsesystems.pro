@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Analytics } from "@/lib/analytics";
 import { StructuredData } from "@/components/seo/structured-data";
 import "./globals.css";
 
@@ -120,7 +119,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <StructuredData schema={website} />
         <StructuredData schema={service} />
         {children}
-        <Analytics />
       </body>
     </html>
   );
