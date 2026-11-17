@@ -11,14 +11,14 @@ const demoLabels: Record<string, string> = {
   "operations-hub": "Operations Hub",
   "client-portal": "Client Portal",
   "crm-sales-pipeline": "CRM & Sales Pipeline",
-  storefront: "Storefront"
+  storefront: "Storefront",
 };
 
 export function ScheduleDemoForm({
   selectedDemo = "",
   className,
   submitLabel = "Schedule a demo",
-  helperText = "We will use this to prepare the right demo, not to drop you into a generic sales sequence."
+  helperText = "We will use this to prepare the right demo, not to drop you into a generic sales sequence.",
 }: {
   selectedDemo?: string;
   className?: string;
@@ -37,33 +37,61 @@ export function ScheduleDemoForm({
     setStatus("submitting");
     setMessage("");
 
-    const response = await fetch("/api/schedule-demo", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        name: data.get("name"),
-        email: data.get("email"),
-        businessName: data.get("businessName"),
-        employeeCount: data.get("employeeCount"),
-        needs: selectedDemoLabel ? `Demo interest: ${selectedDemoLabel}\n\n${data.get("needs")}` : data.get("needs")
-      })
-    });
+    const controller = new AbortController(),
+      timer = window.setTimeout(() => controller.abort(), 30000);
+    try {
+      const response = await fetch("/api/schedule-demo", {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("name"),
+          email: data.get("email"),
+          businessName: data.get("businessName"),
+          employeeCount: data.get("employeeCount"),
+          needs: selectedDemoLabel
+            ? `Demo interest: ${selectedDemoLabel}\n\n${data.get("needs")}`
+            : data.get("needs"),
+        }),
+      });
 
-    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      const payload = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
 
-    if (!response.ok) {
+      if (!response.ok || payload?.ok !== true) {
+        setStatus("error");
+        setMessage(
+          payload?.error ?? "We could not send the request. Please try again.",
+        );
+        return;
+      }
+
+      form.reset();
+      setStatus("success");
+      document.dispatchEvent(new Event("eclipse-systems:lead-confirmed"));
+      setMessage(
+        "Demo request received. We will follow up with the next step.",
+      );
+    } catch {
       setStatus("error");
-      setMessage(payload?.error ?? "We could not send the request. Please try again.");
-      return;
+      setMessage(
+        "We could not confirm your request. Check your connection and try again.",
+      );
+    } finally {
+      window.clearTimeout(timer);
     }
-
-    form.reset();
-    setStatus("success");
-    setMessage("Demo request received. We will follow up with the next step.");
   }
 
   return (
-    <form onSubmit={handleSubmit} className={cn("grid gap-5 rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-2xl shadow-[#172219]/10 md:p-8", className)}>
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "grid gap-5 rounded-[2rem] border border-[#d8d0c1] bg-[#fbfaf6] p-6 shadow-2xl shadow-[#172219]/10 md:p-8",
+        className,
+      )}
+    >
       {selectedDemoLabel ? (
         <div className="rounded-md border border-border bg-cream px-3 py-2 text-sm font-semibold text-primary">
           Demo selected: {selectedDemoLabel}
@@ -72,9 +100,10 @@ export function ScheduleDemoForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold">
-          Your name
+          Your name *
           <input
             name="name"
+            maxLength={160}
             required
             autoComplete="name"
             className="h-11 rounded-md border border-border bg-white px-3 font-normal outline-none focus:border-primary"
@@ -82,9 +111,10 @@ export function ScheduleDemoForm({
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold">
-          Email address
+          Email address *
           <input
             name="email"
+            maxLength={254}
             type="email"
             required
             autoComplete="email"
@@ -96,9 +126,10 @@ export function ScheduleDemoForm({
 
       <div className="grid gap-4 sm:grid-cols-[1fr_0.6fr]">
         <label className="grid gap-2 text-sm font-semibold">
-          Business name
+          Business name *
           <input
             name="businessName"
+            maxLength={200}
             required
             autoComplete="organization"
             className="h-11 rounded-md border border-border bg-white px-3 font-normal outline-none focus:border-primary"
@@ -106,9 +137,10 @@ export function ScheduleDemoForm({
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold">
-          Employee count
+          Employee count *
           <input
             name="employeeCount"
+            max={100000}
             type="number"
             min="1"
             required
@@ -119,9 +151,10 @@ export function ScheduleDemoForm({
       </div>
 
       <label className="grid gap-2 text-sm font-semibold">
-        What are you looking for?
+        What are you looking for? *
         <textarea
           name="needs"
+          maxLength={5000}
           required
           className="min-h-48 rounded-md border border-border bg-white px-3 py-3 font-normal outline-none focus:border-primary"
           placeholder="Tell us what you want the software to handle, what tools you use now, and where the current process breaks."
@@ -129,17 +162,26 @@ export function ScheduleDemoForm({
       </label>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-6 text-muted-foreground">
-          {helperText}
-        </p>
-        <Button className="h-11 bg-primary px-5 text-primary-foreground hover:bg-[#314839]" disabled={status === "submitting"}>
+        <p className="text-sm leading-6 text-muted-foreground">{helperText}</p>
+        <Button
+          type="submit"
+          className="h-11 bg-primary px-5 text-primary-foreground hover:bg-[#314839]"
+          disabled={status === "submitting"}
+        >
           {status === "submitting" ? "Sending..." : submitLabel}
-          {status === "success" ? <Check className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+          {status === "success" ? (
+            <Check className="h-4 w-4" />
+          ) : (
+            <ArrowRight className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
       {message ? (
-        <p className={`rounded-md px-3 py-2 text-sm ${status === "error" ? "bg-red-50 text-red-700" : "bg-cream text-muted-foreground"}`}>
+        <p
+          role={status === "error" ? "alert" : "status"}
+          className={`rounded-md px-3 py-2 text-sm ${status === "error" ? "bg-red-50 text-red-700" : "bg-cream text-muted-foreground"}`}
+        >
           {message}
         </p>
       ) : null}

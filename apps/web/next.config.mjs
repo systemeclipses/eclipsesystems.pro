@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Isolate local browser QA from an existing development session.
+  distDir: process.env.ECLIPSE_BUILD_DIR || ".next",
   async redirects() {
     return [
       { source: "/alternatives", destination: "/vs", permanent: true },
