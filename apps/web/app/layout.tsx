@@ -33,7 +33,8 @@ export const metadata: Metadata = {
   generator: "Next.js",
   keywords: [],
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }]
+    icon: [{ url: "/favicon.svg?v=20261119-clock", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-touch-icon.png?v=20261119-clock", sizes: "180x180", type: "image/png" }]
   },
   openGraph: {
     type: "website",
