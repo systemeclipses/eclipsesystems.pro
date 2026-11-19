@@ -24,6 +24,8 @@ export type FeatureContent = {
   name: string;
   summary: string;
   questions: string[];
+  sections?: { heading: string; paragraphs: string[] }[];
+  answers?: Record<string, string>;
 };
 
 export type CompetitorContent = {

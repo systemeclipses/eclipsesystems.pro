@@ -1,50 +1,190 @@
 [
   {
     "slug": "custom-software",
-    "name": "Custom Software Builds",
-    "summary": "Workflow-specific web apps, dashboards, portals, and operations tools designed around how your business actually runs.",
-    "questions": ["Can Eclipse Systems build software around our current workflow?", "Can an existing Eclipse module be customized instead of starting from scratch?", "How do discovery, scope, and launch planning work?"]
+    "name": "Custom Software Development",
+    "summary": "Custom software development for Birmingham and Central Alabama businesses: web applications, client portals, internal tools and dashboards built around your workflow.",
+    "questions": [
+      "Can Eclipse Systems build software around our current workflow?",
+      "Can an existing Eclipse module be customized instead of starting from scratch?",
+      "How do discovery, scope, and launch planning work?"
+    ],
+    "sections": [
+      {
+        "heading": "Build the missing workflow, not another disconnected tool",
+        "paragraphs": [
+          "Start with the task your existing software cannot carry through. A client request may need review, documents, an assigned owner and a visible status before it becomes billable work. Define that path and the records it depends on before choosing screens. Eclipse Systems scopes custom web applications around those connected steps.",
+          "A focused first release can include a client portal, an internal approval tool or a dashboard tied to the underlying records. The right starting point may be an existing Eclipse foundation, a connection to current software or a bespoke build. Discovery establishes the scope and acceptance checks."
+        ]
+      },
+      {
+        "heading": "Plan the people and data alongside the interface",
+        "paragraphs": [
+          "A useful application needs clear roles, record ownership and a recovery path for errors. Test what a client can see, what a manager can change and what should happen when a request is rejected or reassigned. Plan migration, training, hosting and ongoing maintenance before launch.",
+          "We work with Birmingham-area and Central Alabama teams, including Hoover, Homewood and Vestavia Hills businesses, and can collaborate remotely. Bring a redacted example of the workflow so a consultation can move beyond a feature wish list."
+        ]
+      }
+    ]
   },
   {
     "slug": "customer-payments",
     "name": "Customer Payments",
     "summary": "A public payment page where your customers can look up invoices and pay through secure PayPal-hosted checkout.",
-    "questions": ["Can customers pay an invoice from the main website?", "How does invoice lookup protect customer billing details?", "Does Eclipse Systems store card data?"]
+    "questions": [
+      "Can customers pay an invoice from the main website?",
+      "How does invoice lookup protect customer billing details?",
+      "Does Eclipse Systems store card data?"
+    ]
   },
   {
     "slug": "paypal-invoicing",
     "name": "PayPal Invoicing",
     "summary": "Create, send, and track PayPal invoices from the internal billing desk while customers pay through PayPal payment links.",
-    "questions": ["Can admins send PayPal invoices from Eclipse?", "Can invoices be saved locally for tracking?", "Can unpaid invoice links be surfaced to customers?"]
+    "questions": [
+      "Can admins send PayPal invoices from Eclipse?",
+      "Can invoices be saved locally for tracking?",
+      "Can unpaid invoice links be surfaced to customers?"
+    ]
   },
   {
     "slug": "client-portals",
     "name": "Client Portals",
     "summary": "Branded customer spaces for projects, documents, invoice access, messages, files, and service requests.",
-    "questions": ["Can customers sign in to see project and billing status?", "Can portal workflows match our service process?", "Can documents, messages, and invoices live together?"]
+    "questions": [
+      "Can customers sign in to see project and billing status?",
+      "Can portal workflows match our service process?",
+      "Can documents, messages, and invoices live together?"
+    ]
   },
   {
     "slug": "operations-back-office",
     "name": "Operations Back Office",
     "summary": "Internal tools for scheduling, time records, tasks, HR workflows, documents, tickets, training, and reporting.",
-    "questions": ["Can internal staff manage client work and billing from one place?", "Can roles and permissions match our team structure?", "Can operations workflows connect to customer-facing pages?"]
+    "questions": [
+      "Can internal staff manage client work and billing from one place?",
+      "Can roles and permissions match our team structure?",
+      "Can operations workflows connect to customer-facing pages?"
+    ]
   },
   {
     "slug": "crm-to-billing",
     "name": "CRM to Billing",
     "summary": "Sales pipelines, proposals, e-signature handoff, customer records, and billing workflows connected in one system.",
-    "questions": ["Can closed deals become billable customers?", "Can proposals and invoices share customer data?", "Can follow-up tasks stay attached to the deal or customer?"]
+    "questions": [
+      "Can closed deals become billable customers?",
+      "Can proposals and invoices share customer data?",
+      "Can follow-up tasks stay attached to the deal or customer?"
+    ]
   },
   {
     "slug": "storefront-commerce",
     "name": "Storefront Commerce",
     "summary": "Product and service catalogs, carts, customer accounts, orders, inventory, receipts, and admin workflows.",
-    "questions": ["Can Eclipse Systems build a branded storefront?", "Can services and products live in the same catalog?", "Can order management connect to internal operations?"]
+    "questions": [
+      "Can Eclipse Systems build a branded storefront?",
+      "Can services and products live in the same catalog?",
+      "Can order management connect to internal operations?"
+    ]
   },
   {
     "slug": "reporting-automation",
-    "name": "Reporting & Automation",
-    "summary": "Dashboards, exports, alerts, approval flows, reminders, and automations that keep work moving without spreadsheet cleanup.",
-    "questions": ["Can dashboards be built around our KPIs?", "Can routine billing or operations steps be automated?", "Can reports combine customer, project, invoice, and team data?"]
+    "name": "Business Workflow Automation & Dashboards",
+    "summary": "Business process automation and custom reporting for Birmingham teams: approval workflows, reminders, connected dashboards and traceable handoffs between systems.",
+    "questions": [
+      "Can dashboards be built around our KPIs?",
+      "Can routine billing or operations steps be automated?",
+      "Can reports combine customer, project, invoice, and team data?"
+    ],
+    "sections": [
+      {
+        "heading": "Automate a decision with a clear owner",
+        "paragraphs": [
+          "Choose one recurring task that has a reliable trigger and an expected result. Examples include reminding an owner about an overdue request, preparing an invoice draft after approval or routing a document for review. Decide which actions can run automatically and which require a person to confirm them.",
+          "Map exceptions before expanding the workflow. A missing field, unavailable reviewer or failed update should remain visible with a responsible owner. An automation that silently skips work creates a new reconciliation problem."
+        ]
+      },
+      {
+        "heading": "Build reporting around consistent records",
+        "paragraphs": [
+          "Agree on each metric’s definition, source and reporting period before building the dashboard. A count of open requests and a count of overdue requests may use different rules. Reconcile a sample period with the people who currently produce the report.",
+          "Eclipse Systems scopes custom dashboards and workflow automation for Birmingham and Central Alabama businesses. Source permissions, freshness and vendor API support shape what can be delivered. Review those dependencies and the acceptance criteria during discovery."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "software-consulting",
+    "name": "Software Consulting for Birmingham Businesses",
+    "summary": "Software consulting for Birmingham and Central Alabama: workflow discovery, build-or-buy decisions, system reviews, integration planning and a scoped delivery roadmap.",
+    "questions": [
+      "What happens during software consulting?",
+      "Do we have to commission a new application?",
+      "What should we bring to the first conversation?"
+    ],
+    "answers": {
+      "What happens during software consulting?": "We review the workflow, current tools, data owners and bottlenecks, then discuss a practical next step and scope. Agree on the deliverables before work begins, such as a workflow map, prototype or phased implementation plan.",
+      "Do we have to commission a new application?": "No. The right outcome may be configuring an existing tool, connecting systems, replacing one manual handoff or commissioning a focused application. A custom build should follow the business need.",
+      "What should we bring to the first conversation?": "Bring one process that is difficult today, the tools involved and a redacted example. Include the people who perform the work and the person responsible for approving the result."
+    },
+    "sections": [
+      {
+        "heading": "Turn a vague software problem into a decision",
+        "paragraphs": [
+          "A request for a new system often starts with a symptom: staff copy information between spreadsheets, customers cannot see progress, or managers reconcile several versions of a report. Software consulting starts by following one task from its first request to its finished record. Identify the owner, the next decision and the handoff that creates extra work.",
+          "For a Birmingham service business, that might mean tracing an inquiry through a quote, approval, scheduled work and invoice. For a professional office in Hoover, it might mean client intake and document review. These are discovery examples, not claims about named customers. The aim is a concrete problem statement that a team can evaluate."
+        ]
+      },
+      {
+        "heading": "Compare configuration, integration and custom development",
+        "paragraphs": [
+          "Keep the systems that already do their job well. Review existing features and supported interfaces before paying to recreate them. A customer portal or a small internal application can sometimes bridge a gap without replacing accounting, project management or another established system.",
+          "Document licensing dependencies, data access, hosting responsibilities and the cost of maintaining the result. A prototype should show a complete task, including an exception and a permission boundary. This provides a basis for choosing between a ready-made product, a customized foundation and a bespoke build."
+        ]
+      },
+      {
+        "heading": "Leave discovery with a reviewable next step",
+        "paragraphs": [
+          "Agree on the expected output of the engagement: a workflow map, requirements brief, prototype, integration assessment or phased plan. Separate the first release from later ideas and identify the person who will approve the result. Migration, training and support should be part of the discussion rather than surprises at launch.",
+          "Eclipse Systems serves Birmingham and Central Alabama, including teams in Hoover, Homewood and Vestavia Hills, with remote collaboration available. Consulting is scoped around the actual work; there is no single price that fits every business. Start with a redacted example and a clear description of what a better day would look like."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "api-integrations",
+    "name": "API Integration & Business System Integration",
+    "summary": "Connect business software, customer portals, CRM and reporting through scoped API integrations. For Birmingham-area teams: mapping, safe retries, migration and reconciliation.",
+    "questions": [
+      "Can Eclipse connect our current software?",
+      "Does an integration automatically mean two-way sync?",
+      "How do we prevent duplicate or missing records?"
+    ],
+    "answers": {
+      "Can Eclipse connect our current software?": "We first check the vendor’s supported APIs, authentication, plan requirements and data permissions. Feasibility depends on those interfaces; a CSV handoff or configuration change may be the practical alternative.",
+      "Does an integration automatically mean two-way sync?": "No. Decide which system owns each field, what direction updates travel and how conflicts are reviewed. Reading data, creating records and changing existing records require different capabilities and permissions.",
+      "How do we prevent duplicate or missing records?": "Scope stable identifiers, idempotency, validation, retry limits and reconciliation. Review both successful and failed deliveries, and keep an audit trail so the team can verify what the receiving system actually accepted."
+    },
+    "sections": [
+      {
+        "heading": "Connect a complete business handoff",
+        "paragraphs": [
+          "An integration should solve a specific transfer of work, such as an approved sales opportunity becoming a project, or a completed job becoming an invoice draft. Identify the trigger, the required fields, the destination and the person who reviews the result. Simply moving a file does not establish that the workflow is complete.",
+          "Eclipse Systems can scope connections between customer portals, internal tools, CRM workflows, billing and reporting. We check each vendor’s available interface and account requirements before promising delivery. A provider logo or a sandbox demonstration is not evidence that every production write operation is supported."
+        ]
+      },
+      {
+        "heading": "Map records, ownership and permissions first",
+        "paragraphs": [
+          "Names and email addresses alone may not be reliable keys. Establish stable customer, project or employee identifiers and document which system owns each record. Define what should happen when a field changes, two records conflict or a destination rejects an update.",
+          "Limit the integration to the data and actions it needs. Keep credentials on the server, separate test and production environments, and agree how access can be revoked. Use synthetic or redacted examples during early discovery so feasibility testing does not require sharing a full live dataset."
+        ]
+      },
+      {
+        "heading": "Design recovery as part of the connection",
+        "paragraphs": [
+          "A receiving system can time out after accepting a request. Retrying that request blindly may create a duplicate. A delivery plan should include idempotency where supported, recorded outcomes, bounded retries and a review route for uncertain results. Decide who owns an unresolved item and how it is reconciled.",
+          "For Birmingham and Central Alabama businesses, a first integration can focus on one costly handoff rather than replacing the whole software stack. Scope initial migration separately from ongoing sync, compare record counts and totals, and agree acceptance checks with the people who depend on the data."
+        ]
+      }
+    ]
   }
 ]

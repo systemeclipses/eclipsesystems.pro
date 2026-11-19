@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 };
 
 const featureDesign: Record<string, { label: string; icon: typeof LayoutDashboard; accent: string }> = {
+  "software-consulting": { label: "Consult", icon: BriefcaseBusiness, accent: "bg-[#314839] text-white" },
+  "api-integrations": { label: "Connect", icon: PanelsTopLeft, accent: "bg-[#dfe7cf]" },
   "custom-software": { label: "Build", icon: PanelsTopLeft, accent: "bg-primary text-white" },
   "customer-payments": { label: "Pay", icon: CreditCard, accent: "bg-secondary text-white" },
   "paypal-invoicing": { label: "Invoice", icon: WalletCards, accent: "bg-[#d7ddbc]" },

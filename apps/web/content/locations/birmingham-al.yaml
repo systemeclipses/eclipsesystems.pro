@@ -1,8 +1,8 @@
 slug: "birmingham-al"
 city: "Birmingham"
 state: "Alabama"
-title: "Custom Business Software in Birmingham & Central Alabama"
-description: "Custom software development for Birmingham businesses: client portals, operations systems, CRM, dashboards, workflow automation and integrations. Start with your process."
+title: "Custom Software Development & Consulting in Birmingham"
+description: "Birmingham software development and consulting for custom web apps, client portals, API integrations and workflow automation. Serving Central Alabama businesses."
 wordCountTarget: 600
 localSignals:
   - "Birmingham metropolitan area"
@@ -21,4 +21,4 @@ body:
   - "For construction and engineering teams, a useful starting example is a project moving from estimate to approval, delivery and invoice review. For a service firm, it might be client intake, document collection and recurring requests. A hospitality operator may need purchasing, maintenance and location reporting. These are illustrative workflow options, not claims that named local businesses use Eclipse. The first discovery conversation should establish the process and the people involved before selecting modules or committing to a larger build."
   - "Prototype one complete task before expanding the scope. Let a staff member submit a request, let the responsible manager review it and show what the customer sees afterward. Test the permissions with both ordinary and exceptional cases: a reassigned project, a missing document, a rejected approval or a user who should not see another client. A working path through the process is more informative than a list of features or an attractive screen without connected records."
   - "Plan the move from existing records alongside the new interface. Agree on source files, required identifiers, duplicates, opening information and reconciliation checks. Assign responsibility for sign-off and decide how old records will remain accessible. A staged rollout can begin with one team or workflow, followed by training and a documented support route. Review access, hosting, retention and backup requirements as part of the scope; they should not be assumed from a generic product description."
-  - "Eclipse Systems serves Birmingham and Central Alabama, with online collaboration available for teams elsewhere. Custom software is scoped after discovery according to workflow, integrations, migration, permissions and support needs; there is no universal seat price for a consulting engagement. If the need is employee timekeeping, scheduling, PTO and payroll review, explore ClockEclipse instead. That dedicated product has its own website and plan details at clockeclipse.com, while this site focuses on custom business solutions."
+  - "Eclipse Systems serves Birmingham and Central Alabama, with online collaboration available for teams elsewhere. Custom software is scoped after discovery according to workflow, integrations, migration, permissions and support needs; there is no universal seat price for a consulting engagement. If the need is employee timekeeping, scheduling, PTO and payroll review, explore Eclipse Timekeeping instead. That dedicated product has its own website and plan details at clockeclipse.com, while this site focuses on custom business solutions."
