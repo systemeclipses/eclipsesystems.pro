@@ -106,6 +106,12 @@ export function PublicAnalytics({ measurementId }: { measurementId: string }) {
       ) {
         try {
           const target = new URL(element.href);
+          if (target.hostname === "clockeclipse.com") {
+            window.gtag?.("event", "timekeeping_referral", {
+              product: "timekeeping", destination: target.pathname,
+              page_path: path, page_location: location.href, transport_type: "beacon",
+            });
+          }
           if (
             target.origin === window.location.origin &&
             ["/contact", "/schedule-demo", "/demos", "/pricing"].includes(
