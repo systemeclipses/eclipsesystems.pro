@@ -25,7 +25,7 @@ function notificationRecipients() {
   return configured?.length ? configured : defaultNotificationRecipients;
 }
 
-async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) {
+async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>, timekeeping: boolean) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return false;
 
@@ -40,9 +40,9 @@ async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) 
       from: process.env.DEMO_NOTIFICATION_FROM ?? "Eclipse Systems <info@eclipsesystems.pro>",
       to: notificationRecipients(),
       reply_to: data.email,
-      subject: `New demo request from ${data.name}`,
+      subject: `${timekeeping ? "Eclipse Timekeeping walkthrough" : "Eclipse Systems demo"} request from ${data.name}`,
       text: [
-        "A new demo request was submitted on eclipsesystems.pro.",
+        timekeeping ? "A new Eclipse Timekeeping inquiry was submitted on clockeclipse.com." : "A new demo request was submitted on eclipsesystems.pro.",
         "",
         `Name: ${data.name}`,
         `Email: ${data.email}`,
@@ -69,6 +69,7 @@ async function sendBookingNotification(data: z.infer<typeof demoRequestSchema>) 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = demoRequestSchema.safeParse(body);
+  const timekeeping = body?.source === "eclipse-timekeeping/contact";
 
   if (!parsed.success) {
     return NextResponse.json({ error: "Please complete every field before scheduling a demo." }, { status: 400 });
@@ -77,14 +78,14 @@ export async function POST(request: Request) {
   const webhookUrl = process.env.DEMO_REQUEST_WEBHOOK_URL;
 
   try {
-    const emailSent = await sendBookingNotification(parsed.data);
+    const emailSent = await sendBookingNotification(parsed.data, timekeeping);
 
     if (webhookUrl) {
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          source: "eclipsesystems.pro/contact",
+          source: timekeeping ? "eclipse-timekeeping/contact" : "eclipsesystems.pro/contact",
           submittedAt: new Date().toISOString(),
           ...parsed.data
         })
@@ -94,11 +95,7 @@ export async function POST(request: Request) {
     }
 
     if (!emailSent && !webhookUrl) {
-      console.info("Schedule demo request", {
-        source: "eclipsesystems.pro/contact",
-        submittedAt: new Date().toISOString(),
-        ...parsed.data
-      });
+      return NextResponse.json({ error: "Delivery is unavailable. Please call or email Eclipse directly." }, { status: 503 });
     }
   } catch (error) {
     console.error("Schedule demo delivery failed", error);
